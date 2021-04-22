@@ -1,1 +1,1 @@
-# discovery-metadata-catalog-ingestor
+# Discovery MetaData Catalog Ingestor
