@@ -1,7 +1,8 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-DMCI : Test Config
-==================
+DMCI : Package Setup
+====================
 
 Copyright 2021 MET Norway
 
@@ -18,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os
-import sys
+import setuptools
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+if __name__ == "__main__":
+    setuptools.setup()
