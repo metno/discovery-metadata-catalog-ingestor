@@ -25,6 +25,6 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v2
       - name: Run Tests
-        run: pytest -v --cov=dmci
+        run: python -m pytest -v --cov=dmci
       - name: Upload to Codecov
         uses: codecov/codecov-action@v1
