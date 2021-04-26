@@ -40,3 +40,11 @@ def tmpDir():
     if not os.path.isdir(theDir):
         os.mkdir(theDir)
     return theDir
+
+@pytest.fixture(scope="session")
+def refDir():
+    """A path to the reference files folder.
+    """
+    testDir = os.path.dirname(__file__)
+    theDir = os.path.join(testDir, "files")
+    return theDir

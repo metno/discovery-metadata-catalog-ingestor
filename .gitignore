@@ -5,8 +5,12 @@ __pycache__
 # Pytest
 .pytest_cache
 .coverage
+coverage.*
 htmlcov/
 tests/temp/
+
+# Input
+config.yaml
 
 # Setuptools
 build/
