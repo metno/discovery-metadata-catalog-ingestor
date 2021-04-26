@@ -11,7 +11,7 @@ def base():
     if validate_mmd(data):
         return "Nom nom I like this MMD file.", 200
     else:
-        return "🤮", 400
+        return "🤮", 500
     
 app.run()
 
