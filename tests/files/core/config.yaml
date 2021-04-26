@@ -1,0 +1,7 @@
+groupOne:
+  keyOne: 1
+  keyTwo: two
+  keyThree: null
+  keyFour:
+    - value1
+    - value2
