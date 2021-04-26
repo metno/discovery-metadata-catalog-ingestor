@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-DMCI : Main Package Init
-========================
+DMCI : Main Config
+==================
 
 Copyright 2021 MET Norway
 
@@ -20,11 +20,12 @@ limitations under the License.
 
 import logging
 
-from dmci.config import Config
-
-__package__ = "dmci"
-__version__ = "0.0.1"
-
 logger = logging.getLogger(__name__)
 
-CONFIG = Config()
+class Config():
+
+    def __init__(self):
+
+        return
+
+# END Class Config
