@@ -18,7 +18,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-# import os
-# import sys
+import os
+import sys
+import shutil
+import pytest
 
-# sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+# Note: This line forces the test suite to import the dmci package in the current source tree
+sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+
+@pytest.fixture(scope="session")
+def tmpDir():
+    """A temporary folder for the test session. This folder is
+    presistent after the tests have run so that the status of generated
+    files can be checked. The folder is instead cleared before a new
+    test session.
+    """
+    testDir = os.path.dirname(__file__)
+    theDir = os.path.join(testDir, "temp")
+    if os.path.isdir(theDir):
+        shutil.rmtree(theDir)
+    if not os.path.isdir(theDir):
+        os.mkdir(theDir)
+    return theDir
