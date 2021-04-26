@@ -31,6 +31,9 @@ class Config():
         # Paths
         self.pkgRoot = os.path.abspath(os.path.dirname(__file__))
 
+        # Config Values
+        self.testValue = ""
+
         # Internals
         self._rawConf = {}
 
@@ -54,6 +57,10 @@ class Config():
             logger.error("Could not read file: %s" % configFile)
             logger.error(str(e))
             return False
+
+        # Read Values
+        dmciDict = self._rawConf.get("dmci", {})
+        self.testValue = dmciDict.get("key", self.testValue)
 
         return True
 
