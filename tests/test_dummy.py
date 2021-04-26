@@ -22,7 +22,7 @@ import dmci
 import pytest
 
 @pytest.mark.core
-def test_dummyTest():
+def test_dummyTest(tmpDir):
     """Just so there is something for pytest to do until we write any
     actual tests.
     """
