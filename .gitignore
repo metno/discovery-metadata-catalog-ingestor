@@ -7,8 +7,12 @@ __pycache__
 .coverage
 htmlcov/
 tests/temp/
+.cache
 
 # Setuptools
 build/
 dist/
 *.egg-info
+
+#Vscode
+.vscode
