@@ -21,7 +21,7 @@ from flask import Flask, request
 
 def validate_mmd(data):
     return True
-    
+
 app = Flask(__name__)
 @app.route('/', methods=['POST'])
 def base():
@@ -31,7 +31,6 @@ def base():
     else:
         return "🤮\n", 500
 
-        
+  
 if __name__ == "__main__":
     app.run()
-

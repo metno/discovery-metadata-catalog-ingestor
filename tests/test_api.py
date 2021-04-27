@@ -23,7 +23,7 @@ import pytest
 
 @pytest.fixture
 def client():
-    #FIX ME: Find out how to properly use the init in dmci/api
+#FIX ME: Find out how to properly use the init in dmci/api
 
     with api.app.test_client() as client:
         yield client
@@ -33,4 +33,3 @@ def client():
 def test_api(client):
     assert client.get("/").status_code == 405
     assert client.post("/").status_code == 200
-
