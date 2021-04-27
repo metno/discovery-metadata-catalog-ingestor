@@ -3,16 +3,19 @@
 __pycache__
 
 # Pytest
-.pytest_cache
-.coverage
-htmlcov/
-coverage.xml
-tests/temp/
-.cache
+/.pytest_cache
+/.coverage
+/coverage.*
+/htmlcov/
+/tests/temp/
+/.cache/
+
+# Input
+/config.yaml
 
 # Setuptools
-build/
-dist/
+/build/
+/dist/
 *.egg-info
 
 #Vscode
