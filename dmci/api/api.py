@@ -31,6 +31,5 @@ def base():
     else:
         return "🤮\n", 500
 
-  
 if __name__ == "__main__":
     app.run()

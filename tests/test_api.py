@@ -23,7 +23,7 @@ import pytest
 
 @pytest.fixture
 def client():
-#FIX ME: Find out how to properly use the init in dmci/api
+    # FIX ME: Find out how to properly use the init in dmci/api
 
     with api.app.test_client() as client:
         yield client
