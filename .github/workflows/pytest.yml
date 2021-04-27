@@ -18,13 +18,15 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-      - name: Install Dependencies
-        run: |
-          pip install pytest
-          pip install pytest-cov
       - name: Checkout Source
         uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-timeout
+          pip install pytest-cov
       - name: Run Tests
-        run: python -m pytest -v --cov=dmci
+        run: python -m pytest -v --cov=dmci --timeout=60
       - name: Upload to Codecov
         uses: codecov/codecov-action@v1
