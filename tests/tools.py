@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-DMCI : Main Package Init
-========================
+DMCI : Test Tools
+=================
 
 Copyright 2021 MET Norway
 
@@ -18,13 +18,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import logging
+# Exceptions
 
-from dmci.config import Config
-
-__package__ = "dmci"
-__version__ = "0.0.1"
-
-logger = logging.getLogger(__name__)
-
-CONFIG = Config()
+def causeOSError(*args, **kwargs):
+    """This function will take any arguments and always raise an
+    OSError when called.
+    """
+    raise OSError("Test OSError")
