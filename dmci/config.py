@@ -33,6 +33,7 @@ class Config():
 
         # Config Values
         self.testValue = ""
+        self.csw_service_url = 'https://csw-dev.s-enda.k8s.met.no'
 
         # Internals
         self._rawConf = {}
@@ -61,6 +62,7 @@ class Config():
         # Read Values
         dmciDict = self._rawConf.get("dmci", {})
         self.testValue = dmciDict.get("key", self.testValue)
+        self.csw_service_url = dmciDict["pycsw_dist"].get("csw_service_url", self.csw_service_url)
 
         return True
 
