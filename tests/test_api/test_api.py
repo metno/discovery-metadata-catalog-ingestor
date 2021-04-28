@@ -30,7 +30,6 @@ configFilePath = os.path.join("tests", "test_api", "api_test_config.yaml")
 ret = CONFIG.readConfig(configFile=configFilePath)
 
 
-
 @pytest.fixture
 def client(tmpDir):
     CONFIG.distributorQueuePaths = ["."]

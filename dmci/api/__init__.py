@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from flask import Flask, request
+from flask import request
 import logging
 from dmci.worker import Worker
 from dmci.api.api import Api

@@ -34,7 +34,7 @@ class Worker():
         # "pycsw": PyCSWDist,
     }
 
-    def __init__(self,_CONFIG=None, **kwargs):
+    def __init__(self, _CONFIG=None, **kwargs):
         if _CONFIG:
             self._conf = _CONFIG
         else:
@@ -50,7 +50,7 @@ class Worker():
 
         return
 
-    def validate(self,data):
+    def validate(self, data):
         """Dummy function for the validator code.
         """
         # Takes in bytes-object data
@@ -58,7 +58,6 @@ class Worker():
         if data == bytes("<xml: notXml", "utf-8"):
             return False, "Fails"
         return True, ""
-        
 
     def distribute(self):
         """Loop through all distributors listed in the config and call

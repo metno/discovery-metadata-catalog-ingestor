@@ -31,7 +31,7 @@ def testCoreWorker_Init():
     """Test the Worker class init.
     """
     assert Worker()._dist_cmd == "insert"
-    assert Worker( a=1)._kwargs == {"a": 1}
+    assert Worker(a=1)._kwargs == {"a": 1}
 
 # END Test testCoreWorker_Init
 
@@ -39,7 +39,7 @@ def testCoreWorker_Init():
 def testCoreWorker_Validator():
     """Test the Worker class validator.
     """
-    assert Worker().validate("") == (True,"")
+    assert Worker().validate("") == (True, "")
 
 # END Test testCoreWorker_Validator
 
