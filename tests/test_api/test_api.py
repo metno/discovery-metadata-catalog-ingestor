@@ -33,5 +33,10 @@ def testApiApi_requests(client, refDir):
     assert client.get("/").status_code == 405
 
     mmdFile = os.path.join(refDir, "api", "test.xml")
-    assert client.post("/", data=mmdFile).status_code == 200
-    # assert client.post("/",data="nonExistent.xml").status_code == 500
+    with open(mmdFile, "rb") as infile:
+        xmlFile = infile.read()
+
+    wrongXmlFile = "<xml: notXml"
+
+    assert client.post("/", data=xmlFile).status_code == 200
+    assert client.post("/", data=wrongXmlFile).status_code == 500
