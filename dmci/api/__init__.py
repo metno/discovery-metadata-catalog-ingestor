@@ -21,8 +21,8 @@ from flask import Flask, request
 
 
 def validate_mmd(data):
+    # Takes in bytes-object data
     # Gives msg when both validating and not validating
-
     return True, "Checks out"
 
 app = Flask(__name__)
