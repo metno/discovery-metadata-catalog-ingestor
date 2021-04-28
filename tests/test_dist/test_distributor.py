@@ -56,8 +56,15 @@ def testDistDistributor_Init(tmpDir):
     assert Distributor("insert").is_valid() is False
     assert Distributor("insert", xml_file=dummyXml, metadata_id="stuff").is_valid() is False
 
-    # Run in superclass should always return false
+# END Test testDistDistributor_Init
+
+@pytest.mark.dist
+def testDistDistributor_Run(tmpDir):
+    """Test the Distributor super class run function.
+    Calling run() on the superclass should always return False as
+    nothing is actually run.
+    """
     assert Distributor("insert", metadata_id="some_id").run() is False
     assert Distributor("blabla", metadata_id="some_id").run() is False
 
-# END Test testDistDistributor_Init
+# END Test testDistDistributor_Run
