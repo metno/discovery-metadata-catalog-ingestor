@@ -16,9 +16,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import dmci.api.api as api
+import dmci.api as api
 
 import pytest
+import os
 
 
 @pytest.fixture
@@ -28,6 +29,9 @@ def client():
 
 
 @pytest.mark.api
-def testApiApi_requests(client):
+def testApiApi_requests(client, refDir):
     assert client.get("/").status_code == 405
-    assert client.post("/").status_code == 200
+
+    mmdFile = os.path.join(refDir, "api", "test.xml")
+    assert client.post("/", data=mmdFile).status_code == 200
+    # assert client.post("/",data="nonExistent.xml").status_code == 500
