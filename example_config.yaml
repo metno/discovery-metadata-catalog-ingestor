@@ -1,7 +1,6 @@
 dmci:
   key: value
-  pycsw_dist:
-    csw_service_url: https://csw-dev.s-enda.k8s.met.no
-  distribute:
+  csw_service_url: https://csw-dev.s-enda.k8s.met.no
+  distributors:
     - git
     - pycsw

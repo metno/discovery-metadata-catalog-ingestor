@@ -62,7 +62,7 @@ class Config():
         # Read Values
         dmciDict = self._rawConf.get("dmci", {})
         self.testValue = dmciDict.get("key", self.testValue)
-        self.csw_service_url = dmciDict["pycsw_dist"].get("csw_service_url", self.csw_service_url)
+        self.csw_service_url = dmciDict.get("csw_service_url", self.csw_service_url)
 
         return True
 
