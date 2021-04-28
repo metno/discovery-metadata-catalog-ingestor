@@ -19,13 +19,29 @@ limitations under the License.
 """
 
 import logging
+import os
+import uuid
 
-# from dmci import CONFIG
+from dmci import CONFIG
+
+distributorPathList = CONFIG.distributorQueuePaths
+
+
+# FIX ME: needs to be imported from validator
+def validate_mmd(data):
+    # Takes in bytes-object data
+    # Gives msg when both validating and not validating
+    if data == bytes("<xml: notXml", "utf-8"):
+        return False, "Fails"
+    return True, "Checks out"
+
+
+# FIX ME: needs to be abstracted to config
 
 logger = logging.getLogger(__name__)
 
-class Worker():
 
+class Worker():
     def __init__(self, conn):
         return
 
@@ -34,5 +50,13 @@ class Worker():
 
     def distribute(self):
         return
+
+    def pushToQueues(self, data):
+        file_uuid = uuid.uuid4()
+        for path in CONFIG.distributorQueuePaths:
+            full_path = os.path.join(path, "{}.Q".format(file_uuid))
+            with open(full_path, "wb") as queuefile:
+                queuefile.write(data)
+
 
 # END Class Worker

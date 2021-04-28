@@ -22,6 +22,14 @@ from tools import causeOSError
 import pytest
 import os
 
+from dmci.config import Config
+
+theConf = Config()
+
+configFilePath = os.path.join("tests", "test_api", "api_test_config.yaml")
+ret = theConf.readConfig(configFile=configFilePath)
+
+print(theConf.distributorQueuePaths)
 
 @pytest.fixture
 def client():

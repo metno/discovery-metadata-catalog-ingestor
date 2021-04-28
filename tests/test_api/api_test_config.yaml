@@ -1,0 +1,6 @@
+api:
+  distributorQueuePaths: 
+    - temp
+  distribute:
+    - git
+    - pycsw

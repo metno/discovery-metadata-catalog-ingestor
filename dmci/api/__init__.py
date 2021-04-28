@@ -19,43 +19,35 @@ limitations under the License.
 
 from flask import Flask, request
 import logging
-import os
-import uuid
+from dmci.api import Api
 
 logger = logging.getLogger(__name__)
 
-distributorPathList = "."
 
-# FIX ME: needs to be imported from validator
-def validate_mmd(data):
-    # Takes in bytes-object data
-    # Gives msg when both validating and not validating
-    if data == bytes("<xml: notXml", "utf-8"):
-        return False, "Fails"
-    return True, "Checks out"
+def create_app():
+    app = Api(__name__)
+    app.worker = Worker()
 
-# FIX ME: needs to be abstracted to config
-def pushToQueues(distributorPathList, data):
-    file_uuid = uuid.uuid4()
-    for path in distributorPathList:
-        full_path = os.path.join(path, "{}.Q".format(file_uuid))
-        with open(full_path, "wb") as queuefile:
-            queuefile.write(data)
+    @app.route('/', methods=['POST'])
+    def base():
+        data = request.get_data()
 
-app = Flask(__name__)
-@app.route('/', methods=['POST'])
-def base():
-    data = request.get_data()
+        result, msg = validate_mmd(data)
 
-    result, msg = validate_mmd(data)
+        if result:
+            try:
+                app.worker.pushToQueues(data)
+            except Exception as e:
+                logger.error(e)
+                return "Can't save to disk", 507
 
-    if result:
-        try:
-            pushToQueues(distributorPathList, data)
-        except Exception as e:
-            logger.error(e)
-            return "Can't save to disk", 507
+            return msg, 200
+        else:
+            return msg, 500
 
-        return msg, 200
-    else:
-        return msg, 500
+    return app
+
+
+if __name__ == "__main__":
+    app = create_app()
+    app.run()

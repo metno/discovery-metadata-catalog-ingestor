@@ -34,6 +34,9 @@ class Config():
         # Config Values
         self.testValue = ""
 
+        # API
+        self.distributorQueuePaths = None
+
         # Internals
         self._rawConf = {}
 
@@ -61,6 +64,8 @@ class Config():
         # Read Values
         dmciDict = self._rawConf.get("dmci", {})
         self.testValue = dmciDict.get("key", self.testValue)
+        apiDict = self._rawConf.get("api", {})
+        self.distributorQueuePaths = apiDict.get("distributorQueuePaths", "blah")
 
         return True
 
