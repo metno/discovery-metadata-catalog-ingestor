@@ -18,6 +18,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
 import logging
 
 from dmci.config import Config
@@ -25,6 +26,35 @@ from dmci.config import Config
 __package__ = "dmci"
 __version__ = "0.0.1"
 
-logger = logging.getLogger(__name__)
+def _initLogging(logObj):
+    """Call to initialise logging
+    """
+    strLevel = os.environ.get("DMCI_LOGLEVEL", "INFO")
+    if hasattr(logging, strLevel):
+        logLevel = getattr(logging, strLevel)
+    else:
+        print("Invalid logging level '%s' in environment variable DMCI_LOGLEVEL" % strLevel)
+        logLevel = logging.INFO
 
+    if logLevel < logging.INFO:
+        logFormat = "[{asctime:s}] {levelname:8s} {message:}"
+    else:
+        logFormat = "{levelname:8s} {message:}"
+
+    logFmt = logging.Formatter(fmt=logFormat, style="{")
+
+    cHandle = logging.StreamHandler()
+    cHandle.setLevel(logLevel)
+    cHandle.setFormatter(logFmt)
+
+    logObj.setLevel(logLevel)
+    logObj.addHandler(cHandle)
+
+    return
+
+# Logging Setup
+logger = logging.getLogger(__name__)
+_initLogging(logger)
+
+# Create config object
 CONFIG = Config()
