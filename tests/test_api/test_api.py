@@ -18,6 +18,7 @@ limitations under the License.
 """
 import dmci.api as api
 
+from tools import causeOSError
 import pytest
 import os
 
@@ -29,7 +30,7 @@ def client():
 
 
 @pytest.mark.api
-def testApiApi_requests(client, refDir):
+def testApiApi_requests(client, refDir, monkeypatch):
     assert client.get("/").status_code == 405
 
     mmdFile = os.path.join(refDir, "api", "test.xml")
@@ -40,3 +41,7 @@ def testApiApi_requests(client, refDir):
 
     assert client.post("/", data=xmlFile).status_code == 200
     assert client.post("/", data=wrongXmlFile).status_code == 500
+
+    with monkeypatch.context() as mp:
+        mp.setattr("builtins.open", causeOSError)
+        assert client.post("/", data=xmlFile).status_code == 507
