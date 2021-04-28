@@ -27,15 +27,12 @@ def validate_mmd(data):
     return True, "Checks out"
 
 
-    
-
 app = Flask(__name__)
 @app.route('/', methods=['POST'])
 def base():
     data = request.get_data()
 
     result, msg = validate_mmd(data)
-
 
     if result:
         return msg, 200
