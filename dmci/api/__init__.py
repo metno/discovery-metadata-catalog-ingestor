@@ -18,6 +18,13 @@ limitations under the License.
 """
 
 from flask import Flask, request
+import logging
+import os
+import uuid
+
+logger = logging.getLogger(__name__)
+
+distributorPathList = "."
 
 def validate_mmd(data):
     # Takes in bytes-object data
@@ -26,6 +33,12 @@ def validate_mmd(data):
         return False, "Fails"
     return True, "Checks out"
 
+def pushToQueues(distributorPathList, data):
+    file_uuid = uuid.uuid4()
+    for path in distributorPathList:
+        full_path = os.path.join(path, "{}.xml".format(file_uuid))
+        with open(full_path, "wb") as queuefile:
+            queuefile.write(data)
 
 app = Flask(__name__)
 @app.route('/', methods=['POST'])
@@ -35,6 +48,12 @@ def base():
     result, msg = validate_mmd(data)
 
     if result:
+        try:
+            pushToQueues(distributorPathList, data)
+        except Exception as e:
+            logger.error(e)
+            return "Can't save to disk", 500
+
         return msg, 200
     else:
         return msg, 500
