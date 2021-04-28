@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-DMCI : Distributor Super Class
-==============================
+DMCI : Git Distributor
+======================
 
 Copyright 2021 MET Norway
 
@@ -20,13 +20,30 @@ limitations under the License.
 
 import logging
 
-# from dmci import CONFIG
+from dmci.distributors.distributor import Distributor, DistCmd
 
 logger = logging.getLogger(__name__)
 
-class Distributor():
+class GitDist(Distributor):
 
-    def __init__(self, conn):
+    def __init__(self, cmd, xml_file=None, metadata_id=None, **kwargs):
+        super().__init__(cmd, xml_file, metadata_id, **kwargs)
+
         return
 
-# END Class Distributor
+    def run(self):
+        Distributor.run(self)
+
+        if self._cmd == DistCmd.UPDATE:
+            pass
+        elif self._cmd == DistCmd.INSERT:
+            pass
+        elif self._cmd == DistCmd.DELETE:
+            pass
+        else:
+            logger.error("Invalid command: %s" % str(self._cmd))
+            return False
+
+        return True
+
+# END Class GitDist

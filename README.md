@@ -8,9 +8,16 @@
 
 For the main packages:
 
-| Package | PyPi                 | Ubuntu/Debian  | Source                         |
-| ------- | -------------------- | -------------- | ------------------------------ |
-| PyYaml  | `pip install PyYAML` | `python3-yaml` | https://github.com/yaml/pyyaml |
+| Package      | PyPi                 | Ubuntu/Debian  | Source                                |
+| ------------ | -------------------- | -------------- | ------------------------------------- |
+| pyyaml       | `pip install pyyAML` | `python3-yaml` | https://github.com/yaml/pyyaml        |
+| py_mmd_tools | N/A                  | N/A            | https://github.com/metno/py-mmd-tools |
+
+**Note:** The package `py_mmd_tools` is not on pip, but running the install for the requirements
+file will also install this directly from the repository:
+```bash
+pip install -r requirements.txt
+```
 
 ## Tests
 
@@ -24,6 +31,12 @@ To add coverage, and to optionally generate a coverage report in HTML, run:
 pytest-3 -vv --cov=dmci --cov-report=term --cov-report=html
 ```
 Coverage requires the `pytest-cov` package.
+
+## Debugging
+
+To increase logging level to include info and debug messages, set the environment variable
+`DMCI_LOGLEVEL` to the desired level. Valid levels are `CRITICAL`, `ERROR`, `WARNING`, `INFO`, and
+`DEBUG`.
 
 ## Licence
 
