@@ -1,2 +1,4 @@
 pyyaml
+py-mmd-tools @ git+https://github.com/metno/py-mmd-tools@1.1.4
 flask
+
