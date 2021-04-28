@@ -1,5 +1,5 @@
 dmci:
   key: value
-  distribute:
+  distributors:
     - git
     - pycsw
