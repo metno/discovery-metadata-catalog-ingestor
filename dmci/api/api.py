@@ -1,4 +1,5 @@
 from flask import Flask
 
 class Api(Flask):
-    self.worker = None
+    def set_worker(self,Worker):
+        self.worker = Worker

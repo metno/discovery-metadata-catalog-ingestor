@@ -30,8 +30,8 @@ from dmci.config import Config
 def testCoreWorker_Init():
     """Test the Worker class init.
     """
-    assert Worker("")._dist_cmd == "insert"
-    assert Worker("", a=1)._kwargs == {"a": 1}
+    assert Worker()._dist_cmd == "insert"
+    assert Worker( a=1)._kwargs == {"a": 1}
 
 # END Test testCoreWorker_Init
 
@@ -39,7 +39,7 @@ def testCoreWorker_Init():
 def testCoreWorker_Validator():
     """Test the Worker class validator.
     """
-    assert Worker("").validate() == (200, "")
+    assert Worker().validate("") == (True,"")
 
 # END Test testCoreWorker_Validator
 
@@ -69,7 +69,7 @@ def testCoreWorker_Distributor(tmpDir, monkeypatch):
     writeFile(dummyXml, "<xml />")
 
     # Call the distributor function with the distributors from the config
-    tstWorker = Worker("")
+    tstWorker = Worker()
     tstWorker._conf = tstConf
     tstWorker._dist_xml_file = dummyXml
 
@@ -81,7 +81,7 @@ def testCoreWorker_Distributor(tmpDir, monkeypatch):
     assert skipped == ["blabla"]
 
     # Call the distributor function with the wrong parameters
-    tstWorker = Worker("")
+    tstWorker = Worker()
     tstWorker._conf = tstConf
     tstWorker._dist_cmd = "blabla"
     tstWorker._dist_xml_file = "/path/to/nowhere"

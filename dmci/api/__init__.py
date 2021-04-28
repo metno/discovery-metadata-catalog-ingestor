@@ -19,20 +19,24 @@ limitations under the License.
 
 from flask import Flask, request
 import logging
-from dmci.api import Api
+from dmci.worker import Worker
+from dmci.api.api import Api
+
 
 logger = logging.getLogger(__name__)
 
 
-def create_app():
+def create_app(_CONFIG = None):
+    if _CONFIG:
+        CONFIG = _CONFIG
     app = Api(__name__)
-    app.worker = Worker()
+    app.set_worker(Worker(CONFIG))
 
     @app.route('/', methods=['POST'])
     def base():
         data = request.get_data()
 
-        result, msg = validate_mmd(data)
+        result, msg = app.worker.validate(data)
 
         if result:
             try:
@@ -46,8 +50,3 @@ def create_app():
             return msg, 500
 
     return app
-
-
-if __name__ == "__main__":
-    app = create_app()
-    app.run()

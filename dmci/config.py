@@ -76,8 +76,18 @@ class Config():
         """Read config values under 'dmci'.
         """
         dmciDict = self._rawConf.get("dmci", {})
+        
         self.call_distributors = dmciDict.get("distributors", self.call_distributors)
+        self.distributorQueuePaths = dmciDict.get("distributorQueuePaths")
+
+        if not self.distributorQueuePaths:
+            logger.error("distributorQueuePaths is not parsed correctly")
+            # Should break?
+            
 
         return True
+
+
+        
 
 # END Class Config

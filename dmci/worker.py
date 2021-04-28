@@ -34,11 +34,13 @@ class Worker():
         # "pycsw": PyCSWDist,
     }
 
-    def __init__(self, conn, **kwargs):
+    def __init__(self,_CONFIG=None, **kwargs):
+        if _CONFIG:
+            self._conf = _CONFIG
+        else:
+            self._conf = CONFIG
 
-        self._conf = CONFIG
-
-        # These dhould be populated with proper values to send to the
+        # These should be populated with proper values to send to the
         # distributors
 
         self._dist_cmd = "insert"
@@ -48,12 +50,15 @@ class Worker():
 
         return
 
-    def validate(self):
+    def validate(self,data):
         """Dummy function for the validator code.
         """
-        code = 200
-        msg = ""
-        return code, msg
+        # Takes in bytes-object data
+        # Gives msg when both validating and not validating
+        if data == bytes("<xml: notXml", "utf-8"):
+            return False, "Fails"
+        return True, ""
+        
 
     def distribute(self):
         """Loop through all distributors listed in the config and call
@@ -89,7 +94,8 @@ class Worker():
 
     def pushToQueues(self, data):
         file_uuid = uuid.uuid4()
-        for path in CONFIG.distributorQueuePaths:
+        for path in self._conf.distributorQueuePaths:
+            print(path)
             full_path = os.path.join(path, "{}.Q".format(file_uuid))
             with open(full_path, "wb") as queuefile:
                 queuefile.write(data)

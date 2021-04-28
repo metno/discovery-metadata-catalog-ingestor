@@ -24,16 +24,18 @@ import os
 
 from dmci.config import Config
 
-theConf = Config()
+CONFIG = Config()
 
 configFilePath = os.path.join("tests", "test_api", "api_test_config.yaml")
-ret = theConf.readConfig(configFile=configFilePath)
+ret = CONFIG.readConfig(configFile=configFilePath)
 
-print(theConf.distributorQueuePaths)
+
 
 @pytest.fixture
-def client():
-    with api.app.test_client() as client:
+def client(tmpDir):
+    CONFIG.distributorQueuePaths = ["."]
+    app = api.create_app(CONFIG)
+    with app.test_client() as client:
         yield client
 
 
