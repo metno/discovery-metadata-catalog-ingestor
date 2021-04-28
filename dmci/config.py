@@ -53,6 +53,7 @@ class Config():
         try:
             with open(configFile, mode="r", encoding="utf8") as inFile:
                 self._rawConf = yaml.safe_load(inFile)
+            logger.debug("Read config from: %s" % configFile)
         except Exception as e:
             logger.error("Could not read file: %s" % configFile)
             logger.error(str(e))
