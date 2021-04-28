@@ -18,7 +18,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import dmci
 import os
 import logging
 
@@ -38,7 +37,6 @@ class Distributor():
 
     def __init__(self, cmd, xml_file=None, metadata_id=None, **kwargs):
 
-        self._conf = dmci.CONFIG
         self._valid = False
 
         self._cmd = None
