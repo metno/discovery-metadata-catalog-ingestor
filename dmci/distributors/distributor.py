@@ -25,13 +25,13 @@ from enum import Enum
 
 logger = logging.getLogger(__name__)
 
-
 class DistCmd(Enum):
 
     INSERT = 0
     UPDATE = 1
     DELETE = 2
 
+# END Enum DistCmd
 
 class Distributor():
 
@@ -50,6 +50,8 @@ class Distributor():
             self._valid = True
         else:
             logger.error("Unsupported command '%s'" % str(cmd))
+            self._valid = False
+            return
 
         if (xml_file is None) ^ (metadata_id is None):
             if xml_file is not None:
@@ -58,6 +60,8 @@ class Distributor():
                     self._valid = True
                 else:
                     logger.error("File does not exist: %s" % str(xml_file))
+                    self._valid = False
+                    return
 
             if metadata_id is not None:
                 if isinstance(metadata_id, str) and metadata_id:
@@ -65,9 +69,13 @@ class Distributor():
                     self._valid = True
                 else:
                     logger.error("Metadata identifier must be a non-empty string")
+                    self._valid = False
+                    return
 
         else:
             logger.error("Either xml_file or metadata_id must be specified, but not both")
+            self._valid = False
+            return
 
         return
 
@@ -78,5 +86,12 @@ class Distributor():
             return False
 
         return False
+
+    ##
+    #  Methods
+    ##
+
+    def is_valid(self):
+        return self._valid
 
 # END Class Distributor
