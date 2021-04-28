@@ -16,3 +16,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
+from flask import Flask, request
+
+
+def validate_mmd(data):
+    # Gives msg when both validating and not validating
+
+    return True, "Checks out"
+
+app = Flask(__name__)
+@app.route('/', methods=['POST'])
+def base():
+    data = request.get_data()
+    result, msg = validate_mmd(data)
+
+    if result:
+        return msg, 200
+    else:
+        return msg, 500
