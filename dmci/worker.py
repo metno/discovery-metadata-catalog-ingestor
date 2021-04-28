@@ -20,19 +20,69 @@ limitations under the License.
 
 import logging
 
-# from dmci import CONFIG
+from dmci import CONFIG
+from dmci.distributors import GitDist
 
 logger = logging.getLogger(__name__)
 
 class Worker():
 
-    def __init__(self, conn):
+    CALL_MAP = {
+        "git": GitDist,
+        # "pycsw": PyCSWDist,
+    }
+
+    def __init__(self, conn, **kwargs):
+
+        self._conf = CONFIG
+
+        # These dhould be populated with proper values to send to the
+        # distributors
+
+        self._dist_cmd = "insert"
+        self._dist_xml_file = "test.xml"
+        self._dist_metadata_id = None
+        self._kwargs = kwargs
+
         return
 
     def validate(self):
-        return
+        """Dummy function for the validator code.
+        """
+        code = 200
+        msg = ""
+        return code, msg
 
     def distribute(self):
-        return
+        """Loop through all distributors listed in the config and call
+        them in the same order.
+        """
+        status = True
+        valid  = True
+        called = []
+        failed = []
+        skipped = []
+
+        for dist in self._conf.call_distributors:
+            if dist not in self.CALL_MAP:
+                skipped.append(dist)
+                continue
+
+            obj = self.CALL_MAP[dist](
+                self._dist_cmd,
+                xml_file=self._dist_xml_file,
+                metadata_id=self._dist_metadata_id,
+                **self._kwargs
+            )
+            valid &= obj.is_valid()
+            if obj.is_valid:
+                obj_status = obj.run()
+                status &= obj_status
+                if obj_status:
+                    called.append(dist)
+                else:
+                    failed.append(dist)
+
+        return status, valid, called, failed, skipped
 
 # END Class Worker
