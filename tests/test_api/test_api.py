@@ -17,15 +17,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-
-from tools import causeOSError
-import pytest
 import os
+import pytest
+
+from tools import causeOSError, readFile
 
 from dmci.api import App
 
-
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def client(tmpDir):
     workDir = os.path.join(tmpDir, "api")
     os.mkdir(workDir)
@@ -35,20 +34,23 @@ def client(tmpDir):
     with app._app.test_client() as client:
         yield client
 
-
 @pytest.mark.api
-def testApiApi_requests(client, refDir, monkeypatch):
-    assert client.get("/").status_code == 405
+def testApiApi_Requests(client, filesDir, monkeypatch):
+    """Test api requests.
+    """
+    assert client.get("/").status_code == 404
+    assert client.get("/v1/").status_code == 405
 
-    mmdFile = os.path.join(refDir, "api", "test.xml")
-    with open(mmdFile, "rb") as infile:
-        xmlFile = infile.read()
+    mmdFile = os.path.join(filesDir, "api", "test.xml")
+    xmlFile = readFile(mmdFile)
 
     wrongXmlFile = "<xml: notXml"
 
-    assert client.post("/", data=xmlFile).status_code == 200
-    assert client.post("/", data=wrongXmlFile).status_code == 500
+    assert client.post("/v1/", data=xmlFile).status_code == 200
+    assert client.post("/v1/", data=wrongXmlFile).status_code == 500
 
     with monkeypatch.context() as mp:
         mp.setattr("builtins.open", causeOSError)
-        assert client.post("/", data=xmlFile).status_code == 507
+        assert client.post("/v1/", data=xmlFile).status_code == 507
+
+# END Test testApiApi_Requests

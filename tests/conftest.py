@@ -42,7 +42,7 @@ def tmpDir():
     return theDir
 
 @pytest.fixture(scope="session")
-def refDir():
+def filesDir():
     """A path to the reference files folder.
     """
     testDir = os.path.dirname(__file__)

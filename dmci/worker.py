@@ -25,14 +25,15 @@ from dmci.distributors import GitDist
 
 logger = logging.getLogger(__name__)
 
-
 class Worker():
+
     CALL_MAP = {
         "git": GitDist,
         # "pycsw": PyCSWDist,
     }
 
     def __init__(self, xml_file, **kwargs):
+
         self._conf = CONFIG
 
         # These should be populated with proper values to send to the
@@ -44,6 +45,10 @@ class Worker():
         self._kwargs = kwargs
 
         return
+
+    ##
+    #  Methods
+    ##
 
     def validate(self, data):
         """Dummy function for the validator code.

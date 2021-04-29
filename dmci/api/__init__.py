@@ -22,18 +22,18 @@ import uuid
 
 from flask import request, Flask, after_this_request
 
-from dmci.worker import Worker
 from dmci import CONFIG
+from dmci.worker import Worker
 
 logger = logging.getLogger(__name__)
 
-
 class App():
+
     def __init__(self):
         self._app = Flask(__name__)
         self._conf = CONFIG
 
-        @self._app.route('/', methods=['POST'])
+        @self._app.route("/v1/", methods=["POST"])
         def base():
             data = request.get_data()
 
