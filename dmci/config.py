@@ -78,7 +78,7 @@ class Config():
         dmciDict = self._rawConf.get("dmci", {})
 
         self.call_distributors = dmciDict.get("distributors", self.call_distributors)
-        self.distributorQueuePaths = dmciDict.get("distributor_input_path", ".")
+        self.distributor_input_path = dmciDict.get("distributor_input_path", ".")
 
         return True
 
