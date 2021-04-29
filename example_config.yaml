@@ -1,5 +1,5 @@
 dmci:
   distributors:
     - git
-  distributorQueuePaths: 
+  distributor_queue_paths: 
     - temp
