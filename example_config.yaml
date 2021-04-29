@@ -1,5 +1,4 @@
 dmci:
-  key: value
   csw_service_url: https://csw-dev.s-enda.k8s.met.no
   distributors:
     - git

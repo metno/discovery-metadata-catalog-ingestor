@@ -31,8 +31,8 @@ class Config():
         # Paths
         self.pkgRoot = os.path.abspath(os.path.dirname(__file__))
 
-        # Config Values
-        self.testValue = ""
+        # Core Values
+        self.call_distributors = []
         self.csw_service_url = 'https://csw-dev.s-enda.k8s.met.no'
 
         # Internals
@@ -54,14 +54,27 @@ class Config():
         try:
             with open(configFile, mode="r", encoding="utf8") as inFile:
                 self._rawConf = yaml.safe_load(inFile)
+            logger.debug("Read config from: %s" % configFile)
         except Exception as e:
             logger.error("Could not read file: %s" % configFile)
             logger.error(str(e))
             return False
 
         # Read Values
+        valid = True
+        valid &= self._read_core()
+
+        return valid
+
+    ##
+    #  Internal Functions
+    ##
+
+    def _read_core(self):
+        """Read config values under 'dmci'.
+        """
         dmciDict = self._rawConf.get("dmci", {})
-        self.testValue = dmciDict.get("key", self.testValue)
+        self.call_distributors = dmciDict.get("distributors", self.call_distributors)
         self.csw_service_url = dmciDict.get("csw_service_url", self.csw_service_url)
 
         return True

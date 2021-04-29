@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-DMCI : Dummy Test
-=================
+DMCI : Git Distributor Init
+===========================
 
 Copyright 2021 MET Norway
 
@@ -18,14 +18,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import dmci
-import pytest
+from dmci.distributors.git_dist import GitDist
 
-@pytest.mark.core
-def test_dummyTest(tmpDir):
-    """Just so there is something for pytest to do until we write any
-    actual tests.
-    """
-    assert dmci.__version__ == "0.0.1"
-
-# END Test test_dummyTest
+__all__ = [
+    "GitDist"
+]
