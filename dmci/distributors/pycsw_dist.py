@@ -5,7 +5,7 @@ import xml
 
 from py_mmd_tools.xml_utils import xml_translate
 
-from dmci.distributor import Distributor, DistCmd
+from dmci.distributors.distributor import Distributor, DistCmd
 
 logger = logging.getLogger(__name__)
 

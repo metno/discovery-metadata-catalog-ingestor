@@ -23,6 +23,8 @@ import logging
 
 from enum import Enum
 
+from dmci import CONFIG
+
 logger = logging.getLogger(__name__)
 
 class DistCmd(Enum):
@@ -37,6 +39,7 @@ class Distributor():
 
     def __init__(self, cmd, xml_file=None, metadata_id=None, **kwargs):
 
+        self._conf = CONFIG
         self._valid = False
 
         self._cmd = None
