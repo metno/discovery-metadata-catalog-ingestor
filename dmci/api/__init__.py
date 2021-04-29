@@ -36,7 +36,12 @@ class App():
         @self._app.route('/', methods=['POST'])
         def base():
             data = request.get_data()
-            worker = Worker()
+            
+            file_uuid = uuid.uuid4()
+            path = self._conf.distributor_input_path
+            full_path = os.path.join(path, f"{file_uuid}.Q")
+            
+            worker = Worker(full_path)
 
             @after_this_request
             def dist(response):
@@ -47,16 +52,13 @@ class App():
             result, msg = worker.validate(data)
 
             if result:
-                return self._persist_file(data)
+                return self._persist_file(data,full_path)
             else:
                 return msg, 500
 
         return
 
-    def _persist_file(self, data):
-        file_uuid = uuid.uuid4()
-        path = self._conf.distributor_input_path
-        full_path = os.path.join(path, f"{file_uuid}.Q")
+    def _persist_file(self, data,full_path):
         try:
             with open(full_path, "wb") as queuefile:
                 queuefile.write(data)

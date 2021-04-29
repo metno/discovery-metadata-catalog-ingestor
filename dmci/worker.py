@@ -32,14 +32,14 @@ class Worker():
         # "pycsw": PyCSWDist,
     }
 
-    def __init__(self, **kwargs):
+    def __init__(self, xml_file, **kwargs):
         self._conf = CONFIG
 
         # These should be populated with proper values to send to the
         # distributors
 
         self._dist_cmd = "insert"
-        self._dist_xml_file = "test.xml"
+        self._dist_xml_file = xml_file
         self._dist_metadata_id = None
         self._kwargs = kwargs
 
