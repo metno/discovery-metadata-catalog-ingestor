@@ -16,37 +16,52 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-from flask import request
 import logging
-from dmci.worker import Worker
-from dmci.api.api import Api
+import os
+import uuid
 
+from flask import request, Flask, after_this_request
+
+from dmci.worker import Worker
+from dmci import CONFIG
 
 logger = logging.getLogger(__name__)
 
 
-def create_app(_CONFIG = None):
-    if _CONFIG:
-        CONFIG = _CONFIG
-    app = Api(__name__)
-    app.set_worker(Worker(CONFIG))
+class App():
+    def __init__(self):
+        self._app = Flask(__name__)
+        self._conf = CONFIG
 
-    @app.route('/', methods=['POST'])
-    def base():
-        data = request.get_data()
+        @self._app.route('/', methods=['POST'])
+        def base():
+            data = request.get_data()
+            worker = Worker()
 
-        result, msg = app.worker.validate(data)
+            @after_this_request
+            def dist(response):
+                nonlocal worker
+                worker.distribute()
+                return response
 
-        if result:
-            try:
-                app.worker.pushToQueues(data)
-            except Exception as e:
-                logger.error(e)
-                return "Can't save to disk", 507
+            result, msg = worker.validate(data)
 
-            return msg, 200
-        else:
-            return msg, 500
+            if result:
+                return self._persist_file(data)
+            else:
+                return msg, 500
 
-    return app
+        return
+
+    def _persist_file(self, data):
+        file_uuid = uuid.uuid4()
+        path = self._conf.distributor_input_path
+        full_path = os.path.join(path, f"{file_uuid}.Q")
+        try:
+            with open(full_path, "wb") as queuefile:
+                queuefile.write(data)
+
+        except Exception as e:
+            logger.error(str(e))
+            return "Can't write to file", 507
+        return "", 200

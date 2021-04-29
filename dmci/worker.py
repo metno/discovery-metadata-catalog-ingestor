@@ -19,8 +19,6 @@ limitations under the License.
 """
 
 import logging
-import os
-import uuid
 
 from dmci import CONFIG
 from dmci.distributors import GitDist
@@ -34,11 +32,8 @@ class Worker():
         # "pycsw": PyCSWDist,
     }
 
-    def __init__(self, _CONFIG=None, **kwargs):
-        if _CONFIG:
-            self._conf = _CONFIG
-        else:
-            self._conf = CONFIG
+    def __init__(self, **kwargs):
+        self._conf = CONFIG
 
         # These should be populated with proper values to send to the
         # distributors
@@ -90,14 +85,6 @@ class Worker():
                     failed.append(dist)
 
         return status, valid, called, failed, skipped
-
-    def pushToQueues(self, data):
-        file_uuid = uuid.uuid4()
-        for path in self._conf.distributorQueuePaths:
-            print(path)
-            full_path = os.path.join(path, "{}.Q".format(file_uuid))
-            with open(full_path, "wb") as queuefile:
-                queuefile.write(data)
 
 
 # END Class Worker
