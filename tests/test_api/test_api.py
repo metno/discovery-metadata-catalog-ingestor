@@ -30,7 +30,7 @@ def client(tmpDir):
     workDir = os.path.join(tmpDir, "api")
     os.mkdir(workDir)
     app = App()
-    app._conf.distributor_input_path = tmpDir
+    app._conf.distributor_input_path = workDir
 
     with app._app.test_client() as client:
         yield client
