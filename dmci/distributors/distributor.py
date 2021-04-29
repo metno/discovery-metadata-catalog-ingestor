@@ -80,15 +80,14 @@ class Distributor():
             self._valid = False
             return
 
+        # Check consistency between command and data?
+
         return
 
     def run(self):
         """The main run function to be implemented in each subclass.
         """
-        if not self._valid:
-            return False
-
-        return False
+        return self.is_valid()
 
     ##
     #  Methods

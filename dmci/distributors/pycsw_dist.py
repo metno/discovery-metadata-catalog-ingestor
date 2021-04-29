@@ -22,7 +22,8 @@ class PyCSWDist(Distributor):
 
     def run(self):
 
-        Distributor.run(self)
+        if not Distributor.run(self):
+            return False
 
         status = False
         msg = ""
@@ -43,12 +44,6 @@ class PyCSWDist(Distributor):
 
     def _insert(self, xslt='../mmd/xslt/mmd-to-geonorge.xslt'):
         """ Insert in pyCSW using a Transaction 
-
-        TODO:
-                - DONE: configure pycsw service (Transactions are disabled by default; to enable, `manager.transactions` must be set to true. Access to transactional functionality is limited to IP addresses which must be set in `manager.allowed_ips`.)
-                - DONE: insertion can now be done through met user networks
-                - check how to do insert transaction in pycsw test suite (source code)
-
         """
         if self._xml_file is None:
             msg = "File does not exist: %s" % str(self._xml_file)
@@ -59,11 +54,17 @@ class PyCSWDist(Distributor):
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
-        header = """<?xml version="1.0" encoding="UTF-8"?><csw:Transaction xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:ows="http://www.opengis.net/ows" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd" service="CSW" version="2.0.2"><csw:Insert>"""
-        footer = """</csw:Insert></csw:Transaction>"""
+        header = ('<?xml version="1.0" encoding="UTF-8"?>'
+                '<csw:Transaction xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
+                'xmlns:ows="http://www.opengis.net/ows" '
+                'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+                'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
+                'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd" '
+                'service="CSW" version="2.0.2"><csw:Insert>')
+        footer = '</csw:Insert></csw:Transaction>'
         xml_as_string = header + iso + footer
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
-        status = self.get_status(self.TOTAL_INSERTED, resp)
+        status = self._get_transaction_status(self.TOTAL_INSERTED, resp)
 
         return status
 
@@ -72,13 +73,9 @@ class PyCSWDist(Distributor):
 
         Need to find out how to do this...
         """
-        logger.error("Not yet implemented")
+        logger.warning("Not yet implemented")
 
-        import pdb
-        pdb.set_trace()
-        retval = True
-
-        return retval
+        return False
 
     def _delete(self):
         if self._metadata_id is None:
@@ -89,26 +86,31 @@ class PyCSWDist(Distributor):
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
-        xml_as_string = """<?xml version="1.0" encoding="UTF-8"?>
-        <csw:Transaction xmlns:ogc="http://www.opengis.net/ogc" xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:ows="http://www.opengis.net/ows" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd" service="CSW" version="2.0.2">
-          <csw:Delete>
-            <csw:Constraint version="1.1.0">
-              <ogc:Filter>
-                <ogc:PropertyIsEqualTo>
-                  <ogc:PropertyName>apiso:Identifier</ogc:PropertyName>
-                  <ogc:Literal>%s</ogc:Literal>
-                </ogc:PropertyIsEqualTo>
-              </ogc:Filter>
-            </csw:Constraint>
-          </csw:Delete>
-        </csw:Transaction>""" %self._metadata_id
-
+        xml_as_string = ('<?xml version="1.0" encoding="UTF-8"?>'
+                '<csw:Transaction xmlns:ogc="http://www.opengis.net/ogc" '
+                'xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
+                'xmlns:ows="http://www.opengis.net/ows" '
+                'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+                'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
+                'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd" '
+                'service="CSW" version="2.0.2">'
+                '   <csw:Delete>'
+                '       <csw:Constraint version="1.1.0">'
+                '           <ogc:Filter>'
+                '               <ogc:PropertyIsEqualTo>'
+                '                   <ogc:PropertyName>apiso:Identifier</ogc:PropertyName>'
+                '                   <ogc:Literal>%s</ogc:Literal>'
+                '               </ogc:PropertyIsEqualTo>'
+                '           </ogc:Filter>'
+                '       </csw:Constraint>'
+                '   </csw:Delete>'
+                '</csw:Transaction>' %self._metadata_id)
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
-        status = self.get_status(self.TOTAL_DELETED, resp)
+        status = self._get_transaction_status(self.TOTAL_DELETED, resp)
 
         return status
 
-    def get_status(self, key, resp):
+    def _get_transaction_status(self, key, resp):
         """ Check response status, read response text, and get status (boolean)
 
         Input
@@ -127,16 +129,19 @@ class PyCSWDist(Distributor):
             logger.error("Input key must be '%s', '%s' or '%s'" %(self.TOTAL_INSERTED, 
                 self.TOTAL_UPDATED, self.TOTAL_DELETED))
             return False
+        if not type(resp) is requests.models.Response:
+            logger.error("Input argument 'resp' must be instance of requests.models.Response")
+            return False
         status = False
         if resp.status_code>=200 and resp.status_code<300:
-            status = self.read_response_text(key, resp.text)
+            status = self._read_response_text(key, resp.text)
         else:
             logger.error(resp.text)
 
         return status
 
 
-    def read_response_text(self, key, text):
+    def _read_response_text(self, key, text):
         """ Read response xml text and return a dict with results
 
         Input
@@ -148,6 +153,10 @@ class PyCSWDist(Distributor):
         ======
         dict : status of insert, update and delete
         """
+        if not key in self.STATUS:
+            logger.error("Input key must be '%s', '%s' or '%s'" %(self.TOTAL_INSERTED, 
+                self.TOTAL_UPDATED, self.TOTAL_DELETED))
+            return False
         status = False
         dom = xml.dom.minidom.parseString(text.encode('utf-8').strip())
         # should only contain the standard_name_table:
@@ -159,13 +168,13 @@ class PyCSWDist(Distributor):
         if tag_name=='ows:ExceptionReport':
             msg = node0.getElementsByTagName('ows:ExceptionText')[0].childNodes[0].data
             logger.error(msg)
-        elif tag_name=='csw:TransactionSummary':
-            node = node0.getElementsByTagName(tag_name)[0]
+        elif tag_name=='csw:TransactionResponse':
+            node = node0.getElementsByTagName('csw:TransactionSummary')[0]
             n_ins = node.getElementsByTagName('csw:totalInserted')[0].childNodes[0].data
             n_upd = node.getElementsByTagName('csw:totalUpdated')[0].childNodes[0].data
             n_del = node.getElementsByTagName('csw:totalDeleted')[0].childNodes[0].data
         else:
-            msg = ""
+            msg = "This should not happen"
             print(msg)
             logger.error(msg)
         res_dict = {
@@ -173,7 +182,8 @@ class PyCSWDist(Distributor):
             self.TOTAL_UPDATED: n_upd,
             self.TOTAL_DELETED: n_del,
         }
-        if res_dict[key] == 1:
+        # In principle, we can insert, update or delete multiple datasets...
+        if int(res_dict[key]) >= 1:
             status = True
         return status
 
