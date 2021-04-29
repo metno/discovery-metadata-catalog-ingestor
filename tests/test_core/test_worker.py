@@ -31,7 +31,7 @@ def testCoreWorker_Init():
     """Test the Worker class init.
     """
     assert Worker(None)._dist_cmd == "insert"
-    assert Worker(None,a=1)._kwargs == {"a": 1}
+    assert Worker(None, a=1)._kwargs == {"a": 1}
 
 # END Test testCoreWorker_Init
 
