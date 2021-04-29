@@ -16,25 +16,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import dmci.api as api
+
 
 from tools import causeOSError
 import pytest
 import os
 
-from dmci.config import Config
-
-CONFIG = Config()
-
-configFilePath = os.path.join("tests", "test_api", "api_test_config.yaml")
-ret = CONFIG.readConfig(configFile=configFilePath)
+from dmci.api import App
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def client(tmpDir):
-    CONFIG.distributorQueuePaths = ["."]
-    app = api.create_app(CONFIG)
-    with app.test_client() as client:
+    workDir = os.path.join(tmpDir, "api")
+    os.mkdir(workDir)
+    app = App()
+    app._conf.distributor_input_path = tmpDir
+
+    with app._app.test_client() as client:
         yield client
 
 
