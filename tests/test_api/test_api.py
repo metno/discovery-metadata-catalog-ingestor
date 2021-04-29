@@ -25,17 +25,23 @@ from tools import causeOSError, readFile
 from dmci.api import App
 
 @pytest.fixture(scope="function")
-def client(tmpDir):
+def client(tmpDir, tmpConf):
+    """Create an instance of the API.
+    """
     workDir = os.path.join(tmpDir, "api")
     os.mkdir(workDir)
+
     app = App()
+    app._conf = tmpConf
     app._conf.distributor_input_path = workDir
 
     with app._app.test_client() as client:
         yield client
 
+    return
+
 @pytest.mark.api
-def testApiApi_Requests(client, filesDir, monkeypatch):
+def testApiApp_Requests(client, filesDir, monkeypatch):
     """Test api requests.
     """
     assert client.get("/").status_code == 404
@@ -53,4 +59,4 @@ def testApiApi_Requests(client, filesDir, monkeypatch):
         mp.setattr("builtins.open", causeOSError)
         assert client.post("/v1/", data=xmlFile).status_code == 507
 
-# END Test testApiApi_Requests
+# END Test testApiApp_Requests

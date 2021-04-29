@@ -26,6 +26,12 @@ import pytest
 # Note: This line forces the test suite to import the dmci package in the current source tree
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
+from dmci.config import Config # noqa: E402
+
+##
+#  Directory Fixtures
+##
+
 @pytest.fixture(scope="session")
 def tmpDir():
     """A temporary folder for the test session. This folder is
@@ -48,3 +54,17 @@ def filesDir():
     testDir = os.path.dirname(__file__)
     theDir = os.path.join(testDir, "files")
     return theDir
+
+##
+#  Objects
+##
+
+@pytest.fixture(scope="function")
+def tmpConf(monkeypatch):
+    """Create a temporary configuration object.
+    """
+    theConf = Config()
+    confFile = os.path.join(theConf.pkgRoot, "example_config.yaml")
+    theConf.readConfig(confFile)
+    monkeypatch.setattr("dmci.CONFIG", theConf)
+    return theConf

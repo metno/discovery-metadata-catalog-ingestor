@@ -23,7 +23,6 @@ import pytest
 
 from tools import writeFile
 
-from dmci.config import Config
 from dmci.api.worker import Worker
 
 @pytest.mark.api
@@ -44,7 +43,7 @@ def testApiWorker_Validator():
 # END Test testApiWorker_Validator
 
 @pytest.mark.api
-def testApiWorker_Distributor(tmpDir, monkeypatch):
+def testApiWorker_Distributor(tmpDir, tmpConf, monkeypatch):
     """Test the Worker class distributor.
     """
     workDir = os.path.join(tmpDir, "worker")
@@ -52,17 +51,15 @@ def testApiWorker_Distributor(tmpDir, monkeypatch):
 
     # Create a test config file and object
     workConf = os.path.join(workDir, "distributor_config.yaml")
-    confYaml = (
+    writeFile(workConf, (
         "dmci:\n"
         "  distributors:\n"
         "    - git\n"
         "    - blabla\n"
-    )
-    writeFile(workConf, confYaml)
+    ))
 
-    tstConf = Config()
-    tstConf.readConfig(workConf)
-    assert tstConf.call_distributors == ["git", "blabla"]
+    tmpConf.readConfig(workConf)
+    assert tmpConf.call_distributors == ["git", "blabla"]
 
     # Create a dummy xml file
     dummyXml = os.path.join(workDir, "dummy.xml")
@@ -70,7 +67,7 @@ def testApiWorker_Distributor(tmpDir, monkeypatch):
 
     # Call the distributor function with the distributors from the config
     tstWorker = Worker(None)
-    tstWorker._conf = tstConf
+    tstWorker._conf = tmpConf
     tstWorker._dist_xml_file = dummyXml
 
     status, valid, called, failed, skipped = tstWorker.distribute()
@@ -82,7 +79,7 @@ def testApiWorker_Distributor(tmpDir, monkeypatch):
 
     # Call the distributor function with the wrong parameters
     tstWorker = Worker(None)
-    tstWorker._conf = tstConf
+    tstWorker._conf = tmpConf
     tstWorker._dist_cmd = "blabla"
     tstWorker._dist_xml_file = "/path/to/nowhere"
 
