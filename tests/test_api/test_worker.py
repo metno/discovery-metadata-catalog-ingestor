@@ -23,28 +23,28 @@ import pytest
 
 from tools import writeFile
 
-from dmci.worker import Worker
 from dmci.config import Config
+from dmci.api.worker import Worker
 
-@pytest.mark.core
-def testCoreWorker_Init():
+@pytest.mark.api
+def testApiWorker_Init():
     """Test the Worker class init.
     """
     assert Worker(None)._dist_cmd == "insert"
     assert Worker(None, a=1)._kwargs == {"a": 1}
 
-# END Test testCoreWorker_Init
+# END Test testApiWorker_Init
 
-@pytest.mark.core
-def testCoreWorker_Validator():
+@pytest.mark.api
+def testApiWorker_Validator():
     """Test the Worker class validator.
     """
     assert Worker(None).validate("") == (True, "")
 
-# END Test testCoreWorker_Validator
+# END Test testApiWorker_Validator
 
-@pytest.mark.core
-def testCoreWorker_Distributor(tmpDir, monkeypatch):
+@pytest.mark.api
+def testApiWorker_Distributor(tmpDir, monkeypatch):
     """Test the Worker class distributor.
     """
     workDir = os.path.join(tmpDir, "worker")
@@ -90,4 +90,4 @@ def testCoreWorker_Distributor(tmpDir, monkeypatch):
     assert status is False
     assert valid is False
 
-# END Test testCoreWorker_Distributor
+# END Test testApiWorker_Distributor
