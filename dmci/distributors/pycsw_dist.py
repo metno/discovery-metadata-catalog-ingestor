@@ -20,6 +20,14 @@ class PyCSWDist(Distributor):
         super().__init__(cmd, xml_file, metadata_id, **kwargs)
 
     def run(self):
+        """ Run function to handle insert, update or delete
+
+        Returns
+        =======
+        status : bool
+            True if successful insert, update or delete
+            False if not
+        """
 
         if not self.is_valid():
             return False
