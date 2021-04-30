@@ -33,6 +33,7 @@ class Config():
 
         # Core Values
         self.call_distributors = []
+        self.csw_service_url = 'https://csw-dev.s-enda.k8s.met.no'
 
         # API
         self.distributor_input_path = None
@@ -78,6 +79,7 @@ class Config():
         dmciDict = self._rawConf.get("dmci", {})
 
         self.call_distributors = dmciDict.get("distributors", self.call_distributors)
+        self.csw_service_url = dmciDict.get("csw_service_url", self.csw_service_url)
         self.distributor_input_path = dmciDict.get("distributor_input_path", ".")
 
         return True
