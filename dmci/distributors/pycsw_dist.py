@@ -21,7 +21,7 @@ class PyCSWDist(Distributor):
 
     def run(self):
 
-        if not Distributor.run(self):
+        if not self.is_valid():
             return False
 
         status = False
