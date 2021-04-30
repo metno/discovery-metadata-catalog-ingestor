@@ -1,16 +1,15 @@
 """
 Utility tool to work on mmd xml files.
 
-License: This file is part of py-mmd-tools, licensed under the Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+License: This file is part of py-mmd-tools, licensed under the Apache
+License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
 """
 
 import pathlib
 import os
 import lxml.etree as ET
-from datetime import datetime
 from lxml.etree import XMLSyntaxError
 import errno
-import os
 
 
 def xml_check(xml_file):
@@ -19,20 +18,19 @@ def xml_check(xml_file):
     Args:
         xml_file ([str]): [filepath to an xml file]
     Returns:
-        [bool]: [return True if a valid xml filepath is provided, 
+        [bool]: [return True if a valid xml filepath is provided,
         raises an exception if the xmlfile is invalid, empty, or doesn't exist ]
     """
     if pathlib.Path(xml_file).is_file() and os.path.getsize(xml_file) != 0:
         try:
             # ET.parse will raise an OSError if the file does not exist
-            xml = ET.parse(xml_file)
+            ET.parse(xml_file)
         except XMLSyntaxError:
-            raise 
+            raise
     else:
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), xml_file)
-    
-    return True
 
+    return True
 
 
 def xsd_check(xml_file, xsd_schema):
@@ -41,7 +39,7 @@ def xsd_check(xml_file, xsd_schema):
         xmlfile ([str]): [filepath to an xml file]
         xsd_schema ([str]): [filepath to an xsd schema file]
     Returns:
-        [bool]: [return True if a valid xml filepath is provided, 
+        [bool]: [return True if a valid xml filepath is provided,
         return False if the xmlfile is invalid, empty, or doesn't exist ]
     """
     if not pathlib.Path(xml_file).exists():
@@ -90,11 +88,11 @@ def xml_translate_and_write(xml_file, outputfile, xslt, xsd_validation=False, xs
     try:
         xml_as_string = xml_translate(xml_file, xslt)
     except OSError:
-        result=False
+        result = False
 
     with open(outputfile, "w") as output:
         output.write(xml_as_string)
-        result=True
+        result = True
     return result
 
 def xml_translate(xml_file, xslt):
@@ -116,7 +114,7 @@ def xml_translate(xml_file, xslt):
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), xml_file)
     if not pathlib.Path(xslt).exists():
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), xslt)
-        
+
     xml_doc = ET.ElementTree(file=xml_file)
     transform = ET.XSLT(ET.parse(xslt))
     new_doc = transform(xml_doc)
