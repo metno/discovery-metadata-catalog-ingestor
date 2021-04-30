@@ -130,7 +130,7 @@ def testDistPyCSW__delete__return__false__if___metadata_id_is_None():
 def testDistPyCSW__translate(monkeypatch, dummyXml, dummyXslt):
     monkeypatch.setattr('dmci.distributors.pycsw_dist.xml_translate',
             lambda *args: 'some xml code')
-    assert PyCSWDist("insert", xml_file=dummyXml)._translate(dummyXslt) is 'some xml code'
+    assert PyCSWDist("insert", xml_file=dummyXml)._translate(dummyXslt) == 'some xml code'
 
 # END translate tests
 
