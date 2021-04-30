@@ -29,10 +29,11 @@ class Config():
     def __init__(self):
 
         # Paths
-        self.pkgRoot = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+        self.pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
         # Core Values
         self.call_distributors = []
+        self.csw_service_url = 'https://csw-dev.s-enda.k8s.met.no'
 
         # API
         self.distributor_input_path = None
@@ -40,16 +41,20 @@ class Config():
         self.max_permitted_size = 100*1000
 
         # Internals
-        self._rawConf = {}
+        self._raw_conf = {}
 
         return
 
     def readConfig(self, configFile=None):
         """Read the config file. If the configFile variable is not set,
-        the class will look for the file in the source root folder.
+        the class will look for the file first as an environment variable, then
+        in the source root folder.
         """
         if configFile is None:
-            configFile = os.path.join(self.pkgRoot, "config.yaml")
+            configFile = os.environ.get("DMCI_CONFIG", None)
+
+        if configFile is None:
+            configFile = os.path.join(self.pkg_root, "config.yaml")
 
         if not os.path.isfile(configFile):
             logger.error("Config file not found: %s" % configFile)
@@ -57,7 +62,7 @@ class Config():
 
         try:
             with open(configFile, mode="r", encoding="utf8") as inFile:
-                self._rawConf = yaml.safe_load(inFile)
+                self._raw_conf = yaml.safe_load(inFile)
             logger.debug("Read config from: %s" % configFile)
         except Exception as e:
             logger.error("Could not read file: %s" % configFile)
@@ -77,9 +82,10 @@ class Config():
     def _read_core(self):
         """Read config values under 'dmci'.
         """
-        dmciDict = self._rawConf.get("dmci", {})
+        dmciDict = self._raw_conf.get("dmci", {})
 
         self.call_distributors = dmciDict.get("distributors", self.call_distributors)
+        self.csw_service_url = dmciDict.get("csw_service_url", self.csw_service_url)
         self.distributor_input_path = dmciDict.get("distributor_input_path", ".")
         self.max_permitted_size = dmciDict.get("max_permitted_size", self.max_permitted_size)
         return True

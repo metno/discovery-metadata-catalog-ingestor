@@ -1,7 +1,8 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-DMCI : Git Distributor Init
-===========================
+DMCI : API Start Script
+=======================
 
 Copyright 2021 MET Norway
 
@@ -18,10 +19,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dmci.distributors.git_dist import GitDist
-from dmci.distributors.pycsw_dist import PyCSWDist
+import os
 
-__all__ = [
-    "GitDist",
-    "PyCSWDist"
-]
+os.curdir = os.path.abspath(os.path.dirname(__file__))
+
+if __name__ == "__main__":
+    import dmci
+    dmci.api_main()
