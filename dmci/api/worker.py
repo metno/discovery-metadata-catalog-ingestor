@@ -72,8 +72,8 @@ class Worker():
         """
         # Takes in bytes-object data
         # Gives msg when both validating and not validating
-        if data == bytes("<xml: notXml", "utf-8"):
-            return False, "Fails"
+        if not isinstance(data, bytes):
+            return False, "input must be bytes type"
 
         # Check xml file against XML schema definition 
         xmlschema_mmd = ET.XMLSchema(ET.parse(self._conf.mmd_xsd_schema))
