@@ -76,6 +76,8 @@ def api_main():
     """
     from dmci.api import App # pragma: no cover
 
+    CONFIG.readConfig(configFile=os.environ.get("DMCI_CONFIG", None)) # pragma: no cover
+
     dmci_app = App() # pragma: no cover
     sys.exit(dmci_app.run()) # pragma: no cover
 
