@@ -133,9 +133,9 @@ class PyCSWDist(Distributor):
             True if the transaction succeeded, otherwise False
         """
         if key not in self.STATUS:
-            logger.error("Input key must be '%s', '%s' or '%s'" % (self.TOTAL_INSERTED,
-                                                                   self.TOTAL_UPDATED,
-                                                                   self.TOTAL_DELETED))
+            logger.error("Input key must be '%s', '%s' or '%s'" % (
+                    self.TOTAL_INSERTED, self.TOTAL_UPDATED, self.TOTAL_DELETED)
+                )
             return False
         if not isinstance(resp, requests.models.Response):
             logger.error("Input argument 'resp' must be instance of requests.models.Response")
