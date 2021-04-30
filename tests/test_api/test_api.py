@@ -37,7 +37,6 @@ def client(tmpDir, tmpConf, monkeypatch):
     tmpConf.distributor_input_path = workDir
 
     app = App()
-    #app._conf = tmpConf
     assert app._conf.distributor_input_path == workDir
 
     with app.test_client() as client:
