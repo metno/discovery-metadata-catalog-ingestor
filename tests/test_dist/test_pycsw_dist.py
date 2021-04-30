@@ -18,7 +18,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os
 import pytest
 import requests
 from py_mmd_tools import xml_utils
@@ -63,8 +62,9 @@ def testDistPyCSW__insert__returns__true(monkeypatch, tmpDir, dummy_xml_str, dum
     def mockreturn(*args):
         return dummy_xml_str
     monkeypatch.setattr(PyCSWDist, '_translate', mockreturn)
-    monkeypatch.setattr('dmci.distributors.pycsw_dist.requests.post', 
-            lambda *args, **kwargs: 'a response object')
+    monkeypatch.setattr('dmci.distributors.pycsw_dist.requests.post',
+                        lambda *args, **kwargs: 'a response object')
+
     def mock_get_transaction_status(*args):
         return True
     monkeypatch.setattr(PyCSWDist, '_get_transaction_status', mock_get_transaction_status)
@@ -76,7 +76,8 @@ def testDistPyCSW__insert__returns__false(monkeypatch, dummyXml, dummyXslt, dumm
         return dummy_xml_str
     monkeypatch.setattr(PyCSWDist, '_translate', mockreturn)
     monkeypatch.setattr('dmci.distributors.pycsw_dist.requests.post',
-            lambda *args, **kwargs: 'a response object')
+                        lambda *args, **kwargs: 'a response object')
+
     def mock_get_transaction_status(*args):
         return False
     monkeypatch.setattr(PyCSWDist, '_get_transaction_status', mock_get_transaction_status)
@@ -104,7 +105,8 @@ def testDistPyCSW_Run_delete__fails_if_no_id(dummyXml):
 @pytest.mark.dist
 def testDistPyCSW_run_delete__returns_true(monkeypatch):
     monkeypatch.setattr('dmci.distributors.pycsw_dist.requests.post',
-            lambda *args, **kwargs: 'a response object')
+                        lambda *args, **kwargs: 'a response object')
+
     def mock_get_transaction_status(*args):
         return True
     monkeypatch.setattr(PyCSWDist, '_get_transaction_status', mock_get_transaction_status)
@@ -113,7 +115,8 @@ def testDistPyCSW_run_delete__returns_true(monkeypatch):
 @pytest.mark.dist
 def testDistPyCSW_run_delete__returns_false(monkeypatch):
     monkeypatch.setattr('dmci.distributors.pycsw_dist.requests.post',
-            lambda *args, **kwargs: 'a response object')
+                        lambda *args, **kwargs: 'a response object')
+
     def mock_get_transaction_status(*args):
         return False
     monkeypatch.setattr(PyCSWDist, '_get_transaction_status', mock_get_transaction_status)
@@ -129,7 +132,7 @@ def testDistPyCSW__delete__return__false__if___metadata_id_is_None():
 @pytest.mark.dist
 def testDistPyCSW__translate(monkeypatch, dummyXml, dummyXslt):
     monkeypatch.setattr('dmci.distributors.pycsw_dist.xml_translate',
-            lambda *args: 'some xml code')
+                        lambda *args: 'some xml code')
     assert PyCSWDist("insert", xml_file=dummyXml)._translate(dummyXslt) == 'some xml code'
 
 # END translate tests
@@ -138,13 +141,14 @@ def testDistPyCSW__translate(monkeypatch, dummyXml, dummyXslt):
 @pytest.mark.dist
 def testDistPyCSW__get_transaction_status__wrong_key(monkeypatch, dummyXml):
     resp = requests.models.Response()
+
     assert PyCSWDist("insert", xml_file=dummyXml)._get_transaction_status('tull', resp) is False
 
 @pytest.mark.dist
 def testDistPyCSW__get_transaction_status__invalid_response_obj(monkeypatch, dummyXml):
     resp = 'hei'
-    assert PyCSWDist("insert", xml_file=dummyXml)._get_transaction_status('total_inserted', 
-            resp) is False
+    assert PyCSWDist("insert", xml_file=dummyXml)._get_transaction_status('total_inserted',
+                                                                          resp) is False
 
 @pytest.mark.dist
 def testDistPyCSW__get_transaction_status_returns_true_false(monkeypatch, dummyXml):
@@ -155,24 +159,27 @@ def testDistPyCSW__get_transaction_status_returns_true_false(monkeypatch, dummyX
     resp = requests.models.Response()
     monkeypatch.setattr(resp, 'status_code', 200)
     # Should return True because _read_response_text returns True
+
     def mock_read_response_text(*args, **kwargs):
         return True
     monkeypatch.setattr(PyCSWDist, '_read_response_text', mock_read_response_text)
-    assert PyCSWDist("insert", xml_file=dummyXml)._get_transaction_status('total_inserted', 
-            resp) is True
+    assert PyCSWDist("insert", xml_file=dummyXml)._get_transaction_status('total_inserted',
+                                                                          resp) is True
     # Should return False because _read_response_text returns False
+
     def mock_read_response_text(*args, **kwargs):
         return False
     monkeypatch.setattr(PyCSWDist, '_read_response_text', mock_read_response_text)
-    assert PyCSWDist("insert", xml_file=dummyXml)._get_transaction_status('total_inserted', 
-            resp) is False
+    assert PyCSWDist("insert", xml_file=dummyXml)._get_transaction_status('total_inserted',
+                                                                          resp) is False
     # Should return False because of status 300:
     monkeypatch.setattr(resp, 'status_code', 300)
+
     def mock_read_response_text(*args, **kwargs):
         return True
     monkeypatch.setattr(PyCSWDist, '_read_response_text', mock_read_response_text)
-    assert PyCSWDist("insert", xml_file=dummyXml)._get_transaction_status('total_inserted', 
-            resp) is False
+    assert PyCSWDist("insert", xml_file=dummyXml)._get_transaction_status('total_inserted',
+                                                                          resp) is False
 
 # END _get_transaction_status tests
 
@@ -216,4 +223,3 @@ def testDistPyCSW__read_response_text__delete_but_unknown_tag(
     id = transactionResponseDeleteUnknownTagName[0]
     text = transactionResponseDeleteUnknownTagName[1]
     assert PyCSWDist('delete', metadata_id=id)._read_response_text('total_deleted', text) is False
-
