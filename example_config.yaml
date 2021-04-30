@@ -1,3 +1,4 @@
 dmci:
   distributors:
     - git
+  distributor_input_path: temp

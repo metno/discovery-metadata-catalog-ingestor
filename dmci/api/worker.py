@@ -32,26 +32,32 @@ class Worker():
         # "pycsw": PyCSWDist,
     }
 
-    def __init__(self, conn, **kwargs):
+    def __init__(self, xml_file, **kwargs):
 
         self._conf = CONFIG
 
-        # These dhould be populated with proper values to send to the
+        # These should be populated with proper values to send to the
         # distributors
 
         self._dist_cmd = "insert"
-        self._dist_xml_file = "test.xml"
+        self._dist_xml_file = xml_file
         self._dist_metadata_id = None
         self._kwargs = kwargs
 
         return
 
-    def validate(self):
+    ##
+    #  Methods
+    ##
+
+    def validate(self, data):
         """Dummy function for the validator code.
         """
-        code = 200
-        msg = ""
-        return code, msg
+        # Takes in bytes-object data
+        # Gives msg when both validating and not validating
+        if data == bytes("<xml: notXml", "utf-8"):
+            return False, "Fails"
+        return True, ""
 
     def distribute(self):
         """Loop through all distributors listed in the config and call
@@ -84,5 +90,6 @@ class Worker():
                     failed.append(dist)
 
         return status, valid, called, failed, skipped
+
 
 # END Class Worker
