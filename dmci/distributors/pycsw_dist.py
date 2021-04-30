@@ -137,7 +137,7 @@ class PyCSWDist(Distributor):
                                                                    self.TOTAL_UPDATED,
                                                                    self.TOTAL_DELETED))
             return False
-        if not type(resp) is requests.models.Response:
+        if not isinstance(resp, requests.models.Response):
             logger.error("Input argument 'resp' must be instance of requests.models.Response")
             return False
         status = False
