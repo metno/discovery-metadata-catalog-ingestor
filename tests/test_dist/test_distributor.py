@@ -64,7 +64,7 @@ def testDistDistributor_Run(tmpDir):
     Calling run() on the superclass should always return False as
     nothing is actually run.
     """
-    assert Distributor("insert", metadata_id="some_id").run() is False
+    assert Distributor("insert", metadata_id="some_id").run() is True
     assert Distributor("blabla", metadata_id="some_id").run() is False
 
 # END Test testDistDistributor_Run
