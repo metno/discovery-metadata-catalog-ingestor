@@ -8,7 +8,6 @@ License: This file is part of py-mmd-tools, licensed under the Apache License 2.
 import logging
 import requests
 import pythesint as pti
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +26,7 @@ def check_rectangle(rectangle):
         True / False
     """
 
-    directions = dict.fromkeys(['north', 'south', 'west', 'east'], np.nan)
+    directions = dict.fromkeys(['north', 'south', 'west', 'east'])
 
     ok = True 
     if len(rectangle) > 1:
