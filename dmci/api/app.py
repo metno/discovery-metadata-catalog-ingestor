@@ -39,6 +39,11 @@ class App():
         def base():
             data = request.get_data()
 
+            max_permitted_size = self._conf.max_permitted_size
+
+            if len(data) > max_permitted_size:
+                return f"File bigger than permitted size: {max_permitted_size}", 413
+
             file_uuid = uuid.uuid4()
             path = self._conf.distributor_input_path
             full_path = os.path.join(path, f"{file_uuid}.Q")
