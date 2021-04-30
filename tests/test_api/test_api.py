@@ -45,18 +45,18 @@ def testApiApp_Requests(client, filesDir, monkeypatch):
     """Test api requests.
     """
     assert client.get("/").status_code == 404
-    assert client.get("/v1/").status_code == 405
+    assert client.get("/v1/insert").status_code == 405
 
     mmdFile = os.path.join(filesDir, "api", "test.xml")
     xmlFile = readFile(mmdFile)
 
     wrongXmlFile = "<xml: notXml"
 
-    assert client.post("/v1/", data=xmlFile).status_code == 200
-    assert client.post("/v1/", data=wrongXmlFile).status_code == 500
+    assert client.post("/v1/insert", data=xmlFile).status_code == 200
+    assert client.post("/v1/insert", data=wrongXmlFile).status_code == 500
 
     with monkeypatch.context() as mp:
         mp.setattr("builtins.open", causeOSError)
-        assert client.post("/v1/", data=xmlFile).status_code == 507
+        assert client.post("/v1/insert", data=xmlFile).status_code == 507
 
 # END Test testApiApp_Requests

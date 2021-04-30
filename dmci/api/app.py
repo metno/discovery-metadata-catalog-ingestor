@@ -35,7 +35,7 @@ class App():
         self._app = Flask(__name__)
         self._conf = CONFIG
 
-        @self._app.route("/v1/", methods=["POST"])
+        @self._app.route("/v1/insert", methods=["POST"])
         def base():
             data = request.get_data()
 
