@@ -35,7 +35,7 @@ def client(tmpDir, tmpConf):
     app._conf = tmpConf
     app._conf.distributor_input_path = workDir
 
-    with app._app.test_client() as client:
+    with app.test_client() as client:
         yield client
 
     return

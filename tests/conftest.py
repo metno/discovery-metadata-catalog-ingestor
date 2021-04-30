@@ -89,7 +89,7 @@ def tmpConf(monkeypatch):
     """Create a temporary configuration object.
     """
     theConf = Config()
-    confFile = os.path.join(theConf.pkgRoot, "example_config.yaml")
+    confFile = os.path.join(theConf.pkg_root, "example_config.yaml")
     theConf.readConfig(confFile)
     monkeypatch.setattr("dmci.CONFIG", theConf)
     return theConf

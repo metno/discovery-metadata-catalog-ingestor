@@ -35,6 +35,11 @@ class App():
         self._app = Flask(__name__)
         self._conf = CONFIG
 
+        # Forward functions
+        self.run = self._app.run
+        self.test_client = self._app.test_client
+
+        # Set up api entry points
         @self._app.route("/v1/insert", methods=["POST"])
         def base():
             data = request.get_data()
@@ -59,6 +64,10 @@ class App():
                 return msg, 500
 
         return
+
+    ##
+    #  Internal Functions
+    ##
 
     def _persist_file(self, data, full_path):
         try:
