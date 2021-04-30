@@ -19,27 +19,45 @@ limitations under the License.
 
 import os
 import pytest
+import flask
 
 from tools import causeOSError, readFile
 
 from dmci.api import App
 
-@pytest.fixture()
-def client(tmpDir, tmpConf):
+@pytest.fixture(scope="function")
+def client(tmpDir, tmpConf, monkeypatch):
     """Create an instance of the API.
     """
     workDir = os.path.join(tmpDir, "api")
     if not os.path.isdir(workDir):
         os.mkdir(workDir)
 
+    monkeypatch.setattr("dmci.CONFIG", tmpConf)
+    tmpConf.distributor_input_path = workDir
+
     app = App()
-    app._conf = tmpConf
-    app._conf.distributor_input_path = workDir
+    #app._conf = tmpConf
+    assert app._conf.distributor_input_path == workDir
 
     with app.test_client() as client:
         yield client
 
     return
+
+@pytest.mark.api
+def testApiApp_Init(tmpConf, monkeypatch):
+    # Test if app fails if distributor_input_path is not given
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.CONFIG", tmpConf)
+        tmpConf.distributor_input_path = None
+
+        with pytest.raises(SystemExit) as pytest_wrapped_e:
+            App()
+
+        assert pytest_wrapped_e.type == SystemExit
+        assert pytest_wrapped_e.value.code == 1
+
 
 @pytest.mark.api
 def testApiApp_Requests(client):
@@ -51,6 +69,7 @@ def testApiApp_Requests(client):
 def testApiApp_InsertRequests(client, filesDir, monkeypatch):
     """Test api insert-requests.
     """
+    assert isinstance(client, flask.testing.FlaskClient)
     assert client.get("/v1/insert").status_code == 405
 
     mmdFile = os.path.join(filesDir, "api", "test.xml")
@@ -67,5 +86,6 @@ def testApiApp_InsertRequests(client, filesDir, monkeypatch):
     with monkeypatch.context() as mp:
         mp.setattr("builtins.open", causeOSError)
         assert client.post("/v1/insert", data=xmlFile).status_code == 507
+
 
 # END Test testApiApp_InsertRequests
