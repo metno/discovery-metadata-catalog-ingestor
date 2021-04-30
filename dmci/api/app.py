@@ -37,12 +37,12 @@ class App():
 
         @self._app.route("/v1/insert", methods=["POST"])
         def base():
-            data = request.get_data()
-
             max_permitted_size = self._conf.max_permitted_size
 
-            if len(data) > max_permitted_size:
+            if request.content_length > max_permitted_size:
                 return f"File bigger than permitted size: {max_permitted_size}", 413
+
+            data = request.get_data()
 
             file_uuid = uuid.uuid4()
             path = self._conf.distributor_input_path
