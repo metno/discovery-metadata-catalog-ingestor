@@ -88,15 +88,23 @@ def testApiWorker_validator(monkeypatch):
     """
     current_folder = os.path.dirname(__file__)
     fn = os.path.join(current_folder,
-                      '../files/api/aqua-modis-1km-20210429002844-20210429003955.xml')
+                      '../files/api/passing.xml')
     data = readFile(fn)
 
-    def mock_check_information_content(*args, **kwargs):
-        return True, ""
-
-    monkeypatch.setattr(Worker, '_check_information_content', mock_check_information_content)
     assert Worker(fn).validate(data) == (False, "input must be bytes type")
+
     data = bytes(readFile(fn), 'utf-8')
+    monkeypatch.setattr(Worker, '_check_information_content', lambda *a: (True, ""))
     assert Worker(fn).validate(data) == (True, "")
 
-# END Test testApiWorker_Validator
+# END Test testApiWorker_validator
+
+@pytest.mark.api
+def testApiWorker__check_information_content():
+    current_folder = os.path.dirname(__file__)
+    fn = os.path.join(current_folder,
+                      '../files/api/passing.xml')
+    data = readFile(fn)
+    assert Worker(fn)._check_information_content(data) == (False, "input must be bytes type")
+    data = bytes(readFile(fn), "utf-8")
+    assert Worker(fn)._check_information_content(data) == (True, "Input MMD xml file is ok")

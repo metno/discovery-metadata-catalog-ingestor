@@ -81,16 +81,16 @@ class Worker():
         msg = xmlschema_mmd.error_log
         if valid:
             # Check information content
-            valid, msg = self._check_information_content()
+            valid, msg = self._check_information_content(data)
         return valid, msg
 
-    def _check_information_content(self):
+    def _check_information_content(self, data):
         """ Check the information content in the submitted file
         """
-        import pdb
-        pdb.set_trace()
+        if not isinstance(data, bytes):
+            return False, "input must be bytes type"
         # Read XML file
-        xml_doc = ET.ElementTree(file=str(self._dist_xml_file))
+        xml_doc = ET.fromstring(data)
         logger.info('Performing in depth checking.')
         valid = full_check(xml_doc)
         if valid:

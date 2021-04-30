@@ -71,7 +71,7 @@ def testApiApp_InsertRequests(client, filesDir, monkeypatch):
     assert isinstance(client, flask.testing.FlaskClient)
     assert client.get("/v1/insert").status_code == 405
 
-    mmdFile = os.path.join(filesDir, "api", "test.xml")
+    mmdFile = os.path.join(filesDir, "api", "passing.xml")
     xmlFile = readFile(mmdFile)
 
     wrongXmlFile = "<xml: notXml"
