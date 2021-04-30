@@ -21,7 +21,7 @@ limitations under the License.
 import logging
 import lxml.etree as ET
 
-from py_mmd_tools.check_mmd import full_check
+from external.py_mmd_tools.check_mmd import full_check
 
 from dmci import CONFIG
 from dmci.distributors import GitDist
