@@ -23,6 +23,112 @@ import requests
 
 from dmci.distributors.pycsw_dist import PyCSWDist
 
+def transactionResponseInsert():
+    text = ('<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
+            '<!-- pycsw 2.7.dev0 -->'
+            '<csw:TransactionResponse xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
+            'xmlns:dc="http://purl.org/dc/elements/1.1/" '
+            'xmlns:dct="http://purl.org/dc/terms/" '
+            'xmlns:gmd="http://www.isotc211.org/2005/gmd" '
+            'xmlns:gml="http://www.opengis.net/gml" '
+            'xmlns:ows="http://www.opengis.net/ows" '
+            'xmlns:xs="http://www.w3.org/2001/XMLSchema" '
+            'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0.2" '
+            'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
+            'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd">'
+            '<csw:TransactionSummary>'
+            '<csw:totalInserted>1</csw:totalInserted>'
+            '<csw:totalUpdated>0</csw:totalUpdated>'
+            '<csw:totalDeleted>0</csw:totalDeleted>'
+            '</csw:TransactionSummary>'
+            '<csw:InsertResult>'
+            '<csw:BriefRecord>'
+            '<dc:identifier>'
+            'S1A_EW_GRDM_1SDH_20200420T023244_20200420T023348_032205_03B97F_72EB'
+            '</dc:identifier>'
+            '<dc:title>Date: 2020-04-20T02:32:44.006Z, Instrument: SAR-C SAR, '
+            'Mode: HH HV, Satellite: Sentinel-1, Size: 434.58 MB'
+            '</dc:title>'
+            '</csw:BriefRecord>'
+            '</csw:InsertResult>'
+            '</csw:TransactionResponse>')
+    return text
+
+def exceptionReportInsertAlreadyExists():
+    text = ('<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
+            '<!-- pycsw 2.7.dev0 -->'
+            '<ows:ExceptionReport xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
+            'xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dct="http://purl.org/dc/terms/" '
+            'xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gml="http://www.opengis.net/gml" '
+            'xmlns:ows="http://www.opengis.net/ows" xmlns:xs="http://www.w3.org/2001/XMLSchema" '
+            'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2.0" '
+            'language="en-US" xsi:schemaLocation="http://www.opengis.net/ows '
+            'http://schemas.opengis.net/ows/1.0.0/owsExceptionReport.xsd">'
+            '<ows:Exception exceptionCode="NoApplicableCode" locator="insert">'
+            '<ows:ExceptionText>Transaction (insert) failed: (psycopg2.errors.UniqueViolation) '
+            'duplicate key value violates unique constraint "records_pkey"'
+            'DETAIL: '
+            'Key (identifier)=('
+            'S1A_EW_GRDM_1SDH_20200420T023244_20200420T023348_032205_03B97F_72EB) '
+            'already exists.'
+            '</ows:ExceptionText></ows:Exception></ows:ExceptionReport>')
+    return text
+
+def transactionResponseDelete():
+    id = 'S1A_EW_GRDM_1SDH_20200420T023244_20200420T023348_032205_03B97F_72EB'
+    text = ('<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
+            '<!-- pycsw 2.7.dev0 -->'
+            '<csw:TransactionResponse xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
+            'xmlns:dc="http://purl.org/dc/elements/1.1/" '
+            'xmlns:dct="http://purl.org/dc/terms/" '
+            'xmlns:gmd="http://www.isotc211.org/2005/gmd" '
+            'xmlns:gml="http://www.opengis.net/gml" xmlns:ows="http://www.opengis.net/ows" '
+            'xmlns:xs="http://www.w3.org/2001/XMLSchema" '
+            'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0.2" '
+            'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
+            'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd">'
+            '<csw:TransactionSummary>'
+            '<csw:totalInserted>0</csw:totalInserted>'
+            '<csw:totalUpdated>0</csw:totalUpdated>'
+            '<csw:totalDeleted>1</csw:totalDeleted>'
+            '</csw:TransactionSummary>'
+            '</csw:TransactionResponse>')
+    return [id, text]
+
+def transactionResponseDeleteFails():
+    id = 'S1A_EW_GRDM_1SDH_20200420T023244_20200420T023348_032205_03B97F_72EB'
+    text = ('<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
+            '<!-- pycsw 2.7.dev0 -->'
+            '<csw:TransactionResponse xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
+            'xmlns:dc="http://purl.org/dc/elements/1.1/" '
+            'xmlns:dct="http://purl.org/dc/terms/" '
+            'xmlns:gmd="http://www.isotc211.org/2005/gmd" '
+            'xmlns:gml="http://www.opengis.net/gml" xmlns:ows="http://www.opengis.net/ows" '
+            'xmlns:xs="http://www.w3.org/2001/XMLSchema" '
+            'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0.2" '
+            'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
+            'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd">'
+            '<csw:TransactionSummary>'
+            '<csw:totalInserted>0</csw:totalInserted>'
+            '<csw:totalUpdated>0</csw:totalUpdated>'
+            '<csw:totalDeleted>0</csw:totalDeleted>'
+            '</csw:TransactionSummary>'
+            '</csw:TransactionResponse>')
+    return [id, text]
+
+def transactionResponseDeleteUnknownTagName():
+    id = 'S1A_EW_GRDM_1SDH_20200420T023244_20200420T023348_032205_03B97F_72EB'
+    text = ('<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
+            '<!-- pycsw 2.7.dev0 -->'
+            '<SomeNewTagName>'
+            '<TransactionSummary>'
+            '<totalInserted>0</totalInserted>'
+            '<totalUpdated>0</totalUpdated>'
+            '<totalDeleted>1</totalDeleted>'
+            '</TransactionSummary>'
+            '</SomeNewTagName>')
+    return [id, text]
+
 @pytest.mark.dist
 def testDistPyCSW_Init():
     """Test the PyCSWDist class init.
@@ -187,35 +293,30 @@ def testDistPyCSW__read_response_text__wrong_key(dummyXml):
     assert PyCSWDist("insert", xml_file=dummyXml)._read_response_text('tull', 'some text') is False
 
 @pytest.mark.dist
-def testDistPyCSW__read_response_text__insert_succeeds(
-        transactionResponseInsert, dummyXml):
-    text = transactionResponseInsert
+def testDistPyCSW__read_response_text__insert_succeeds(dummyXml):
+    text = transactionResponseInsert()
     key = 'total_inserted'
     assert PyCSWDist("insert", xml_file=dummyXml)._read_response_text(key, text) is True
 
 @pytest.mark.dist
-def testDistPyCSW__read_response_text__insert_but_dataset_already_exists(
-        exceptionReportInsertAlreadyExists, dummyXml):
-    text = exceptionReportInsertAlreadyExists
+def testDistPyCSW__read_response_text__insert_but_dataset_already_exists(dummyXml):
+    text = exceptionReportInsertAlreadyExists()
     key = 'total_inserted'
     assert PyCSWDist("insert", xml_file=dummyXml)._read_response_text(key, text) is False
 
 @pytest.mark.dist
-def testDistPyCSW__read_response_text__successful_delete(
-        transactionResponseDelete):
-    id = transactionResponseDelete[0]
-    text = transactionResponseDelete[1]
+def testDistPyCSW__read_response_text__successful_delete():
+    id = transactionResponseDelete()[0]
+    text = transactionResponseDelete()[1]
     assert PyCSWDist('delete', metadata_id=id)._read_response_text('total_deleted', text) is True
 
 @pytest.mark.dist
-def testDistPyCSW__read_response_text__unsuccessful_delete(
-        transactionResponseDeleteFails):
-    id = transactionResponseDeleteFails[0]
-    text = transactionResponseDeleteFails[1]
+def testDistPyCSW__read_response_text__unsuccessful_delete():
+    id = transactionResponseDeleteFails()[0]
+    text = transactionResponseDeleteFails()[1]
     assert PyCSWDist('delete', metadata_id=id)._read_response_text('total_deleted', text) is False
 
-def testDistPyCSW__read_response_text__delete_but_unknown_tag(
-        transactionResponseDeleteUnknownTagName):
-    id = transactionResponseDeleteUnknownTagName[0]
-    text = transactionResponseDeleteUnknownTagName[1]
+def testDistPyCSW__read_response_text__delete_but_unknown_tag():
+    id = transactionResponseDeleteUnknownTagName()[0]
+    text = transactionResponseDeleteUnknownTagName()[1]
     assert PyCSWDist('delete', metadata_id=id)._read_response_text('total_deleted', text) is False
