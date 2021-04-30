@@ -24,6 +24,8 @@ import logging
 
 import dmci
 
+from tools import readFile
+
 @pytest.mark.core
 def testCoreInit_Init():
     """Test the package initialisation.
@@ -34,7 +36,7 @@ def testCoreInit_Init():
 # END Test testCoreInit_Init
 
 @pytest.mark.core
-def testCoreInit_Logger():
+def testCoreInit_Logger(tmpDir):
     """Test the logger initialisation.
     """
     os.environ["DMCI_LOGLEVEL"] = "DEBUG"
@@ -46,5 +48,18 @@ def testCoreInit_Logger():
     logger = logging.getLogger(__name__)
     dmci._init_logging(logger)
     assert logger.getEffectiveLevel() == logging.INFO
+
+    # Test log file
+    logFile = os.path.join(tmpDir, "test.log")
+    if os.path.isfile(logFile):
+        os.unlink(logFile)
+
+    os.environ["DMCI_LOGLEVEL"] = "DEBUG"
+    os.environ["DMCI_LOGFILE"] = logFile
+    logger = logging.getLogger(__name__)
+    dmci._init_logging(logger)
+    assert os.path.isfile(logFile)
+    logger.debug("Some log message")
+    assert readFile(logFile).strip().endswith("Some log message")
 
 # END Test testCoreInit_Logger
