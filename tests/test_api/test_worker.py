@@ -81,14 +81,11 @@ def testApiWorker_Distributor(tmpDir, tmpConf, monkeypatch):
 
 # END Test testApiWorker_Distributor
 
-# validate tests
 @pytest.mark.api
-def testApiWorker_validator(monkeypatch):
+def testApiWorker_Validator(monkeypatch, filesDir):
     """Test the Worker class validator.
     """
-    current_folder = os.path.dirname(__file__)
-    fn = os.path.join(current_folder,
-                      '../files/api/passing.xml')
+    fn = os.path.join(filesDir, "api", "passing.xml")
     data = readFile(fn)
 
     assert Worker(fn).validate(data) == (False, "input must be bytes type")
@@ -97,14 +94,16 @@ def testApiWorker_validator(monkeypatch):
     monkeypatch.setattr(Worker, '_check_information_content', lambda *a: (True, ""))
     assert Worker(fn).validate(data) == (True, "")
 
-# END Test testApiWorker_validator
+# END Test testApiWorker_Validator
 
 @pytest.mark.api
-def testApiWorker__check_information_content():
-    current_folder = os.path.dirname(__file__)
-    fn = os.path.join(current_folder,
-                      '../files/api/passing.xml')
+def testApiWorker_CheckInfoContent(filesDir):
+    """Test _check_information_content
+    """
+    fn = os.path.join(filesDir, "api", "passing.xml")
     data = readFile(fn)
     assert Worker(fn)._check_information_content(data) == (False, "input must be bytes type")
     data = bytes(readFile(fn), "utf-8")
     assert Worker(fn)._check_information_content(data) == (True, "Input MMD xml file is ok")
+
+# END Test testApiWorker_CheckInfoContent

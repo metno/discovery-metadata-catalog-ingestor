@@ -46,7 +46,8 @@ def client(tmpDir, tmpConf, monkeypatch):
 
 @pytest.mark.api
 def testApiApp_Init(tmpConf, monkeypatch):
-    # Test if app fails if distributor_input_path is not given
+    """Test if app fails if distributor_input_path is not given
+    """
     with monkeypatch.context() as mp:
         mp.setattr("dmci.CONFIG", tmpConf)
         tmpConf.distributor_input_path = None
@@ -60,6 +61,8 @@ def testApiApp_Init(tmpConf, monkeypatch):
 
 @pytest.mark.api
 def testApiApp_Requests(client):
+    """
+    """
     assert client.get("/").status_code == 404
 
 # END Test testApiApp_Requests
@@ -75,8 +78,9 @@ def testApiApp_InsertRequests(client, filesDir, monkeypatch):
     xmlFile = readFile(mmdFile)
 
     wrongXmlFile = "<xml: notXml"
+
     # Test sending 3MB of data
-    tooLargeXmlFile = bytes(3*1000*1000)
+    tooLargeXmlFile = bytes(3000000)
 
     with monkeypatch.context() as mp:
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
@@ -88,6 +92,5 @@ def testApiApp_InsertRequests(client, filesDir, monkeypatch):
     with monkeypatch.context() as mp:
         mp.setattr("builtins.open", causeOSError)
         assert client.post("/v1/insert", data=xmlFile).status_code == 507
-
 
 # END Test testApiApp_InsertRequests

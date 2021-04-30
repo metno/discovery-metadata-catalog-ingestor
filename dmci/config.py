@@ -33,14 +33,16 @@ class Config():
 
         # Core Values
         self.call_distributors = []
-        self.csw_service_url = 'https://csw-dev.s-enda.k8s.met.no'
+        self.csw_service_url = "localhost"
 
         # API
         self.distributor_input_path = None
-        self.mmd_xsd_schema = os.path.join(self.pkg_root, 'dmci/assets/mmd.xsd')
 
-        # Size of files permitted through API, 100 KB
-        self.max_permitted_size = 100*1000
+        # Worker
+        self.mmd_xsd_schema = os.path.join(self.pkg_root, "dmci", "assets", "mmd.xsd")
+
+        # Size of files permitted through API, 100 kB
+        self.max_permitted_size = 100000
 
         # Internals
         self._raw_conf = {}

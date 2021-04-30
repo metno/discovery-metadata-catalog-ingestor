@@ -54,7 +54,7 @@ class Worker():
     ##
 
     def validate(self, data):
-        """ Validate the xml file against the XML style definition,
+        """Validate the xml file against the XML style definition,
         then check the information content.
 
         Input
@@ -82,22 +82,28 @@ class Worker():
         if valid:
             # Check information content
             valid, msg = self._check_information_content(data)
+
         return valid, msg
 
     def _check_information_content(self, data):
-        """ Check the information content in the submitted file
+        """Check the information content in the submitted file
         """
         if not isinstance(data, bytes):
             return False, "input must be bytes type"
+
         # Read XML file
         xml_doc = ET.fromstring(data)
         logger.info('Performing in depth checking.')
+
         valid = full_check(xml_doc)
         if valid:
             msg = "Input MMD xml file is ok"
         else:
-            msg = "Input MMD xml file contains errors - please check your file " \
+            msg = (
+                "Input MMD xml file contains errors - please check your file "
                 "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
+            )
+
         return valid, msg
 
     def distribute(self):
@@ -131,6 +137,5 @@ class Worker():
                     failed.append(dist)
 
         return status, valid, called, failed, skipped
-
 
 # END Class Worker
