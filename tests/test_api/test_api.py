@@ -24,6 +24,7 @@ import flask
 from tools import causeOSError, readFile
 
 from dmci.api import App
+from dmci.api.worker import Worker
 
 @pytest.fixture(scope="function")
 def client(tmpDir, tmpConf, monkeypatch):
@@ -78,7 +79,10 @@ def testApiApp_InsertRequests(client, filesDir, monkeypatch):
     # Test sending 3MB of data
     tooLargeXmlFile = bytes(3*1000*1000)
 
-    assert client.post("/v1/insert", data=xmlFile).status_code == 200
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
+        assert client.post("/v1/insert", data=xmlFile).status_code == 200
+        
     assert client.post("/v1/insert", data=wrongXmlFile).status_code == 500
     assert client.post("/v1/insert", data=tooLargeXmlFile).status_code == 413
 

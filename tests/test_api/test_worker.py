@@ -20,7 +20,6 @@ limitations under the License.
 
 import os
 import pytest
-import uuid
 
 from tools import writeFile, readFile
 
@@ -91,8 +90,10 @@ def testApiWorker_validator(monkeypatch):
     fn = os.path.join(current_folder,
             '../files/api/aqua-modis-1km-20210429002844-20210429003955.xml')
     data = readFile(fn)
+
     def mock_check_information_content(*args, **kwargs):
         return True, ""
+
     monkeypatch.setattr(Worker, '_check_information_content', mock_check_information_content)
     assert Worker(fn).validate(data) == (False, "input must be bytes type")
     data = bytes(readFile(fn), 'utf-8')

@@ -22,7 +22,6 @@ import logging
 import lxml.etree as ET
 
 from py_mmd_tools.check_mmd import full_check
-from py_mmd_tools.xml_utils import xsd_check
 
 from dmci import CONFIG
 from dmci.distributors import GitDist
@@ -75,12 +74,11 @@ class Worker():
         if not isinstance(data, bytes):
             return False, "input must be bytes type"
 
-        # Check xml file against XML schema definition 
+        # Check xml file against XML schema definition
         xmlschema_mmd = ET.XMLSchema(ET.parse(self._conf.mmd_xsd_schema))
         xml_doc = ET.fromstring(data)
         valid = xmlschema_mmd.validate(xml_doc)
         msg = xmlschema_mmd.error_log
-        #valid, msg = xsd_check(self._dist_xml_file, self._conf.mmd_xsd_schema)
         if valid:
             # Check information content
             valid, msg = self._check_information_content()
@@ -99,7 +97,7 @@ class Worker():
             msg = "Input MMD xml file is ok"
         else:
             msg = "Input MMD xml file contains errors - please check your file " \
-                    "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
+                "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
         return valid, msg
 
     def distribute(self):
