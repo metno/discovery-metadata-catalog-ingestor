@@ -2,7 +2,7 @@ import logging
 import requests
 import xml
 
-from py_mmd_tools.xml_utils import xml_translate
+from external.py_mmd_tools.xml_utils import xml_translate
 
 from dmci.distributors.distributor import Distributor, DistCmd
 
