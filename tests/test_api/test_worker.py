@@ -80,11 +80,11 @@ def testApiWorker_Distributor(tmpDir, tmpConf, monkeypatch):
     assert status is False
     assert valid is False
 
-# END Test testCoreWorker_Distributor
+# END Test testApiWorker_Distributor
 
 # validate tests
 @pytest.mark.api
-def testCoreWorker_validator_fails(monkeypatch):
+def testApiWorker_validator(monkeypatch):
     """Test the Worker class validator.
     """
     current_folder = os.path.dirname(__file__)
@@ -95,20 +95,7 @@ def testCoreWorker_validator_fails(monkeypatch):
         return True, ""
     monkeypatch.setattr(Worker, '_check_information_content', mock_check_information_content)
     assert Worker(fn).validate(data) == (False, "input must be bytes type")
-
-# END Test testCoreWorker_Validator
-
-@pytest.mark.api
-def testCoreWorker_validator(monkeypatch):
-    """Test the Worker class validator.
-    """
-    current_folder = os.path.dirname(__file__)
-    fn = os.path.join(current_folder,
-            '../files/api/aqua-modis-1km-20210429002844-20210429003955.xml')
     data = bytes(readFile(fn), 'utf-8')
-    def mock_check_information_content(*args, **kwargs):
-        return True, ""
-    monkeypatch.setattr(Worker, '_check_information_content', mock_check_information_content)
     assert Worker(fn).validate(data) == (True, "")
 
-# END Test testCoreWorker_Validator
+# END Test testApiWorker_Validator

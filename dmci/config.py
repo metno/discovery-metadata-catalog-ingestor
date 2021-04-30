@@ -37,7 +37,7 @@ class Config():
 
         # API
         self.distributor_input_path = None
-        self.mmd_xsd_schema = os.path.join(self.pkgRoot, 'dmci/assets/mmd.xsd')
+        self.mmd_xsd_schema = os.path.join(self.pkg_root, 'dmci/assets/mmd.xsd')
 
         # Size of files permitted through API, 100 KB
         self.max_permitted_size = 100*1000
