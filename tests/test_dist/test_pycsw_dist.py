@@ -20,9 +20,6 @@ limitations under the License.
 
 import pytest
 import requests
-from py_mmd_tools import xml_utils
-
-from tools import writeFile
 
 from dmci.distributors.pycsw_dist import PyCSWDist
 
@@ -187,7 +184,6 @@ def testDistPyCSW__get_transaction_status_returns_true_false(monkeypatch, dummyX
 
 @pytest.mark.dist
 def testDistPyCSW__read_response_text__wrong_key(dummyXml):
-    resp = requests.models.Response()
     assert PyCSWDist("insert", xml_file=dummyXml)._read_response_text('tull', 'some text') is False
 
 @pytest.mark.dist
