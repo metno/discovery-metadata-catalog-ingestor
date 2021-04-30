@@ -22,5 +22,6 @@ from dmci.distributors.git_dist import GitDist
 from dmci.distributors.pycsw_dist import PyCSWDist
 
 __all__ = [
-    "GitDist"
+    "GitDist",
+    "PyCSWDist"
 ]
