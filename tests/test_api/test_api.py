@@ -57,7 +57,8 @@ def testApiApp_InsertRequests(client, filesDir, monkeypatch):
     xmlFile = readFile(mmdFile)
 
     wrongXmlFile = "<xml: notXml"
-    tooLargeXmlFile = bytes(1000*1000*3)
+    # Test sending 3MB of data
+    tooLargeXmlFile = bytes(3*1000*1000)
 
     assert client.post("/v1/insert", data=xmlFile).status_code == 200
     assert client.post("/v1/insert", data=wrongXmlFile).status_code == 500
