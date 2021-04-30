@@ -37,6 +37,7 @@ class Config():
 
         # API
         self.distributor_input_path = None
+        self.mmd_xsd_schema = os.path.join(self.pkgRoot, 'dmci/assets/mmd.xsd')
 
         # Internals
         self._rawConf = {}

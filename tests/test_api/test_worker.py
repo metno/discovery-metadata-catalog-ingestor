@@ -20,8 +20,9 @@ limitations under the License.
 
 import os
 import pytest
+import uuid
 
-from tools import writeFile
+from tools import writeFile, readFile
 
 from dmci.api.worker import Worker
 
@@ -84,11 +85,16 @@ def testApiWorker_Distributor(tmpDir, tmpConf, monkeypatch):
 # validate tests
 
 @pytest.mark.api
-def testCoreWorker_Validator():
+def testCoreWorker_Validator(monkeypatch):
     """Test the Worker class validator.
     """
-    import pdb
-    pdb.set_trace()
-    assert Worker("").validate() == (200, "")
+    current_folder = os.path.dirname(__file__)
+    fn = os.path.join(current_folder,
+            '../files/api/aqua-modis-1km-20210429002844-20210429003955.xml')
+    data = bytes(readFile(fn), 'utf-8')
+    def mock_check_information_content(*args, **kwargs):
+        return True, ""
+    monkeypatch.setattr(Worker, '_check_information_content', mock_check_information_content)
+    assert Worker(fn).validate(data) == (True, "")
 
 # END Test testCoreWorker_Validator

@@ -55,7 +55,20 @@ class Worker():
     ##
 
     def validate(self, data):
-        """ Validate the xml file
+        """ Validate the xml file against the XML style definition,
+        then check the information content.
+
+        Input
+        =====
+        data : bytes
+            bytes representation of the xml data
+
+        Returns
+        =======
+        valid : boolean
+            True if xsd and information content checks are passing
+        msg : str
+            Validation message
         """
         # Takes in bytes-object data
         # Gives msg when both validating and not validating
@@ -63,7 +76,11 @@ class Worker():
             return False, "Fails"
 
         # Check xml file against XML schema definition 
-        valid, msg = xsd_check(self._dist_xml_file, xsd_schema)
+        xmlschema_mmd = ET.XMLSchema(ET.parse(self._conf.mmd_xsd_schema))
+        xml_doc = ET.fromstring(data)
+        valid = xmlschema_mmd.validate(xml_doc)
+        msg = xmlschema_mmd.error_log
+        #valid, msg = xsd_check(self._dist_xml_file, self._conf.mmd_xsd_schema)
         if valid:
             # Check information content
             valid, msg = self._check_information_content()
@@ -72,6 +89,8 @@ class Worker():
     def _check_information_content(self):
         """ Check the information content in the submitted file
         """
+        import pdb
+        pdb.set_trace()
         # Read XML file
         xml_doc = ET.ElementTree(file=str(self._dist_xml_file))
         logger.info('Performing in depth checking.')
