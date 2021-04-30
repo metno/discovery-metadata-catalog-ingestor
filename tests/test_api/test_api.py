@@ -24,12 +24,13 @@ from tools import causeOSError, readFile
 
 from dmci.api import App
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def client(tmpDir, tmpConf):
     """Create an instance of the API.
     """
     workDir = os.path.join(tmpDir, "api")
-    os.mkdir(workDir)
+    if not os.path.isdir(workDir):
+        os.mkdir(workDir)
 
     app = App()
     app._conf = tmpConf
@@ -41,22 +42,29 @@ def client(tmpDir, tmpConf):
     return
 
 @pytest.mark.api
-def testApiApp_Requests(client, filesDir, monkeypatch):
-    """Test api requests.
-    """
+def testApiApp_Requests(client):
     assert client.get("/").status_code == 404
+
+# END Test testApiApp_Requests
+
+@pytest.mark.api
+def testApiApp_InsertRequests(client, filesDir, monkeypatch):
+    """Test api insert-requests.
+    """
     assert client.get("/v1/insert").status_code == 405
 
     mmdFile = os.path.join(filesDir, "api", "test.xml")
     xmlFile = readFile(mmdFile)
 
     wrongXmlFile = "<xml: notXml"
+    tooLargeXmlFile = bytes(1000*1000*3)
 
     assert client.post("/v1/insert", data=xmlFile).status_code == 200
     assert client.post("/v1/insert", data=wrongXmlFile).status_code == 500
+    assert client.post("/v1/insert", data=tooLargeXmlFile).status_code == 413
 
     with monkeypatch.context() as mp:
         mp.setattr("builtins.open", causeOSError)
         assert client.post("/v1/insert", data=xmlFile).status_code == 507
 
-# END Test testApiApp_Requests
+# END Test testApiApp_InsertRequests
