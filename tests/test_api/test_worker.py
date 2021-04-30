@@ -23,20 +23,19 @@ import pytest
 
 from tools import writeFile
 
-from dmci.worker import Worker
-from dmci.config import Config
+from dmci.api.worker import Worker
 
-@pytest.mark.core
-def testCoreWorker_Init():
+@pytest.mark.api
+def testApiWorker_Init():
     """Test the Worker class init.
     """
-    assert Worker("")._dist_cmd == "insert"
-    assert Worker("", a=1)._kwargs == {"a": 1}
+    assert Worker(None)._dist_cmd == "insert"
+    assert Worker(None, a=1)._kwargs == {"a": 1}
 
-# END Test testCoreWorker_Init
+# END Test testApiWorker_Init
 
-@pytest.mark.core
-def testCoreWorker_Distributor(tmpDir, monkeypatch):
+@pytest.mark.api
+def testApiWorker_Distributor(tmpDir, tmpConf, monkeypatch):
     """Test the Worker class distributor.
     """
     workDir = os.path.join(tmpDir, "worker")
@@ -44,25 +43,23 @@ def testCoreWorker_Distributor(tmpDir, monkeypatch):
 
     # Create a test config file and object
     workConf = os.path.join(workDir, "distributor_config.yaml")
-    confYaml = (
+    writeFile(workConf, (
         "dmci:\n"
         "  distributors:\n"
         "    - git\n"
         "    - blabla\n"
-    )
-    writeFile(workConf, confYaml)
+    ))
 
-    tstConf = Config()
-    tstConf.readConfig(workConf)
-    assert tstConf.call_distributors == ["git", "blabla"]
+    tmpConf.readConfig(workConf)
+    assert tmpConf.call_distributors == ["git", "blabla"]
 
     # Create a dummy xml file
     dummyXml = os.path.join(workDir, "dummy.xml")
     writeFile(dummyXml, "<xml />")
 
     # Call the distributor function with the distributors from the config
-    tstWorker = Worker("")
-    tstWorker._conf = tstConf
+    tstWorker = Worker(None)
+    tstWorker._conf = tmpConf
     tstWorker._dist_xml_file = dummyXml
 
     status, valid, called, failed, skipped = tstWorker.distribute()
@@ -73,8 +70,8 @@ def testCoreWorker_Distributor(tmpDir, monkeypatch):
     assert skipped == ["blabla"]
 
     # Call the distributor function with the wrong parameters
-    tstWorker = Worker("")
-    tstWorker._conf = tstConf
+    tstWorker = Worker(None)
+    tstWorker._conf = tmpConf
     tstWorker._dist_cmd = "blabla"
     tstWorker._dist_xml_file = "/path/to/nowhere"
 
@@ -86,12 +83,10 @@ def testCoreWorker_Distributor(tmpDir, monkeypatch):
 
 # validate tests
 
-@pytest.mark.core
+@pytest.mark.api
 def testCoreWorker_Validator():
     """Test the Worker class validator.
     """
     assert Worker("").validate() == (200, "")
 
 # END Test testCoreWorker_Validator
-
-

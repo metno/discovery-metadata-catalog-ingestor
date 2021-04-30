@@ -26,13 +26,13 @@ from tools import causeOSError
 from dmci.config import Config
 
 @pytest.mark.core
-def testCoreConfig_ReadFile(refDir, monkeypatch):
+def testCoreConfig_ReadFile(filesDir, monkeypatch):
     """Test reading config file.
     """
     theConf = Config()
 
     # Read some values and see that we get them
-    confFile = os.path.join(refDir, "core", "config.yaml")
+    confFile = os.path.join(filesDir, "core", "config.yaml")
 
     # Fake path
     assert not theConf.readConfig(configFile="not_a_real_file")
@@ -52,7 +52,7 @@ def testCoreConfig_ReadFile(refDir, monkeypatch):
     assert theConf._rawConf["groupOne"]["keyFour"] == ["value1", "value2"]
 
     # Read with no file path set, but a folder that contains the test file
-    theConf.pkgRoot = os.path.join(refDir, "core")
+    theConf.pkgRoot = os.path.join(filesDir, "core")
     assert theConf.readConfig(configFile=None)
 
 # END Test testCoreConfig_ReadFile
