@@ -88,7 +88,7 @@ def testApiWorker_validator(monkeypatch):
     """
     current_folder = os.path.dirname(__file__)
     fn = os.path.join(current_folder,
-            '../files/api/aqua-modis-1km-20210429002844-20210429003955.xml')
+                      '../files/api/aqua-modis-1km-20210429002844-20210429003955.xml')
     data = readFile(fn)
 
     def mock_check_information_content(*args, **kwargs):
