@@ -37,7 +37,7 @@ class Config():
 
         # API
         self.distributor_input_path = None
-        ## Size of files permitted through API, 100 KB
+        # Size of files permitted through API, 100 KB
         self.max_permitted_size = 100*1000
 
         # Internals
@@ -47,12 +47,8 @@ class Config():
 
     def readConfig(self, configFile=None):
         """Read the config file. If the configFile variable is not set,
-        the class will look for the file first as an environment variable, then
-        in the source root folder.
+        the class will look for the file in the source root folder.
         """
-        if configFile is None:
-            configFile = os.environ.get("DMCI_CONFIG", None)
-
         if configFile is None:
             configFile = os.path.join(self.pkg_root, "config.yaml")
 
