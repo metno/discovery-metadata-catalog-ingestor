@@ -19,6 +19,7 @@ limitations under the License.
 """
 
 import os
+import sys
 import logging
 
 from dmci.config import Config
@@ -26,7 +27,7 @@ from dmci.config import Config
 __package__ = "dmci"
 __version__ = "0.0.1"
 
-def _initLogging(log_obj):
+def _init_logging(log_obj):
     """Call to initialise logging
     """
     # Read environment variables
@@ -65,7 +66,7 @@ def _initLogging(log_obj):
 # Logging Setup
 # Must be called before the CONFIG object is created
 logger = logging.getLogger(__name__)
-_initLogging(logger)
+_init_logging(logger)
 
 # Create config object
 CONFIG = Config()
@@ -73,7 +74,9 @@ CONFIG = Config()
 def api_main():
     """This is the main entry point for the api process.
     """
+    from dmci.api import App # pragma: no cover
 
-    return
+    dmci_app = App() # pragma: no cover
+    sys.exit(dmci_app.run()) # pragma: no cover
 
 # END api_main entry point

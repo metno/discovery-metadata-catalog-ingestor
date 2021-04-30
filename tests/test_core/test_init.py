@@ -39,12 +39,12 @@ def testCoreInit_Logger():
     """
     os.environ["DMCI_LOGLEVEL"] = "DEBUG"
     logger = logging.getLogger(__name__)
-    dmci._initLogging(logger)
+    dmci._init_logging(logger)
     assert logger.getEffectiveLevel() == logging.DEBUG
 
     os.environ["DMCI_LOGLEVEL"] = "INVALID"
     logger = logging.getLogger(__name__)
-    dmci._initLogging(logger)
+    dmci._init_logging(logger)
     assert logger.getEffectiveLevel() == logging.INFO
 
 # END Test testCoreInit_Logger
