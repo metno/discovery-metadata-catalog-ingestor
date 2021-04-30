@@ -19,6 +19,10 @@ limitations under the License.
 """
 
 import logging
+import lxml.etree as ET
+
+from py_mmd_tools.check_mmd import full_check
+from py_mmd_tools.xml_utils import xsd_check
 
 from dmci import CONFIG
 from dmci.distributors import GitDist
@@ -36,7 +40,7 @@ class Worker():
 
         self._conf = CONFIG
 
-        # These dhould be populated with proper values to send to the
+        # These should be populated with proper values to send to the
         # distributors
 
         self._dist_cmd = "insert"
@@ -47,11 +51,28 @@ class Worker():
         return
 
     def validate(self):
-        """Dummy function for the validator code.
+        """ Validate the xml file
         """
-        code = 200
-        msg = ""
-        return code, msg
+        # Check xml file against XML schema definition 
+        valid, msg = xsd_check(self._dist_xml_file, xsd_schema)
+        if valid:
+            # Check information content
+            valid, msg = self._check_information_content()
+        return valid, msg
+
+    def _check_information_content(self):
+        """ Check the information content in the submitted file
+        """
+        # Read XML file
+        xml_doc = ET.ElementTree(file=str(self._dist_xml_file))
+        logger.info('Performing in depth checking.')
+        valid = full_check(xml_doc)
+        if valid:
+            msg = "Input MMD xml file is ok"
+        else:
+            msg = "Input MMD xml file contains errors - please check your file " \
+                    "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
+        return valid, msg
 
     def distribute(self):
         """Loop through all distributors listed in the config and call

@@ -36,14 +36,6 @@ def testCoreWorker_Init():
 # END Test testCoreWorker_Init
 
 @pytest.mark.core
-def testCoreWorker_Validator():
-    """Test the Worker class validator.
-    """
-    assert Worker("").validate() == (200, "")
-
-# END Test testCoreWorker_Validator
-
-@pytest.mark.core
 def testCoreWorker_Distributor(tmpDir, monkeypatch):
     """Test the Worker class distributor.
     """
@@ -91,3 +83,15 @@ def testCoreWorker_Distributor(tmpDir, monkeypatch):
     assert valid is False
 
 # END Test testCoreWorker_Distributor
+
+# validate tests
+
+@pytest.mark.core
+def testCoreWorker_Validator():
+    """Test the Worker class validator.
+    """
+    assert Worker("").validate() == (200, "")
+
+# END Test testCoreWorker_Validator
+
+
