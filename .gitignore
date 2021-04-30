@@ -8,6 +8,7 @@ __pycache__
 /coverage.*
 /htmlcov/
 /tests/temp/
+/.cache/
 
 # Input
 /config.yaml
@@ -16,3 +17,6 @@ __pycache__
 /build/
 /dist/
 *.egg-info
+
+#Vscode
+.vscode

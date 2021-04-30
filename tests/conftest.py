@@ -28,6 +28,12 @@ from tools import writeFile
 # Note: This line forces the test suite to import the dmci package in the current source tree
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
+from dmci.config import Config # noqa: E402
+
+##
+#  Directory Fixtures
+##
+
 @pytest.fixture(scope="session")
 def tmpDir():
     """A temporary folder for the test session. This folder is
@@ -44,7 +50,7 @@ def tmpDir():
     return theDir
 
 @pytest.fixture(scope="session")
-def refDir():
+def filesDir():
     """A path to the reference files folder.
     """
     testDir = os.path.dirname(__file__)
@@ -74,3 +80,16 @@ def dummyXslt(distDir):
     writeFile(dummyXslt, "<xml />")
     return dummyXslt
 
+##
+#  Objects
+##
+
+@pytest.fixture(scope="function")
+def tmpConf(monkeypatch):
+    """Create a temporary configuration object.
+    """
+    theConf = Config()
+    confFile = os.path.join(theConf.pkgRoot, "example_config.yaml")
+    theConf.readConfig(confFile)
+    monkeypatch.setattr("dmci.CONFIG", theConf)
+    return theConf

@@ -3,3 +3,4 @@ dmci:
   distributors:
     - git
     - pycsw
+  distributor_input_path: temp

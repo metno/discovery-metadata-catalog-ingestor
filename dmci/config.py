@@ -29,11 +29,14 @@ class Config():
     def __init__(self):
 
         # Paths
-        self.pkgRoot = os.path.abspath(os.path.dirname(__file__))
+        self.pkgRoot = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
         # Core Values
         self.call_distributors = []
         self.csw_service_url = 'https://csw-dev.s-enda.k8s.met.no'
+
+        # API
+        self.distributor_input_path = None
 
         # Internals
         self._rawConf = {}
@@ -74,8 +77,10 @@ class Config():
         """Read config values under 'dmci'.
         """
         dmciDict = self._rawConf.get("dmci", {})
+
         self.call_distributors = dmciDict.get("distributors", self.call_distributors)
         self.csw_service_url = dmciDict.get("csw_service_url", self.csw_service_url)
+        self.distributor_input_path = dmciDict.get("distributor_input_path", ".")
 
         return True
 
