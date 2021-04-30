@@ -23,8 +23,6 @@ import sys
 import shutil
 import pytest
 
-from tools import writeFile
-
 # Note: This line forces the test suite to import the dmci package in the current source tree
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
@@ -57,29 +55,6 @@ def filesDir():
     theDir = os.path.join(testDir, "files")
     return theDir
 
-@pytest.fixture(scope='session')
-def dummy_xml_str():
-    return "<xml />"
-
-@pytest.fixture(scope='session')
-def distDir(tmpDir):
-    distDir = os.path.join(tmpDir, "dist")
-    if not os.path.isdir(distDir):
-        os.mkdir(distDir)
-    return distDir
-
-@pytest.fixture(scope='session')
-def dummyXml(distDir, dummy_xml_str):
-    dummyXml = os.path.join(distDir, "dummy.xml")
-    writeFile(dummyXml, dummy_xml_str)
-    return dummyXml
-
-@pytest.fixture(scope='session')
-def dummyXslt(distDir):
-    dummyXslt = os.path.join(distDir, "dummy.xslt")
-    writeFile(dummyXslt, "<xml />")
-    return dummyXslt
-
 ##
 #  Objects
 ##
@@ -89,7 +64,7 @@ def tmpConf(monkeypatch):
     """Create a temporary configuration object.
     """
     theConf = Config()
-    confFile = os.path.join(theConf.pkgRoot, "example_config.yaml")
+    confFile = os.path.join(theConf.pkg_root, "example_config.yaml")
     theConf.readConfig(confFile)
     monkeypatch.setattr("dmci.CONFIG", theConf)
     return theConf

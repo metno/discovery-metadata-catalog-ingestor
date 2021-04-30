@@ -19,6 +19,7 @@ limitations under the License.
 """
 
 import os
+import sys
 import logging
 
 from dmci.config import Config
@@ -26,35 +27,58 @@ from dmci.config import Config
 __package__ = "dmci"
 __version__ = "0.0.1"
 
-def _initLogging(logObj):
+def _init_logging(log_obj):
     """Call to initialise logging
     """
-    strLevel = os.environ.get("DMCI_LOGLEVEL", "INFO")
-    if hasattr(logging, strLevel):
-        logLevel = getattr(logging, strLevel)
+    # Read environment variables
+    want_level = os.environ.get("DMCI_LOGLEVEL", "INFO")
+    log_file = os.environ.get("DMCI_LOGFILE", None)
+
+    # Determine log level and format
+    if hasattr(logging, want_level):
+        log_level = getattr(logging, want_level)
     else:
-        print("Invalid logging level '%s' in environment variable DMCI_LOGLEVEL" % strLevel)
-        logLevel = logging.INFO
+        print("Invalid logging level '%s' in environment variable DMCI_LOGLEVEL" % want_level)
+        log_level = logging.INFO
 
-    if logLevel < logging.INFO:
-        logFormat = "[{asctime:s}] {levelname:8s} {message:}"
+    if log_level < logging.INFO:
+        msg_format = "[{asctime:s}] {levelname:8s} {message:}"
     else:
-        logFormat = "{levelname:8s} {message:}"
+        msg_format = "{levelname:8s} {message:}"
 
-    logFmt = logging.Formatter(fmt=logFormat, style="{")
+    log_format = logging.Formatter(fmt=msg_format, style="{")
+    log_obj.setLevel(log_level)
 
-    cHandle = logging.StreamHandler()
-    cHandle.setLevel(logLevel)
-    cHandle.setFormatter(logFmt)
+    # Create stream handlers
+    h_stdout = logging.StreamHandler()
+    h_stdout.setLevel(log_level)
+    h_stdout.setFormatter(log_format)
+    log_obj.addHandler(h_stdout)
 
-    logObj.setLevel(logLevel)
-    logObj.addHandler(cHandle)
+    if log_file is not None:
+        h_file = logging.FileHandler(log_file, encoding="utf-8")
+        h_file.setLevel(log_level)
+        h_file.setFormatter(log_format)
+        log_obj.addHandler(h_file)
 
     return
 
 # Logging Setup
+# Must be called before the CONFIG object is created
 logger = logging.getLogger(__name__)
-_initLogging(logger)
+_init_logging(logger)
 
 # Create config object
 CONFIG = Config()
+
+def api_main():
+    """This is the main entry point for the api process.
+    """
+    from dmci.api import App # pragma: no cover
+
+    CONFIG.readConfig(configFile=os.environ.get("DMCI_CONFIG", None)) # pragma: no cover
+
+    dmci_app = App() # pragma: no cover
+    sys.exit(dmci_app.run()) # pragma: no cover
+
+# END api_main entry point

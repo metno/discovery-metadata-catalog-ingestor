@@ -4,3 +4,4 @@ dmci:
     - git
     - pycsw
   distributor_input_path: temp
+  max_permitted_size: 100000
