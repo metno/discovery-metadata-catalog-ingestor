@@ -18,13 +18,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import dmci
 import logging
 import os
+import sys
 import uuid
 
 from flask import request, Flask, after_this_request
 
-from dmci import CONFIG
 from dmci.api.worker import Worker
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,11 @@ class App():
 
     def __init__(self):
         self._app = Flask(__name__)
-        self._conf = CONFIG
+        self._conf = dmci.CONFIG
+
+        if self._conf.distributor_input_path is None:
+            logger.error("Parameter distributor_input_path in config is not set")
+            sys.exit(1)
 
         # Forward functions
         self.run = self._app.run

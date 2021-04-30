@@ -86,7 +86,7 @@ class Config():
 
         self.call_distributors = dmciDict.get("distributors", self.call_distributors)
         self.csw_service_url = dmciDict.get("csw_service_url", self.csw_service_url)
-        self.distributor_input_path = dmciDict.get("distributor_input_path", ".")
+        self.distributor_input_path = dmciDict.get("distributor_input_path", None)
         self.max_permitted_size = dmciDict.get("max_permitted_size", self.max_permitted_size)
         return True
 
