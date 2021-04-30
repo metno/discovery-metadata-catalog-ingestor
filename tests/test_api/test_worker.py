@@ -87,6 +87,8 @@ def testApiWorker_Distributor(tmpDir, tmpConf, monkeypatch):
 def testCoreWorker_Validator():
     """Test the Worker class validator.
     """
+    import pdb
+    pdb.set_trace()
     assert Worker("").validate() == (200, "")
 
 # END Test testCoreWorker_Validator
