@@ -75,8 +75,8 @@ def testApiApp_InsertRequests(client, filesDir, monkeypatch):
     assert client.get("/v1/insert").status_code == 405
 
     mmdFile = os.path.join(filesDir, "api", "passing.xml")
-    wrongMmdFile = os.path.join(filesDir,"api","failing.xml")
-    
+    wrongMmdFile = os.path.join(filesDir, "api", "failing.xml")
+
     xmlFile = readFile(mmdFile)
     wrongXmlFile = readFile(wrongMmdFile)
 
