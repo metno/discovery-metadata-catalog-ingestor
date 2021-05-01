@@ -97,13 +97,24 @@ def testApiWorker_Validator(monkeypatch, filesDir):
 # END Test testApiWorker_Validator
 
 @pytest.mark.api
-def testApiWorker_CheckInfoContent(filesDir):
+def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
     """Test _check_information_content
     """
     fn = os.path.join(filesDir, "api", "passing.xml")
     data = readFile(fn)
     assert Worker(fn)._check_information_content(data) == (False, "input must be bytes type")
-    data = bytes(readFile(fn), "utf-8")
-    assert Worker(fn)._check_information_content(data) == (True, "Input MMD xml file is ok")
+    with monkeypatch.context() as mp:
+        mp.setattr("external.py_mmd_tools.check_mmd.check_urls", lambda *a: True)
+        data = bytes(readFile(fn), "utf-8")
+        assert Worker(fn)._check_information_content(data) == (True, "Input MMD xml file is ok")
+
+    msg = (
+        "Input MMD xml file contains errors - please check your file "
+        "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
+    )
+    with monkeypatch.context() as mp:
+        mp.setattr("external.py_mmd_tools.check_mmd.check_urls", lambda *a: False)
+        data = bytes(readFile(fn), "utf-8")
+        assert Worker(fn)._check_information_content(data) == (False, msg)
 
 # END Test testApiWorker_CheckInfoContent
