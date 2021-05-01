@@ -75,9 +75,10 @@ def testApiApp_InsertRequests(client, filesDir, monkeypatch):
     assert client.get("/v1/insert").status_code == 405
 
     mmdFile = os.path.join(filesDir, "api", "passing.xml")
+    wrongMmdFile = os.path.join(filesDir,"api","failing.xml")
+    
     xmlFile = readFile(mmdFile)
-
-    wrongXmlFile = "<xml: notXml"
+    wrongXmlFile = readFile(wrongMmdFile)
 
     # Test sending 3MB of data
     tooLargeXmlFile = bytes(3000000)
@@ -90,6 +91,7 @@ def testApiApp_InsertRequests(client, filesDir, monkeypatch):
     assert client.post("/v1/insert", data=tooLargeXmlFile).status_code == 413
 
     with monkeypatch.context() as mp:
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
         mp.setattr("builtins.open", causeOSError)
         assert client.post("/v1/insert", data=xmlFile).status_code == 507
 
