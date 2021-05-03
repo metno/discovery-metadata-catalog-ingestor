@@ -38,13 +38,13 @@ def distDir(tmpDir):
 
 @pytest.fixture(scope="module")
 def mockXml(distDir):
-    xmlFile = os.path.join(distDir, "dummy.xml")
+    xmlFile = os.path.join(distDir, "mock.xml")
     writeFile(xmlFile, "<xml />")
     return xmlFile
 
 @pytest.fixture(scope="module")
 def mockXslt(distDir):
-    xsltFile = os.path.join(distDir, "dummy.xslt")
+    xsltFile = os.path.join(distDir, "mock.xslt")
     writeFile(xsltFile, "<xml />")
     return xsltFile
 
