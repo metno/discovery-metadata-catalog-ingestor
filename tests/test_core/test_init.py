@@ -26,6 +26,8 @@ import dmci
 
 from tools import readFile
 
+from dmci.config import Config
+
 @pytest.mark.core
 def testCoreInit_Init():
     """Test the package initialisation.
@@ -63,3 +65,35 @@ def testCoreInit_Logger(tmpDir):
     assert readFile(logFile).strip().endswith("Some log message")
 
 # END Test testCoreInit_Logger
+
+@pytest.mark.core
+def testCoreInit_ApiMain(monkeypatch, rootDir):
+    """Test the API entry point function
+    """
+    class mockAPI():
+        def __init__(self):
+            pass
+
+        def run(self):
+            return
+
+    exampleConf = os.path.join(rootDir, "example_config.yaml")
+    monkeypatch.setenv("DMCI_CONFIG", exampleConf)
+    monkeypatch.setattr("dmci.api.App", mockAPI)
+
+    # Invalid config
+    with pytest.raises(SystemExit) as sysExit:
+        dmci.api_main()
+
+    assert sysExit.type == SystemExit
+    assert sysExit.value.code == 1
+
+    # Valid config
+    monkeypatch.setattr(Config, "_validate_config", lambda *a: True)
+    with pytest.raises(SystemExit) as sysExit:
+        dmci.api_main()
+
+    assert sysExit.type == SystemExit
+    assert sysExit.value.code is None
+
+# END Test testCoreInit_ApiMain

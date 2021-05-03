@@ -65,34 +65,34 @@ class PyCSWDist(Distributor):
 
         return status
 
-    def _translate(self, xslt):
+    def _translate(self):
         """Convert from MMD to ISO19139, Norwegian INSPIRE profile
         """
-        return xml_translate(self._xml_file, xslt)
+        return xml_translate(self._xml_file, self._conf.mmd_xslt_path)
 
-    def _insert(self, xslt='../mmd/xslt/mmd-to-geonorge.xslt'):
+    def _insert(self):
         """Insert in pyCSW using a Transaction
         """
         if self._xml_file is None:
-            msg = "File does not exist: %s" % str(self._xml_file)
-            logger.error(msg)
+            logger.error("File does not exist: %s" % str(self._xml_file))
             return False
-        iso = self._translate(xslt)
+
+        iso = self._translate(self._conf.mmd_xslt_path)
 
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
-        header = (
+        xml_as_string = (
             '<?xml version="1.0" encoding="UTF-8"?>'
             '<csw:Transaction xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
             'xmlns:ows="http://www.opengis.net/ows" '
             'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
             'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
             'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd" '
-            'service="CSW" version="2.0.2"><csw:Insert>'
-        )
-        footer = '</csw:Insert></csw:Transaction>'
-        xml_as_string = header + iso + footer
+            'service="CSW" version="2.0.2">'
+            '    <csw:Insert>%s</csw:Insert>'
+            '</csw:Transaction>'
+        ) % iso
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
         status = self._get_transaction_status(self.TOTAL_INSERTED, resp)
 
@@ -137,8 +137,8 @@ class PyCSWDist(Distributor):
             '           </ogc:Filter>'
             '       </csw:Constraint>'
             '   </csw:Delete>'
-            '</csw:Transaction>' % self._metadata_id
-        )
+            '</csw:Transaction>'
+        ) % self._metadata_id
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
         status = self._get_transaction_status(self.TOTAL_DELETED, resp)
 

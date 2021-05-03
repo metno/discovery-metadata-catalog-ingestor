@@ -85,14 +85,34 @@ def testApiWorker_Distributor(tmpDir, tmpConf, monkeypatch):
 def testApiWorker_Validator(monkeypatch, filesDir):
     """Test the Worker class validator.
     """
-    fn = os.path.join(filesDir, "api", "passing.xml")
-    data = readFile(fn)
+    xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
+    passFile = os.path.join(filesDir, "api", "passing.xml")
+    failFile = os.path.join(filesDir, "api", "failing.xml")
 
-    assert Worker(fn).validate(data) == (False, "input must be bytes type")
+    passWorker = Worker(passFile)
+    passWorker._conf.mmd_xsd_path = xsdFile
+    failWorker = Worker(failFile)
+    failWorker._conf.mmd_xsd_path = xsdFile
 
-    data = bytes(readFile(fn), 'utf-8')
-    monkeypatch.setattr(Worker, '_check_information_content', lambda *a: (True, ""))
-    assert Worker(fn).validate(data) == (True, "")
+    # Invalid data format
+    passData = readFile(passFile)
+    assert passWorker.validate(passData) == (False, "input must be bytes type")
+
+    # Valid data format
+    with monkeypatch.context() as mp:
+        mp.setattr(Worker, '_check_information_content', lambda *a: (True, ""))
+
+        # Valid XML
+        passData = bytes(readFile(passFile), "utf-8")
+        valid, msg = passWorker.validate(passData)
+        assert valid is True
+        assert not msg
+
+        # Invalid XML
+        failData = bytes(readFile(failFile), "utf-8")
+        valid, msg = failWorker.validate(failData)
+        assert valid is False
+        assert msg
 
 # END Test testApiWorker_Validator
 
@@ -100,21 +120,28 @@ def testApiWorker_Validator(monkeypatch, filesDir):
 def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
     """Test _check_information_content
     """
-    fn = os.path.join(filesDir, "api", "passing.xml")
-    data = readFile(fn)
-    assert Worker(fn)._check_information_content(data) == (False, "input must be bytes type")
+    passFile = os.path.join(filesDir, "api", "passing.xml")
+
+    tstWorker = Worker(passFile)
+
+    # Invalid data format
+    passData = readFile(passFile)
+    assert tstWorker._check_information_content(passData) == (False, "input must be bytes type")
+
+    # Valid data format
     with monkeypatch.context() as mp:
         mp.setattr("external.py_mmd_tools.check_mmd.check_urls", lambda *a: True)
-        data = bytes(readFile(fn), "utf-8")
-        assert Worker(fn)._check_information_content(data) == (True, "Input MMD xml file is ok")
+        passData = bytes(readFile(passFile), "utf-8")
+        assert tstWorker._check_information_content(passData) == (True, "Input MMD xml file is ok")
 
+    # Valid data format, invalid content
     msg = (
         "Input MMD xml file contains errors - please check your file "
         "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
     )
     with monkeypatch.context() as mp:
         mp.setattr("external.py_mmd_tools.check_mmd.check_urls", lambda *a: False)
-        data = bytes(readFile(fn), "utf-8")
-        assert Worker(fn)._check_information_content(data) == (False, msg)
+        passData = bytes(readFile(passFile), "utf-8")
+        assert tstWorker._check_information_content(passData) == (False, msg)
 
 # END Test testApiWorker_CheckInfoContent
