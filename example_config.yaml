@@ -1,7 +1,11 @@
 dmci:
-  csw_service_url: https://csw-dev.s-enda.k8s.met.no
   distributors:
     - git
     - pycsw
   distributor_input_path: temp
   max_permitted_size: 100000
+  mmd_xslt_path: null
+  mmd_xsd_path: null
+
+pycsw:
+  service_url: https://csw-dev.s-enda.k8s.met.no

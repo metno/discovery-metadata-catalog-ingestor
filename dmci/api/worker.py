@@ -75,7 +75,7 @@ class Worker():
             return False, "input must be bytes type"
 
         # Check xml file against XML schema definition
-        xmlschema_mmd = ET.XMLSchema(ET.parse(self._conf.mmd_xsd_schema))
+        xmlschema_mmd = ET.XMLSchema(ET.parse(self._conf.mmd_xsd_path))
         xml_doc = ET.fromstring(data)
         valid = xmlschema_mmd.validate(xml_doc)
         msg = xmlschema_mmd.error_log
