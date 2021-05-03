@@ -36,8 +36,8 @@ class App():
         self._app = Flask(__name__)
         self._conf = dmci.CONFIG
 
-        if self._conf.distributor_input_path is None:
-            logger.error("Parameter distributor_input_path in config is not set")
+        if self._conf.distributor_cache is None:
+            logger.error("Parameter distributor_cache in config is not set")
             sys.exit(1)
 
         # Forward functions
@@ -55,7 +55,7 @@ class App():
             data = request.get_data()
 
             file_uuid = uuid.uuid4()
-            path = self._conf.distributor_input_path
+            path = self._conf.distributor_cache
             full_path = os.path.join(path, f"{file_uuid}.Q")
 
             worker = Worker(full_path)

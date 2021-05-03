@@ -33,7 +33,7 @@ class Config():
 
         # Core Values
         self.call_distributors = []
-        self.distributor_input_path = None
+        self.distributor_cache = None
         self.max_permitted_size = 100000   # Size of files permitted through API
         self.mmd_xslt_path = None
         self.mmd_xsd_path = None
@@ -67,9 +67,10 @@ class Config():
             return False
 
         # Read Values
-        valid = True
-        valid &= self._read_core()
-        valid &= self._read_pycsw()
+        self._read_core()
+        self._read_pycsw()
+
+        valid = self._validate_config()
 
         return valid
 
@@ -80,32 +81,15 @@ class Config():
     def _read_core(self):
         """Read config values under 'dmci'.
         """
-        valid = True
         conf = self._raw_conf.get("dmci", {})
 
         self.call_distributors = conf.get("distributors", self.call_distributors)
-        self.distributor_input_path = conf.get("distributor_input_path", None)
+        self.distributor_cache = conf.get("distributor_cache", self.distributor_cache)
         self.max_permitted_size = conf.get("max_permitted_size", self.max_permitted_size)
-
         self.mmd_xslt_path = conf.get("mmd_xslt_path", self.mmd_xslt_path)
-        if self.mmd_xslt_path is None:
-            logger.error("Config value 'mmd_xslt_path' must be set")
-            valid = False
-        else:
-            if not os.path.isfile(self.mmd_xslt_path):
-                logger.error("Config value 'mmd_xslt_path' must point to an existing file")
-                valid = False
-
         self.mmd_xsd_path = conf.get("mmd_xsd_path", self.mmd_xsd_path)
-        if self.mmd_xslt_path is None:
-            logger.error("Config value 'mmd_xsd_path' must be set")
-            valid = False
-        else:
-            if not os.path.isfile(self.mmd_xsd_path):
-                logger.error("Config value 'mmd_xsd_path' must point to an existing file")
-                valid = False
 
-        return valid
+        return
 
     def _read_pycsw(self):
         """Read config values under 'pycsw'.
@@ -114,6 +98,30 @@ class Config():
 
         self.csw_service_url = conf.get("csw_service_url", self.csw_service_url)
 
-        return True
+        return
+
+    def _validate_config(self):
+        """Check config variable dependencies.
+        """
+        valid = True
+
+        if "pycsw" in self.call_distributors:
+            if self.mmd_xslt_path is None:
+                logger.error("Config value 'mmd_xslt_path' must be set for the pycsw distributor")
+                valid = False
+            else:
+                if not os.path.isfile(self.mmd_xslt_path):
+                    logger.error("Config value 'mmd_xslt_path' must point to an existing file")
+                    valid = False
+
+        if self.mmd_xsd_path is None:
+            logger.error("Config value 'mmd_xsd_path' must be set")
+            valid = False
+        else:
+            if not os.path.isfile(self.mmd_xsd_path):
+                logger.error("Config value 'mmd_xsd_path' must point to an existing file")
+                valid = False
+
+        return valid
 
 # END Class Config

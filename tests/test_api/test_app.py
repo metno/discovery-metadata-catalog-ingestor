@@ -36,10 +36,10 @@ def client(tmpDir, tmpConf, monkeypatch):
         os.mkdir(workDir)
 
     monkeypatch.setattr("dmci.CONFIG", tmpConf)
-    tmpConf.distributor_input_path = workDir
+    tmpConf.distributor_cache = workDir
 
     app = App()
-    assert app._conf.distributor_input_path == workDir
+    assert app._conf.distributor_cache == workDir
 
     with app.test_client() as client:
         yield client
@@ -48,10 +48,10 @@ def client(tmpDir, tmpConf, monkeypatch):
 
 @pytest.mark.api
 def testApiApp_Init(tmpConf, monkeypatch):
-    """Test if app fails if distributor_input_path is not given
+    """Test if app fails if distributor_cache is not given
     """
     monkeypatch.setattr("dmci.CONFIG", tmpConf)
-    tmpConf.distributor_input_path = None
+    tmpConf.distributor_cache = None
 
     with pytest.raises(SystemExit) as pytest_wrapped_e:
         App()

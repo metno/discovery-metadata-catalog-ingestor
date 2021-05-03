@@ -42,8 +42,8 @@ def testCoreConfig_ReadFile(filesDir, monkeypatch):
         mp.setattr("builtins.open", causeOSError)
         assert not theConf.readConfig(configFile=confFile)
 
-    # Successful read
-    assert theConf.readConfig(configFile=confFile)
+    # Successful raw read
+    theConf.readConfig(configFile=confFile)
 
     # Check the values read
     assert theConf._raw_conf["groupOne"]["keyOne"] == 1
@@ -53,6 +53,51 @@ def testCoreConfig_ReadFile(filesDir, monkeypatch):
 
     # Read with no file path set, but a folder that contains the test file
     theConf.pkg_root = os.path.join(filesDir, "core")
-    assert theConf.readConfig(configFile=None)
+    theConf.readConfig(configFile=None)
+    assert theConf._raw_conf["groupOne"]["keyOne"] == 1
+    assert theConf._raw_conf["groupOne"]["keyTwo"] == "two"
+    assert theConf._raw_conf["groupOne"]["keyThree"] is None
+    assert theConf._raw_conf["groupOne"]["keyFour"] == ["value1", "value2"]
 
 # END Test testCoreConfig_ReadFile
+
+@pytest.mark.core
+def testCoreConfig_Validate(rootDir, filesDir):
+    """Test that the class reads all settings and validates them.
+    """
+    exampleConf = os.path.join(rootDir, "example_config.yaml")
+    theConf = Config()
+    theConf.readConfig(exampleConf)
+
+    assert theConf.call_distributors == ["git", "pycsw"]
+    assert theConf.distributor_cache is None
+    assert theConf.max_permitted_size == 100000
+    assert theConf.mmd_xslt_path is None
+    assert theConf.mmd_xsd_path is None
+
+    assert theConf.csw_service_url == "localhost"
+
+    # Set valid values
+    theConf.mmd_xsd_path = os.path.join(filesDir, "mmd", "mmd.xsd")
+    theConf.mmd_xslt_path = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
+    assert theConf._validate_config() is True
+
+    # Validate XSD Path
+    correctVal = theConf.mmd_xsd_path
+    theConf.mmd_xsd_path = None
+    assert theConf._validate_config() is False
+    theConf.mmd_xsd_path = "path/to/nowhere"
+    assert theConf._validate_config() is False
+    theConf.mmd_xsd_path = correctVal
+    assert theConf._validate_config() is True
+
+    # Validate XSLT Path
+    correctVal = theConf.mmd_xslt_path
+    theConf.mmd_xslt_path = None
+    assert theConf._validate_config() is False
+    theConf.mmd_xslt_path = "path/to/nowhere"
+    assert theConf._validate_config() is False
+    theConf.mmd_xslt_path = correctVal
+    assert theConf._validate_config() is True
+
+# END Test testCoreConfig_Validate
