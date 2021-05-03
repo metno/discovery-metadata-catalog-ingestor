@@ -37,16 +37,16 @@ def distDir(tmpDir):
     return distDir
 
 @pytest.fixture(scope="module")
-def dummyXml(distDir):
-    dummyXml = os.path.join(distDir, "dummy.xml")
-    writeFile(dummyXml, "<xml />")
-    return dummyXml
+def mockXml(distDir):
+    xmlFile = os.path.join(distDir, "dummy.xml")
+    writeFile(xmlFile, "<xml />")
+    return xmlFile
 
 @pytest.fixture(scope="module")
-def dummyXslt(distDir):
-    dummyXslt = os.path.join(distDir, "dummy.xslt")
-    writeFile(dummyXslt, "<xml />")
-    return dummyXslt
+def mockXslt(distDir):
+    xsltFile = os.path.join(distDir, "dummy.xslt")
+    writeFile(xsltFile, "<xml />")
+    return xsltFile
 
 # Tests
 # =====
@@ -57,7 +57,7 @@ def testDistPyCSW_Init():
     """
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
-    assert PyCSWDist("insert", metadata_id="some_id").is_valid() is True # Should be false...
+    assert PyCSWDist("insert", metadata_id="some_id").is_valid() is True # Should be false
     assert PyCSWDist("update", metadata_id="some_id").is_valid() is True # should be false
     assert PyCSWDist("delete", metadata_id="some_id").is_valid() is True
     assert PyCSWDist("blabla", metadata_id="some_id").is_valid() is False
@@ -70,12 +70,14 @@ def testDistPyCSW_Run():
     assert PyCSWDist("blabla", metadata_id="some_id").run() is False
     assert PyCSWDist("insert", metadata_id="some_id").run() is False
 
+# END Test testDistPyCSW_Run
+
 @pytest.mark.dist
-def testDistPyCSW_Insert(monkeypatch, dummyXml, dummyXslt):
+def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
     """_insert tests
     """
     # return false when xml_file is None
-    assert PyCSWDist("insert")._insert(dummyXslt) is False
+    assert PyCSWDist("insert")._insert() is False
 
     # insert returns True
     with monkeypatch.context() as mp:
@@ -84,7 +86,9 @@ def testDistPyCSW_Insert(monkeypatch, dummyXml, dummyXslt):
             "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: "a response object"
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: True)
-        assert PyCSWDist("insert", xml_file=dummyXml)._insert(dummyXslt) is True
+        tstPyCSW = PyCSWDist("insert", xml_file=mockXml)
+        tstPyCSW._conf.mmd_xslt_path = mockXslt
+        assert tstPyCSW._insert() is True
 
     # insert returns false
     with monkeypatch.context() as mp:
@@ -93,25 +97,26 @@ def testDistPyCSW_Insert(monkeypatch, dummyXml, dummyXslt):
             "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: "a response object"
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: False)
-        assert PyCSWDist("insert", xml_file=dummyXml)._insert(dummyXslt) is False
+        tstPyCSW._conf.mmd_xslt_path = mockXslt
+        assert tstPyCSW._insert() is False
 
 # END Test testDistPyCSW_Insert
 
 @pytest.mark.dist
-def testDistPyCSW_Update(dummyXml):
+def testDistPyCSW_Update(mockXml):
     """_update tests
     """
-    assert PyCSWDist("update", xml_file=dummyXml).run() is False
+    assert PyCSWDist("update", xml_file=mockXml).run() is False
     assert PyCSWDist("update", metadata_id="some_id").run() is False
 
 # END Test testDistPyCSW_Update
 
 @pytest.mark.dist
-def testDistPyCSW_Delete(monkeypatch, dummyXml):
+def testDistPyCSW_Delete(monkeypatch, mockXml):
     """_delete tests
     """
     assert PyCSWDist("delete").run() is False
-    assert PyCSWDist("delete", xml_file=dummyXml).run() is False
+    assert PyCSWDist("delete", xml_file=mockXml).run() is False
 
     # delete returns True
     with monkeypatch.context() as mp:
@@ -132,31 +137,33 @@ def testDistPyCSW_Delete(monkeypatch, dummyXml):
     # return false if metadata id is None
     assert PyCSWDist("delete")._delete() is False
 
-# END delete tests
+# END Test testDistPyCSW_Delete
 
 @pytest.mark.dist
-def testDistPyCSW_Translate(monkeypatch, dummyXml, dummyXslt):
+def testDistPyCSW_Translate(monkeypatch, mockXml, mockXslt):
     """_translate tests
     """
     monkeypatch.setattr(
         "dmci.distributors.pycsw_dist.xml_translate", lambda *a: "some xml code"
     )
-    assert PyCSWDist("insert", xml_file=dummyXml)._translate(dummyXslt) == "some xml code"
+    tstPyCSW = PyCSWDist("insert", xml_file=mockXml)
+    tstPyCSW._conf.mmd_xslt_path = mockXslt
+    assert tstPyCSW._translate() == "some xml code"
 
 # END Test testDistPyCSW_Translate
 
 @pytest.mark.dist
-def testDistPyCSW_GetTransactionStatus(monkeypatch, dummyXml):
+def testDistPyCSW_GetTransactionStatus(monkeypatch, mockXml):
     """_get_transaction_status tests
     """
     # wrong key
     resp = requests.models.Response()
-    assert PyCSWDist("insert", xml_file=dummyXml)._get_transaction_status("tull", resp) is False
+    assert PyCSWDist("insert", xml_file=mockXml)._get_transaction_status("tull", resp) is False
 
     # invalud response object
     resp = "hei"
     assert PyCSWDist(
-        "insert", xml_file=dummyXml
+        "insert", xml_file=mockXml
     )._get_transaction_status(
         "total_inserted", resp
     ) is False
@@ -170,7 +177,7 @@ def testDistPyCSW_GetTransactionStatus(monkeypatch, dummyXml):
         # Should return False because _read_response_text returns False
         mp.setattr(PyCSWDist, "_read_response_text", lambda *a, **k: True)
         assert PyCSWDist(
-            "insert", xml_file=dummyXml
+            "insert", xml_file=mockXml
         )._get_transaction_status(
             "total_inserted", resp
         ) is True
@@ -179,7 +186,7 @@ def testDistPyCSW_GetTransactionStatus(monkeypatch, dummyXml):
         # Should return False because of status 300:
         mp.setattr(PyCSWDist, "_read_response_text", lambda *a, **k: False)
         assert PyCSWDist(
-            "insert", xml_file=dummyXml
+            "insert", xml_file=mockXml
         )._get_transaction_status(
             "total_inserted", resp
         ) is False
@@ -188,7 +195,7 @@ def testDistPyCSW_GetTransactionStatus(monkeypatch, dummyXml):
         mp.setattr(resp, "status_code", 300)
         mp.setattr(PyCSWDist, "_read_response_text", lambda *a, **k: True)
         assert PyCSWDist(
-            "insert", xml_file=dummyXml
+            "insert", xml_file=mockXml
         )._get_transaction_status(
             "total_inserted", resp
         ) is False
@@ -196,11 +203,11 @@ def testDistPyCSW_GetTransactionStatus(monkeypatch, dummyXml):
 # END Test testDistPyCSW_GetTransactionStatus
 
 @pytest.mark.dist
-def testDistPyCSW_ReadResponse(dummyXml):
+def testDistPyCSW_ReadResponse(mockXml):
     """_read_response_text tests
     """
     # text wrongkey
-    assert PyCSWDist("insert", xml_file=dummyXml)._read_response_text("tull", "some text") is False
+    assert PyCSWDist("insert", xml_file=mockXml)._read_response_text("tull", "some text") is False
 
     # text insert succeeds
     text = (
@@ -234,7 +241,7 @@ def testDistPyCSW_ReadResponse(dummyXml):
         '</csw:TransactionResponse>'
     )
     key = "total_inserted"
-    assert PyCSWDist("insert", xml_file=dummyXml)._read_response_text(key, text) is True
+    assert PyCSWDist("insert", xml_file=mockXml)._read_response_text(key, text) is True
 
     # insert but dataset already exists
     text = (
@@ -257,7 +264,7 @@ def testDistPyCSW_ReadResponse(dummyXml):
         '</ows:ExceptionText></ows:Exception></ows:ExceptionReport>'
     )
     key = "total_inserted"
-    assert PyCSWDist("insert", xml_file=dummyXml)._read_response_text(key, text) is False
+    assert PyCSWDist("insert", xml_file=mockXml)._read_response_text(key, text) is False
 
     # successful delete
     md_id = "S1A_EW_GRDM_1SDH_20200420T023244_20200420T023348_032205_03B97F_72EB"
@@ -332,4 +339,4 @@ def testDistPyCSW_ReadResponse(dummyXml):
         "total_deleted", text
     ) is False
 
-# END Test testDistPyCSW__ReadResponse
+# END Test testDistPyCSW_ReadResponse
