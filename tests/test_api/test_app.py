@@ -67,8 +67,16 @@ def testApiApp_EndPoints(client):
     """
     assert client.get("/").status_code == 404
     assert client.get("/v1/").status_code == 404
+
+    assert client.get("/v1/insert").status_code == 405
+
+    # should return 405 when implemented
     assert client.get("/v1/update").status_code == 404
     assert client.get("/v1/delete").status_code == 404
+
+    # When implemented should be tested in own functions with
+    assert client.post("/v1/update").status_code == 404
+    assert client.post("/v1/delete").status_code == 404
 
 # END Test testApiApp_EndPoints
 
@@ -77,7 +85,6 @@ def testApiApp_InsertRequests(client, filesDir, monkeypatch):
     """Test api insert requests.
     """
     assert isinstance(client, flask.testing.FlaskClient)
-    assert client.get("/v1/insert").status_code == 405
 
     # Test sending 3MB of data
     tooLargeFile = bytes(3000000)
