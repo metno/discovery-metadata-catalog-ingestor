@@ -75,7 +75,7 @@ def testCoreInit_ApiMain(monkeypatch, rootDir):
             pass
 
         def run(self):
-            return 0
+            return
 
     exampleConf = os.path.join(rootDir, "example_config.yaml")
     monkeypatch.setenv("DMCI_CONFIG", exampleConf)
@@ -94,6 +94,6 @@ def testCoreInit_ApiMain(monkeypatch, rootDir):
         dmci.api_main()
 
     assert sysExit.type == SystemExit
-    assert sysExit.value.code == 0
+    assert sysExit.value.code == None
 
 # END Test testCoreInit_ApiMain
