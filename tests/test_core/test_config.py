@@ -67,7 +67,7 @@ def testCoreConfig_Validate(rootDir, filesDir):
     """
     exampleConf = os.path.join(rootDir, "example_config.yaml")
     theConf = Config()
-    theConf.readConfig(exampleConf)
+    theConf.readConfig(configFile=exampleConf)
 
     assert theConf.call_distributors == ["git", "pycsw"]
     assert theConf.distributor_cache is None

@@ -53,11 +53,11 @@ def testApiApp_Init(tmpConf, monkeypatch):
     monkeypatch.setattr("dmci.CONFIG", tmpConf)
     tmpConf.distributor_cache = None
 
-    with pytest.raises(SystemExit) as pytest_wrapped_e:
+    with pytest.raises(SystemExit) as sysExit:
         App()
 
-    assert pytest_wrapped_e.type == SystemExit
-    assert pytest_wrapped_e.value.code == 1
+    assert sysExit.type == SystemExit
+    assert sysExit.value.code == 1
 
 # END Test testApiApp_Init
 
