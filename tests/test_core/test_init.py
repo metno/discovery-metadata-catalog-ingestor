@@ -94,6 +94,6 @@ def testCoreInit_ApiMain(monkeypatch, rootDir):
         dmci.api_main()
 
     assert sysExit.type == SystemExit
-    assert sysExit.value.code == None
+    assert sysExit.value.code is None
 
 # END Test testCoreInit_ApiMain
