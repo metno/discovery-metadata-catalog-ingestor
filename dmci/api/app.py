@@ -67,7 +67,6 @@ class App():
                 return response
 
             result, msg = worker.validate(data)
-
             if result:
                 return self._persist_file(data, full_path)
             else:
@@ -81,7 +80,10 @@ class App():
     #  Internal Functions
     ##
 
-    def _persist_file(self, data, full_path):
+    @staticmethod
+    def _persist_file(data, full_path):
+        """Write the persistent file
+        """
         try:
             with open(full_path, "wb") as queuefile:
                 queuefile.write(data)

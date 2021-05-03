@@ -87,19 +87,32 @@ def testApiWorker_Validator(monkeypatch, filesDir):
     """
     xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
     passFile = os.path.join(filesDir, "api", "passing.xml")
+    failFile = os.path.join(filesDir, "api", "failing.xml")
 
-    tstWorker = Worker(passFile)
-    tstWorker._conf.mmd_xsd_path = xsdFile
+    passWorker = Worker(passFile)
+    passWorker._conf.mmd_xsd_path = xsdFile
+    failWorker = Worker(failFile)
+    failWorker._conf.mmd_xsd_path = xsdFile
 
     # Invalid data format
     passData = readFile(passFile)
-    assert tstWorker.validate(passData) == (False, "input must be bytes type")
+    assert passWorker.validate(passData) == (False, "input must be bytes type")
 
     # Valid data format
-    passData = bytes(readFile(passFile), "utf-8")
     with monkeypatch.context() as mp:
         mp.setattr(Worker, '_check_information_content', lambda *a: (True, ""))
-        assert tstWorker.validate(passData) == (True, "")
+
+        # Valid XML
+        passData = bytes(readFile(passFile), "utf-8")
+        valid, msg = passWorker.validate(passData)
+        assert valid is True
+        assert not msg
+
+        # Invalid XML
+        failData = bytes(readFile(failFile), "utf-8")
+        valid, msg = failWorker.validate(failData)
+        assert valid is False
+        assert msg
 
 # END Test testApiWorker_Validator
 

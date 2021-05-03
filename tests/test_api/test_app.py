@@ -21,9 +21,11 @@ import os
 import pytest
 import flask
 
-from tools import causeOSError, readFile
+from tools import causeOSError
 
 from dmci.api import App
+
+MOCK_XML = b"<xml />"
 
 @pytest.fixture(scope="function")
 def client(tmpDir, tmpConf, monkeypatch):
@@ -48,51 +50,63 @@ def client(tmpDir, tmpConf, monkeypatch):
 def testApiApp_Init(tmpConf, monkeypatch):
     """Test if app fails if distributor_input_path is not given
     """
-    with monkeypatch.context() as mp:
-        mp.setattr("dmci.CONFIG", tmpConf)
-        tmpConf.distributor_input_path = None
+    monkeypatch.setattr("dmci.CONFIG", tmpConf)
+    tmpConf.distributor_input_path = None
 
-        with pytest.raises(SystemExit) as pytest_wrapped_e:
-            App()
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        App()
 
-        assert pytest_wrapped_e.type == SystemExit
-        assert pytest_wrapped_e.value.code == 1
+    assert pytest_wrapped_e.type == SystemExit
+    assert pytest_wrapped_e.value.code == 1
 
+# END Test testApiApp_Init
 
 @pytest.mark.api
-def testApiApp_Requests(client):
-    """
+def testApiApp_EndPoints(client):
+    """Test requests to endpoints not in use.
     """
     assert client.get("/").status_code == 404
+    assert client.get("/v1/").status_code == 404
+    assert client.get("/v1/update").status_code == 404
+    assert client.get("/v1/delete").status_code == 404
 
-# END Test testApiApp_Requests
+# END Test testApiApp_EndPoints
 
 @pytest.mark.api
 def testApiApp_InsertRequests(client, filesDir, monkeypatch):
-    """Test api insert-requests.
+    """Test api insert requests.
     """
     assert isinstance(client, flask.testing.FlaskClient)
     assert client.get("/v1/insert").status_code == 405
 
-    mmdFile = os.path.join(filesDir, "api", "passing.xml")
-    wrongMmdFile = os.path.join(filesDir, "api", "failing.xml")
-
-    xmlFile = readFile(mmdFile)
-    wrongXmlFile = readFile(wrongMmdFile)
-
     # Test sending 3MB of data
-    tooLargeXmlFile = bytes(3000000)
+    tooLargeFile = bytes(3000000)
+    assert client.post("/v1/insert", data=tooLargeFile).status_code == 413
 
     with monkeypatch.context() as mp:
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
-        assert client.post("/v1/insert", data=xmlFile).status_code == 200
-
-    assert client.post("/v1/insert", data=wrongXmlFile).status_code == 500
-    assert client.post("/v1/insert", data=tooLargeXmlFile).status_code == 413
+        assert client.post("/v1/insert", data=MOCK_XML).status_code == 200
 
     with monkeypatch.context() as mp:
-        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
-        mp.setattr("builtins.open", causeOSError)
-        assert client.post("/v1/insert", data=xmlFile).status_code == 507
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (False, ""))
+        assert client.post("/v1/insert", data=MOCK_XML).status_code == 500
 
 # END Test testApiApp_InsertRequests
+
+@pytest.mark.api
+def testApiApp_PersistFile(tmpDir, monkeypatch):
+    """Test the persistent file writer function.
+    """
+    assert App._persist_file(MOCK_XML, None)[1] == 507
+
+    outFile = os.path.join(tmpDir, "app_persist_file.xml")
+
+    with monkeypatch.context() as mp:
+        mp.setattr("builtins.open", causeOSError)
+        assert App._persist_file(MOCK_XML, outFile)[1] == 507
+        assert not os.path.isfile(outFile)
+
+    assert App._persist_file(MOCK_XML, outFile)[1] == 200
+    assert os.path.isfile(outFile)
+
+# END Test testApiApp_PersistFile
