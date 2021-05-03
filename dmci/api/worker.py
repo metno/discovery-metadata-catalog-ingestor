@@ -19,6 +19,9 @@ limitations under the License.
 """
 
 import logging
+import lxml.etree as ET
+
+from external.py_mmd_tools.check_mmd import full_check
 
 from dmci import CONFIG
 from dmci.distributors import GitDist
@@ -51,13 +54,57 @@ class Worker():
     ##
 
     def validate(self, data):
-        """Dummy function for the validator code.
+        """Validate the xml file against the XML style definition,
+        then check the information content.
+
+        Input
+        =====
+        data : bytes
+            bytes representation of the xml data
+
+        Returns
+        =======
+        valid : boolean
+            True if xsd and information content checks are passing
+        msg : str
+            Validation message
         """
         # Takes in bytes-object data
         # Gives msg when both validating and not validating
-        if data == bytes("<xml: notXml", "utf-8"):
-            return False, "Fails"
-        return True, ""
+        if not isinstance(data, bytes):
+            return False, "input must be bytes type"
+
+        # Check xml file against XML schema definition
+        xmlschema_mmd = ET.XMLSchema(ET.parse(self._conf.mmd_xsd_schema))
+        xml_doc = ET.fromstring(data)
+        valid = xmlschema_mmd.validate(xml_doc)
+        msg = xmlschema_mmd.error_log
+        if valid:
+            # Check information content
+            valid, msg = self._check_information_content(data)
+
+        return valid, msg
+
+    def _check_information_content(self, data):
+        """Check the information content in the submitted file
+        """
+        if not isinstance(data, bytes):
+            return False, "input must be bytes type"
+
+        # Read XML file
+        xml_doc = ET.fromstring(data)
+        logger.info('Performing in depth checking.')
+
+        valid = full_check(xml_doc)
+        if valid:
+            msg = "Input MMD xml file is ok"
+        else:
+            msg = (
+                "Input MMD xml file contains errors - please check your file "
+                "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
+            )
+
+        return valid, msg
 
     def distribute(self):
         """Loop through all distributors listed in the config and call
@@ -90,6 +137,5 @@ class Worker():
                     failed.append(dist)
 
         return status, valid, called, failed, skipped
-
 
 # END Class Worker

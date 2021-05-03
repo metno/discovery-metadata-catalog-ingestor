@@ -21,7 +21,7 @@ limitations under the License.
 import os
 import pytest
 
-from tools import writeFile
+from tools import writeFile, readFile
 
 from dmci.api.worker import Worker
 
@@ -33,14 +33,6 @@ def testApiWorker_Init():
     assert Worker(None, a=1)._kwargs == {"a": 1}
 
 # END Test testApiWorker_Init
-
-@pytest.mark.api
-def testApiWorker_Validator():
-    """Test the Worker class validator.
-    """
-    assert Worker(None).validate("") == (True, "")
-
-# END Test testApiWorker_Validator
 
 @pytest.mark.api
 def testApiWorker_Distributor(tmpDir, tmpConf, monkeypatch):
@@ -88,3 +80,41 @@ def testApiWorker_Distributor(tmpDir, tmpConf, monkeypatch):
     assert valid is False
 
 # END Test testApiWorker_Distributor
+
+@pytest.mark.api
+def testApiWorker_Validator(monkeypatch, filesDir):
+    """Test the Worker class validator.
+    """
+    fn = os.path.join(filesDir, "api", "passing.xml")
+    data = readFile(fn)
+
+    assert Worker(fn).validate(data) == (False, "input must be bytes type")
+
+    data = bytes(readFile(fn), 'utf-8')
+    monkeypatch.setattr(Worker, '_check_information_content', lambda *a: (True, ""))
+    assert Worker(fn).validate(data) == (True, "")
+
+# END Test testApiWorker_Validator
+
+@pytest.mark.api
+def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
+    """Test _check_information_content
+    """
+    fn = os.path.join(filesDir, "api", "passing.xml")
+    data = readFile(fn)
+    assert Worker(fn)._check_information_content(data) == (False, "input must be bytes type")
+    with monkeypatch.context() as mp:
+        mp.setattr("external.py_mmd_tools.check_mmd.check_urls", lambda *a: True)
+        data = bytes(readFile(fn), "utf-8")
+        assert Worker(fn)._check_information_content(data) == (True, "Input MMD xml file is ok")
+
+    msg = (
+        "Input MMD xml file contains errors - please check your file "
+        "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
+    )
+    with monkeypatch.context() as mp:
+        mp.setattr("external.py_mmd_tools.check_mmd.check_urls", lambda *a: False)
+        data = bytes(readFile(fn), "utf-8")
+        assert Worker(fn)._check_information_content(data) == (False, msg)
+
+# END Test testApiWorker_CheckInfoContent

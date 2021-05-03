@@ -73,6 +73,8 @@ class App():
             else:
                 return msg, 500
 
+            # TODO: shouldn't msg be logged?
+
         return
 
     ##
