@@ -5,8 +5,8 @@ dmci:
     - pycsw
   distributor_cache: /workdir
   max_permitted_size: 100000
-  mmd_xslt_path: /dmci/tests/files/mmd/mmd-to-geonorge.xslt
-  mmd_xsd_path: /dmci/tests/files/mmd/mmd.xsd
+  mmd_xslt_path: /usr/share/mmd/xslt/mmd-to-geonorge.xslt
+  mmd_xsd_path: /usr/share/mmd/xsd/mmd.xsd
 
 pycsw:
   service_url: localhost

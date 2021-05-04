@@ -9,6 +9,11 @@ LABEL description="Discovery Metadata Catalog Ingestor used in the S-ENDA prosje
 # Make us able to change version and repo when building
 ARG DMCI_VERION=main
 ARG DMCI_REPO=https://github.com/metno/discovery-metadata-catalog-ingestor
+ARG MMD_REPO=https://github.com/metno/mmd
+ARG MMD_VERSION=issue125_temporal_extent_maxOccurs
+
+# Set config file for dmci
+ENV DMCI_CONFIG=/config.yaml
 
 # Install requirements
 RUN apk add --no-cache \
@@ -29,14 +34,21 @@ RUN pip3 install --upgrade setuptools pip
 RUN pip3 install "gunicorn~=20.1"
 
 # FIXME: At later stage run installation with pip3 directly from source
-# RUN pip3 install "git+https://github.com/metno/discovery-metadata-catalog-ingestor@main#dmci=discovery-metadata-catalog-ingestor"
+RUN pip3 install "git+${DMCI_REPO}@${DMCI_VERION}#dmci=discovery-metadata-catalog-ingestor"
 
 # Install from Git
-RUN git clone --depth 1 --branch ${DMCI_VERION} ${DMCI_REPO} /dmci
-RUN pip3 install -e /dmci
+#RUN git clone --depth 1 --branch ${DMCI_VERION} ${DMCI_REPO} /dmci
+#RUN pip3 install -e /dmci
+
+# Download MMD
+RUN git clone --depth 1 --branch ${MMD_VERSION} ${MMD_REPO} /tmp/mmd; \
+    mkdir -p /usr/share/mmd/xslt /usr/share/mmd/xsd; \
+    cp /tmp/mmd/xslt/* /usr/share/mmd/xslt; \
+    cp /tmp/mmd/xsd/* /usr/share/mmd/xsd; \
+    rm -rf /tmp/mmd
 
 # Add configuration file
-ADD config.yaml /dmci
+ADD config.yaml /
 
 # Add wsgi start script
 ADD wsgi.py /
@@ -48,10 +60,10 @@ EXPOSE 8000
 VOLUME /workdir
 
 # Override config file in this folder as config.yaml
-VOLUME /dmci
+#VOLUME /dmci
 
 # Catch interrupts and send to all sub-processes
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start application
-CMD gunicorn --worker-class sync --workers 1 --bind 0.0.0.0:8000 wsgi:App --keep-alive 5 --keep-alive 5 --log-level info
+CMD gunicorn --worker-class sync --workers 1 --bind 0.0.0.0:8000 wsgi:app --keep-alive 5 --keep-alive 5 --log-level info
