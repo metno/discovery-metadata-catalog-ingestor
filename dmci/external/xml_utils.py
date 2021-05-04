@@ -12,7 +12,7 @@ from lxml.etree import XMLSyntaxError
 import errno
 
 
-def xml_check(xml_file):
+def xml_check(xml_file): # pragma: no cover
     """ Validate xml syntax from filepath.
 
     Args:
@@ -33,7 +33,7 @@ def xml_check(xml_file):
     return True
 
 
-def xsd_check(xml_file, xsd_schema):
+def xsd_check(xml_file, xsd_schema): # pragma: no cover
     """[validate xml file from filepath]
     Args:
         xmlfile ([str]): [filepath to an xml file]
@@ -52,7 +52,8 @@ def xsd_check(xml_file, xsd_schema):
     msg = xmlschema_mmd.error_log
     return valid, msg
 
-def xml_translate_and_write(xml_file, outputfile, xslt, xsd_validation=False, xsd_schema=None):
+def xml_translate_and_write(
+        xml_file, outputfile, xslt, xsd_validation=False, xsd_schema=None): # pragma: no cover
     """ Translate the provided `xml_file` and write the result to an output xml file.
 
     Input
@@ -95,7 +96,7 @@ def xml_translate_and_write(xml_file, outputfile, xslt, xsd_validation=False, xs
         result = True
     return result
 
-def xml_translate(xml_file, xslt):
+def xml_translate(xml_file, xslt): # pragma: no cover
     """ Translate XML file using xslt
 
     Input
