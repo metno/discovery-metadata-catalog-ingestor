@@ -1,0 +1,9 @@
+---
+dmci:
+  csw_service_url: https://pycsw.foo.bar
+  distributors:
+    - git
+    - pycsw
+  distributor_input_path: /workdir
+  max_permitted_size: 100000
+
