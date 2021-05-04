@@ -23,7 +23,7 @@ import logging
 from lxml import etree
 
 from dmci import CONFIG
-from dmci.external import full_check
+from dmci.mmd_tools import full_check
 from dmci.distributors import GitDist, PyCSWDist
 
 logger = logging.getLogger(__name__)

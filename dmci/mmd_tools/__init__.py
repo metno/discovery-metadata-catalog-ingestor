@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-DMCI : External Tools Init
-==========================
+DMCI : MMD Tools Init
+=====================
 
 This package contains code extracted from py_mmd_tools that is needed
 for this repository.
-
-TODO: Integrate this code properly in this repository.
 
 Copyright 2021 MET Norway
 
@@ -23,7 +21,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dmci.external.check_mmd import full_check
+from dmci.mmd_tools.check_mmd import full_check
 
 __all__ = [
     "full_check",
