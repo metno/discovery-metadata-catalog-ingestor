@@ -6,9 +6,9 @@ Containerization of https://github.com/metno/discovery-metadata-catalog-ingestor
 
 * `latest` --- build of latest `main` branch.
 
-##
+## Exposes ports
 
-* ``
+* `8000` --- `dmci` listens on port `8000`.
 
 ## Volumes
 

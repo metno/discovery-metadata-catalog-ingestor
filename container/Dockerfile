@@ -1,15 +1,16 @@
 FROM alpine:3.13
 
-# Label me
+# Label the container
 LABEL no.met.project="s-enda"
 LABEL source="https://github.com/metno/container-dmci"
 LABEL issues="https://github.com/metno/container-dmci/issues"
-LABEL description="Container of Discovery Metadata Catalog Ingestor used in the S-ENDA prosject."
+LABEL description="Discovery Metadata Catalog Ingestor used in the S-ENDA prosject."
 
 # Make us able to change version and repo when building
 ARG DMCI_VERION=main
 ARG DMCI_REPO=https://github.com/metno/discovery-metadata-catalog-ingestor
 
+# Install requirements
 RUN apk add --no-cache \
       ca-certificates \
       dumb-init \
@@ -43,8 +44,11 @@ ADD wsgi.py /
 # Default port to expose
 EXPOSE 8000
 
-# Workdirectory, expected to have persistent storage
+# Override workdirectory, expected to have persistent storage
 VOLUME /workdir
+
+# Override config file
+VOLUME /dmci/config.yaml
 
 # Catch interrupts and send to all sub-processes
 ENTRYPOINT ["dumb-init", "--"]
