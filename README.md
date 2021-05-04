@@ -8,27 +8,43 @@
 
 For the main packages:
 
-| Package      | PyPi                 | Ubuntu/Debian  | Source                                |
-| ------------ | -------------------- | -------------- | ------------------------------------- |
-| pyyaml       | `pip install pyyAML` | `python3-yaml` | https://github.com/yaml/pyyaml        |
-| py_mmd_tools | N/A                  | N/A            | https://github.com/metno/py-mmd-tools |
+| Package      | PyPi                   | Ubuntu/Debian      | Source                                |
+| ------------ | ---------------------- | ------------------ | ------------------------------------- |
+| requests     | `pip install requests` | `python3-requests` | https://github.com/psf/requests       |
+| pyyaml       | `pip install pyyaml`   | `python3-yaml`     | https://github.com/yaml/pyyaml        |
+| flask        | `pip install flask`    | `python3-flask`    | https://github.com/pallets/flask      |
+| lxml         | `pip install lxml`     | `python3-lxml`     | https://github.com/lxml/lxml          |
 
-**Note:** The package `py_mmd_tools` is not on pip, but running the install for the requirements
-file will also install this directly from the repository:
+In addition, the tool `pythesint` must be installed from
+[github.com/metno/py-thesaurus-interface](https://github.com/metno/py-thesaurus-interface).
+
+The requirements can also be installed with:
 ```bash
 pip install -r requirements.txt
 ```
+
+## Environment Variables
+
+The package reads the following environment variables.
+
+* `DMCI_CONFIG` should point to the config file, in yaml format.
+* `DMCI_LOGFILE` can be set to enable logging to file.
+* `DMCI_LOGLEVEL` can be set to change log level. See the Debugging section below.
+
+If the config variable is not set, the package will look for a file named `config.yaml` at the
+package root location. If neither the environment variable is set, or this file exists, the
+initialisation will fail and exit with exit code `1`.
 
 ## Tests
 
 The tests use `pytest`. To run all tests for all modules, run:
 ```bash
-pytest-3 -vv
+python -m pytest -vv
 ```
 
 To add coverage, and to optionally generate a coverage report in HTML, run:
 ```bash
-pytest-3 -vv --cov=dmci --cov-report=term --cov-report=html
+python -m pytest -vv --cov=dmci --cov-report=term --cov-report=html
 ```
 Coverage requires the `pytest-cov` package.
 
