@@ -33,6 +33,12 @@ from dmci.config import Config # noqa: E402
 ##
 
 @pytest.fixture(scope="session")
+def rootDir():
+    """The root folder of the repository.
+    """
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+
+@pytest.fixture(scope="session")
 def tmpDir():
     """A temporary folder for the test session. This folder is
     presistent after the tests have run so that the status of generated

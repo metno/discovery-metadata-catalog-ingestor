@@ -74,11 +74,12 @@ CONFIG = Config()
 def api_main():
     """This is the main entry point for the api process.
     """
-    from dmci.api import App # pragma: no cover
+    from dmci.api import App
 
-    CONFIG.readConfig(configFile=os.environ.get("DMCI_CONFIG", None)) # pragma: no cover
+    if not CONFIG.readConfig(configFile=os.environ.get("DMCI_CONFIG", None)):
+        sys.exit(1)
 
-    dmci_app = App() # pragma: no cover
-    sys.exit(dmci_app.run()) # pragma: no cover
+    dmci_app = App()
+    sys.exit(dmci_app.run())
 
 # END api_main entry point
