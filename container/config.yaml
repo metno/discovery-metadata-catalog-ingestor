@@ -1,9 +1,13 @@
 ---
 dmci:
-  csw_service_url: https://pycsw.foo.bar
   distributors:
     - git
     - pycsw
-  distributor_input_path: /workdir
+  distributor_cache: /workdir
   max_permitted_size: 100000
+  mmd_xslt_path: /dmci/tests/files/mmd/mmd-to-geonorge.xslt
+  mmd_xsd_path: /dmci/tests/files/mmd/mmd.xsd
+
+pycsw:
+  service_url: localhost
 
