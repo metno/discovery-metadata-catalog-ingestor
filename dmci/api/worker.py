@@ -19,7 +19,8 @@ limitations under the License.
 """
 
 import logging
-import lxml.etree as ET
+
+from lxml import etree
 
 from dmci import CONFIG
 from dmci.external import full_check
@@ -45,6 +46,9 @@ class Worker():
         self._dist_xml_file = xml_file
         self._dist_metadata_id = None
         self._kwargs = kwargs
+
+        # XML
+        self._xsd_obj = None
 
         return
 
@@ -73,11 +77,12 @@ class Worker():
         if not isinstance(data, bytes):
             return False, "input must be bytes type"
 
+        if self._xsd_obj is None:
+            self._xsd_obj = etree.XMLSchema(etree.parse(self._conf.mmd_xsd_path))
+
         # Check xml file against XML schema definition
-        xmlschema_mmd = ET.XMLSchema(ET.parse(self._conf.mmd_xsd_path))
-        xml_doc = ET.fromstring(data)
-        valid = xmlschema_mmd.validate(xml_doc)
-        msg = xmlschema_mmd.error_log
+        valid = self._xsd_obj.validate(etree.fromstring(data))
+        msg = self._xsd_obj.error_log
         if valid:
             # Check information content
             valid, msg = self._check_information_content(data)
@@ -91,7 +96,7 @@ class Worker():
             return False, "input must be bytes type"
 
         # Read XML file
-        xml_doc = ET.fromstring(data)
+        xml_doc = etree.fromstring(data)
         logger.info('Performing in depth checking.')
 
         valid = full_check(xml_doc)

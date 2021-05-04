@@ -23,10 +23,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dmci.external.xml_utils import xml_translate
 from dmci.external.check_mmd import full_check
 
 __all__ = [
-    "xml_translate",
     "full_check",
 ]
