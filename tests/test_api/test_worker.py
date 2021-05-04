@@ -130,7 +130,7 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
 
     # Valid data format
     with monkeypatch.context() as mp:
-        mp.setattr("external.py_mmd_tools.check_mmd.check_urls", lambda *a: True)
+        mp.setattr("dmci.external.check_mmd.check_urls", lambda *a: True)
         passData = bytes(readFile(passFile), "utf-8")
         assert tstWorker._check_information_content(passData) == (True, "Input MMD xml file is ok")
 
@@ -140,7 +140,7 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
         "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
     )
     with monkeypatch.context() as mp:
-        mp.setattr("external.py_mmd_tools.check_mmd.check_urls", lambda *a: False)
+        mp.setattr("dmci.external.check_mmd.check_urls", lambda *a: False)
         passData = bytes(readFile(passFile), "utf-8")
         assert tstWorker._check_information_content(passData) == (False, msg)
 
