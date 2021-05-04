@@ -23,7 +23,7 @@ import lxml.etree as ET
 
 from dmci import CONFIG
 from dmci.external import full_check
-from dmci.distributors import GitDist
+from dmci.distributors import GitDist, PyCSWDist
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class Worker():
 
     CALL_MAP = {
         "git": GitDist,
-        # "pycsw": PyCSWDist,
+        "pycsw": PyCSWDist,
     }
 
     def __init__(self, xml_file, **kwargs):
