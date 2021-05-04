@@ -30,22 +30,18 @@ from dmci.api.worker import Worker
 
 logger = logging.getLogger(__name__)
 
-class App():
+class App(Flask):
 
     def __init__(self):
-        self._app = Flask(__name__)
+        super().__init__(__name__)
         self._conf = dmci.CONFIG
 
         if self._conf.distributor_cache is None:
             logger.error("Parameter distributor_cache in config is not set")
             sys.exit(1)
 
-        # Forward functions
-        self.run = self._app.run
-        self.test_client = self._app.test_client
-
         # Set up api entry points
-        @self._app.route("/v1/insert", methods=["POST"])
+        @self.route("/v1/insert", methods=["POST"])
         def base():
             max_permitted_size = self._conf.max_permitted_size
 
