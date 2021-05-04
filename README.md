@@ -39,12 +39,12 @@ initialisation will fail and exit with exit code `1`.
 
 The tests use `pytest`. To run all tests for all modules, run:
 ```bash
-pytest-3 -vv
+python -m pytest -vv
 ```
 
 To add coverage, and to optionally generate a coverage report in HTML, run:
 ```bash
-pytest-3 -vv --cov=dmci --cov-report=term --cov-report=html
+python -m pytest -vv --cov=dmci --cov-report=term --cov-report=html
 ```
 Coverage requires the `pytest-cov` package.
 
