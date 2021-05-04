@@ -18,5 +18,8 @@ __pycache__
 /dist/
 *.egg-info
 
-#Vscode
+# Vscode
 .vscode
+
+# Vim swapfile
+*.swp
