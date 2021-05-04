@@ -35,7 +35,7 @@ class Worker():
         "pycsw": PyCSWDist,
     }
 
-    def __init__(self, xml_file, **kwargs):
+    def __init__(self, xml_file, xsd_validator, **kwargs):
 
         self._conf = CONFIG
 
@@ -48,7 +48,7 @@ class Worker():
         self._kwargs = kwargs
 
         # XML
-        self._xsd_obj = None
+        self._xsd_obj = xsd_validator
 
         return
 
@@ -76,9 +76,6 @@ class Worker():
         # Gives msg when both validating and not validating
         if not isinstance(data, bytes):
             return False, "input must be bytes type"
-
-        if self._xsd_obj is None:
-            self._xsd_obj = etree.XMLSchema(etree.parse(self._conf.mmd_xsd_path))
 
         # Check xml file against XML schema definition
         valid = self._xsd_obj.validate(etree.fromstring(data))

@@ -21,6 +21,8 @@ limitations under the License.
 import os
 import pytest
 
+from lxml import etree
+
 from tools import writeFile, readFile
 
 from dmci.api.worker import Worker
@@ -29,8 +31,8 @@ from dmci.api.worker import Worker
 def testApiWorker_Init():
     """Test the Worker class init.
     """
-    assert Worker(None)._dist_cmd == "insert"
-    assert Worker(None, a=1)._kwargs == {"a": 1}
+    assert Worker(None, None)._dist_cmd == "insert"
+    assert Worker(None, None, a=1)._kwargs == {"a": 1}
 
 # END Test testApiWorker_Init
 
@@ -58,7 +60,7 @@ def testApiWorker_Distributor(tmpDir, tmpConf, monkeypatch):
     writeFile(dummyXml, "<xml />")
 
     # Call the distributor function with the distributors from the config
-    tstWorker = Worker(None)
+    tstWorker = Worker(None, None)
     tstWorker._conf = tmpConf
     tstWorker._dist_xml_file = dummyXml
 
@@ -70,7 +72,7 @@ def testApiWorker_Distributor(tmpDir, tmpConf, monkeypatch):
     assert skipped == ["blabla"]
 
     # Call the distributor function with the wrong parameters
-    tstWorker = Worker(None)
+    tstWorker = Worker(None, None)
     tstWorker._conf = tmpConf
     tstWorker._dist_cmd = "blabla"
     tstWorker._dist_xml_file = "/path/to/nowhere"
@@ -89,10 +91,9 @@ def testApiWorker_Validator(monkeypatch, filesDir):
     passFile = os.path.join(filesDir, "api", "passing.xml")
     failFile = os.path.join(filesDir, "api", "failing.xml")
 
-    passWorker = Worker(passFile)
-    passWorker._conf.mmd_xsd_path = xsdFile
-    failWorker = Worker(failFile)
-    failWorker._conf.mmd_xsd_path = xsdFile
+    xsdObj = etree.XMLSchema(etree.parse(xsdFile))
+    passWorker = Worker(passFile, xsdObj)
+    failWorker = Worker(failFile, xsdObj)
 
     # Invalid data format
     passData = readFile(passFile)
@@ -121,8 +122,7 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
     """Test _check_information_content
     """
     passFile = os.path.join(filesDir, "api", "passing.xml")
-
-    tstWorker = Worker(passFile)
+    tstWorker = Worker(passFile, None)
 
     # Invalid data format
     passData = readFile(passFile)
