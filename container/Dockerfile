@@ -47,8 +47,8 @@ EXPOSE 8000
 # Override workdirectory, expected to have persistent storage
 VOLUME /workdir
 
-# Override config file
-VOLUME /dmci/config.yaml
+# Override config file in this folder as config.yaml
+VOLUME /dmci
 
 # Catch interrupts and send to all sub-processes
 ENTRYPOINT ["dumb-init", "--"]

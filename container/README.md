@@ -18,7 +18,7 @@ Containerization of https://github.com/metno/discovery-metadata-catalog-ingestor
 ## Build
 
 ```bash
-podman  build -t dmci .
+podman build -t dmci .
 ```
 
 ## Run
