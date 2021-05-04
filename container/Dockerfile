@@ -21,6 +21,9 @@ RUN apk add --no-cache \
       py3-pip \
       py3-wheel
 
+# Esure latest version
+RUN pip3 install --upgrade setuptools pip
+
 # Install our runtime server
 RUN pip3 install "gunicorn~=20.1"
 
