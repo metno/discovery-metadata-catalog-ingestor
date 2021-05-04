@@ -22,8 +22,7 @@ import logging
 import requests
 import xml
 
-from external.py_mmd_tools.xml_utils import xml_translate
-
+from dmci.external import xml_translate
 from dmci.distributors.distributor import Distributor, DistCmd
 
 logger = logging.getLogger(__name__)
