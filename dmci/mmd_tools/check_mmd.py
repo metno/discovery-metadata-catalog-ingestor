@@ -11,10 +11,8 @@ import pythesint as pti
 
 logger = logging.getLogger(__name__)
 
-
 def check_rectangle(rectangle): # pragma: no cover
-    """
-    Check if element geographic extent/rectangle is valid:
+    """Check if element geographic extent/rectangle is valid:
         - only 1 existing rectangle element
         - rectangle has north / south / west / east subelements
         - -180 <= min_lat <= max_lat <= 180
@@ -25,7 +23,6 @@ def check_rectangle(rectangle): # pragma: no cover
     Returns:
         True / False
     """
-
     directions = dict.fromkeys(['north', 'south', 'west', 'east'])
 
     ok = True
@@ -50,16 +47,13 @@ def check_rectangle(rectangle): # pragma: no cover
 
     return ok
 
-
 def check_urls(url_list): # pragma: no cover
-    """
-    Check that a list of URLs is valid
+    """Check that a list of URLs is valid
     Args:
         url_list: list of URLs
     Returns:
         True / False
     """
-
     ok = True
     for url in url_list:
 
@@ -80,10 +74,8 @@ def check_urls(url_list): # pragma: no cover
 
     return ok
 
-
 def check_cf(cf_names): # pragma: no cover
-    """
-    Check that names are valid CF standard names
+    """Check that names are valid CF standard names
     Args:
         cf_names: list of names to test
     Returns:
@@ -97,12 +89,11 @@ def check_cf(cf_names): # pragma: no cover
         except IndexError:
             logger.debug(f'NOK - {cf_name} is not a CF standard name.')
             ok = False
+
     return ok
 
-
 def check_vocabulary(xmldoc): # pragma: no cover
-    """
-    Check controlled vocabularies for elements:
+    """Check controlled vocabularies for elements:
         - access_constraint
         - activity_type
         - operational_status (comment: also checked in MMD XSD schema)
@@ -116,17 +107,17 @@ def check_vocabulary(xmldoc): # pragma: no cover
     - area -> because it does not correspond to an element in currently tested files
     - platform type -> because erroneous thesaurus in mmd repo?
     """
-    vocabularies = {'access_constraint': 'access_constraints',
-                    'activity_type': 'activity_type',
-                    'operational_status': 'operstatus',
-                    'use_constraint': 'use_constraint_type',
-                    }
+    vocabularies = {
+        'access_constraint': 'access_constraints', 'activity_type': 'activity_type',
+        'operational_status': 'operstatus', 'use_constraint': 'use_constraint_type',
+    }
     ok = True
     for element_name, f_name in vocabularies.items():
         if f_name == 'use_constraint_type':
             elems_found = xmldoc.findall('./{*}' + element_name + '/{*}identifier')
         else:
             elems_found = xmldoc.findall('./{*}' + element_name)
+
         if len(elems_found) >= 1:
             for rep in elems_found:
                 try:
@@ -141,12 +132,11 @@ def check_vocabulary(xmldoc): # pragma: no cover
                     ok = False
         else:
             logger.debug(f'Element {element_name} not present.')
+
     return ok
 
-
 def full_check(doc): # pragma: no cover
-    """
-    Main checking scripts for in depth checking of XML file.
+    """Main checking scripts for in depth checking of XML file.
      - checking URLs
      - checking lat-lon within geographic_extent/rectangle
      - checking CF names against standard table
@@ -158,7 +148,6 @@ def full_check(doc): # pragma: no cover
     Returns:
        True / False
     """
-
     valid = True
 
     # Get elements with urls and check for OK response

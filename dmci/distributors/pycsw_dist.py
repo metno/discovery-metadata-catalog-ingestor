@@ -22,7 +22,8 @@ import logging
 import requests
 import xml
 
-from dmci.external import xml_translate
+from lxml import etree
+
 from dmci.distributors.distributor import Distributor, DistCmd
 
 logger = logging.getLogger(__name__)
@@ -67,7 +68,11 @@ class PyCSWDist(Distributor):
     def _translate(self):
         """Convert from MMD to ISO19139, Norwegian INSPIRE profile
         """
-        return xml_translate(self._xml_file, self._conf.mmd_xslt_path)
+        xml_doc = etree.ElementTree(file=self._xml_file)
+        transform = etree.XSLT(etree.parse(self._conf.mmd_xslt_path))
+        new_doc = transform(xml_doc)
+
+        return etree.tostring(new_doc, pretty_print=True, encoding="unicode")
 
     def _insert(self):
         """Insert in pyCSW using a Transaction

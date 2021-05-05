@@ -19,10 +19,11 @@ limitations under the License.
 """
 
 import logging
-import lxml.etree as ET
+
+from lxml import etree
 
 from dmci import CONFIG
-from dmci.external import full_check
+from dmci.mmd_tools import full_check
 from dmci.distributors import GitDist, PyCSWDist
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class Worker():
         "pycsw": PyCSWDist,
     }
 
-    def __init__(self, xml_file, **kwargs):
+    def __init__(self, xml_file, xsd_validator, **kwargs):
 
         self._conf = CONFIG
 
@@ -45,6 +46,9 @@ class Worker():
         self._dist_xml_file = xml_file
         self._dist_metadata_id = None
         self._kwargs = kwargs
+
+        # XML
+        self._xsd_obj = xsd_validator
 
         return
 
@@ -74,10 +78,8 @@ class Worker():
             return False, "input must be bytes type"
 
         # Check xml file against XML schema definition
-        xmlschema_mmd = ET.XMLSchema(ET.parse(self._conf.mmd_xsd_path))
-        xml_doc = ET.fromstring(data)
-        valid = xmlschema_mmd.validate(xml_doc)
-        msg = xmlschema_mmd.error_log
+        valid = self._xsd_obj.validate(etree.fromstring(data))
+        msg = self._xsd_obj.error_log
         if valid:
             # Check information content
             valid, msg = self._check_information_content(data)
@@ -91,7 +93,7 @@ class Worker():
             return False, "input must be bytes type"
 
         # Read XML file
-        xml_doc = ET.fromstring(data)
+        xml_doc = etree.fromstring(data)
         logger.info('Performing in depth checking.')
 
         valid = full_check(xml_doc)

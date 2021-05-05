@@ -22,7 +22,7 @@ import os
 import pytest
 import requests
 
-from tools import writeFile
+from tools import readFile, writeFile
 
 from dmci.distributors.pycsw_dist import PyCSWDist
 
@@ -140,15 +140,18 @@ def testDistPyCSW_Delete(monkeypatch, mockXml):
 # END Test testDistPyCSW_Delete
 
 @pytest.mark.dist
-def testDistPyCSW_Translate(monkeypatch, mockXml, mockXslt):
+def testDistPyCSW_Translate(monkeypatch, mockXml, filesDir):
     """_translate tests
     """
-    monkeypatch.setattr(
-        "dmci.distributors.pycsw_dist.xml_translate", lambda *a: "some xml code"
-    )
-    tstPyCSW = PyCSWDist("insert", xml_file=mockXml)
-    tstPyCSW._conf.mmd_xslt_path = mockXslt
-    assert tstPyCSW._translate() == "some xml code"
+    passFile = os.path.join(filesDir, "api", "passing.xml")
+    xsltFile = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
+
+    outFile = os.path.join(filesDir, "reference", "passing_translated.xml")
+    outData = readFile(outFile)
+
+    tstPyCSW = PyCSWDist("insert", xml_file=passFile)
+    tstPyCSW._conf.mmd_xslt_path = xsltFile
+    assert tstPyCSW._translate() == outData
 
 # END Test testDistPyCSW_Translate
 

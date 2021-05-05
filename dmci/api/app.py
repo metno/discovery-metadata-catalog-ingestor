@@ -24,6 +24,7 @@ import os
 import sys
 import uuid
 
+from lxml import etree
 from flask import request, Flask, after_this_request
 
 from dmci.api.worker import Worker
@@ -40,6 +41,13 @@ class App(Flask):
             logger.error("Parameter distributor_cache in config is not set")
             sys.exit(1)
 
+        if self._conf.mmd_xsd_path is None:
+            logger.error("Parameter mmd_xsd_path in config is not set")
+            sys.exit(1)
+
+        # Create the XML Validator Object
+        self._xsd_obj = etree.XMLSchema(etree.parse(self._conf.mmd_xsd_path))
+
         # Set up api entry points
         @self.route("/v1/insert", methods=["POST"])
         def base():
@@ -54,7 +62,7 @@ class App(Flask):
             path = self._conf.distributor_cache
             full_path = os.path.join(path, f"{file_uuid}.Q")
 
-            worker = Worker(full_path)
+            worker = Worker(full_path, self._xsd_obj)
 
             @after_this_request
             def dist(response):
