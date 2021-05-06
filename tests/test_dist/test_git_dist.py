@@ -18,6 +18,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
 import pytest
 
 from dmci.distributors import GitDist
@@ -28,8 +29,8 @@ def testDistGit_Init():
     """
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
-    assert GitDist("insert", metadata_id="some_id").is_valid() is True
-    assert GitDist("update", metadata_id="some_id").is_valid() is True
+    assert GitDist("insert", metadata_id="some_id").is_valid() is False
+    assert GitDist("update", metadata_id="some_id").is_valid() is False
     assert GitDist("delete", metadata_id="some_id").is_valid() is True
     assert GitDist("blabla", metadata_id="some_id").is_valid() is False
 
@@ -39,9 +40,26 @@ def testDistGit_Init():
 def testDistGit_Run(tmpDir):
     """Test the GitDist class run function.
     """
-    assert GitDist("insert", metadata_id="some_id").run() is True
-    assert GitDist("update", metadata_id="some_id").run() is True
-    assert GitDist("delete", metadata_id="some_id").run() is True
+    assert GitDist("insert", metadata_id="some_id").run() is False
+    assert GitDist("update", metadata_id="some_id").run() is False
+    assert GitDist("delete", xml_file="/path/to/somewhere").run() is False
     assert GitDist("blabla", metadata_id="some_id").run() is False
 
 # END Test testDistGit_Run
+
+@pytest.mark.dist
+def testDistGit_InsertUpdate(tmpDir, mockXml, monkeypatch):
+    """Test the GitDist class insert and update actions.
+    """
+    gitDir = os.path.join(tmpDir, "git")
+    jobsDir = os.path.join(gitDir, "jobs")
+
+    os.mkdir(gitDir)
+    os.mkdir(jobsDir)
+
+    tstGit = GitDist("insert", xml_file=mockXml)
+    tstGit._conf.git_jobs_path = jobsDir
+
+    assert tstGit.run() is True
+
+# END Test testDistGit_InsertUpdate
