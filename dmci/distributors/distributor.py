@@ -80,14 +80,23 @@ class Distributor():
             self._valid = False
             return
 
-        # Check consistency between command and data?
+        # Check consistency between command and data
+        if self._cmd in (DistCmd.UPDATE, DistCmd.INSERT) and self._xml_file is None:
+            logger.error("Command '%s' requires `xml_file` to be specified" % str(cmd))
+            self._valid = False
+            return
+
+        if self._cmd == DistCmd.DELETE and self._metadata_id is None:
+            logger.error("Command '%s' requires `metadata_id` to be specified" % str(cmd))
+            self._valid = False
+            return
 
         return
 
     def run(self):
         """The main run function to be implemented in each subclass.
         """
-        return self.is_valid()
+        raise NotImplementedError
 
     ##
     #  Methods
