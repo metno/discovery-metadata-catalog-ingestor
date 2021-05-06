@@ -18,23 +18,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os
 import pytest
-
-from tools import writeFile
 
 from dmci.distributors.distributor import Distributor
 
 @pytest.mark.dist
-def testDistDistributor_Init(tmpDir):
+def testDistDistributor_Init(tmpDir, mockXml):
     """Test the Distributor super class init.
     """
-    distDir = os.path.join(tmpDir, "dist")
-    os.mkdir(distDir)
-
-    mockXml = os.path.join(distDir, "init_mock.xml")
-    writeFile(mockXml, "<xml />")
-
     # Check Insert Command
     assert Distributor("insert", metadata_id="some_id").is_valid() is False
     assert Distributor("insert", xml_file="/path/to/nowhere").is_valid() is False
