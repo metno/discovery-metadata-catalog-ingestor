@@ -77,6 +77,7 @@ def testDistGit_InsertUpdate(tmpDir, mockXml, monkeypatch):
     jobsDir = os.path.join(gitDir, "jobs")
 
     jobTime = datetime.datetime.fromtimestamp(123.0).strftime("%Y%m%d_%H%M%S")
+    jobProc = os.getpid()
 
     os.mkdir(gitDir)
     os.mkdir(jobsDir)
@@ -87,13 +88,13 @@ def testDistGit_InsertUpdate(tmpDir, mockXml, monkeypatch):
     # Generate a job file
     tstGit._conf.git_jobs_path = jobsDir
     assert tstGit.run() is True
-    jobName = "%s_N%05d.xml" % (jobTime, 0)
+    jobName = "%s_N%05d_P%d.xml" % (jobTime, 0, jobProc)
     assert os.path.isfile(os.path.join(jobsDir, jobName))
 
     # Generate a job second file
     tstGit._conf.git_jobs_path = jobsDir
     assert tstGit.run() is True
-    jobName = "%s_N%05d.xml" % (jobTime, 1)
+    jobName = "%s_N%05d_P%d.xml" % (jobTime, 1, jobProc)
     assert os.path.isfile(os.path.join(jobsDir, jobName))
 
     # Should fail because the job path is None

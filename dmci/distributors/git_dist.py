@@ -64,8 +64,9 @@ class GitDist(Distributor):
         jobName = None
         jobPath = None
         jobTime = datetime.datetime.fromtimestamp(time.time()).strftime("%Y%m%d_%H%M%S")
+        jobProc = os.getpid()
         for i in range(100000):
-            jobName = "%s_N%05d.xml" % (jobTime, i)
+            jobName = "%s_N%05d_P%d.xml" % (jobTime, i, jobProc)
             jobPath = os.path.join(jobsDir, jobName)
             if os.path.isfile(jobPath):
                 jobName = None
