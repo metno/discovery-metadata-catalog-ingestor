@@ -62,11 +62,21 @@ def testCoreConfig_ReadFile(filesDir, monkeypatch):
 # END Test testCoreConfig_ReadFile
 
 @pytest.mark.core
-def testCoreConfig_Validate(rootDir, filesDir):
+def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     """Test that the class reads all settings and validates them.
     """
     exampleConf = os.path.join(rootDir, "example_config.yaml")
     theConf = Config()
+
+    # Set wrong values
+    theConf.call_distributors = []
+    theConf.distributor_cache = "path"
+    theConf.max_permitted_size = 0
+    theConf.mmd_xslt_path = "path"
+    theConf.mmd_xsd_path = "path"
+    theConf.git_jobs_path = "path"
+
+    # Check the values from example_config.yaml are read
     theConf.readConfig(configFile=exampleConf)
 
     assert theConf.call_distributors == ["git", "pycsw"]
@@ -74,12 +84,14 @@ def testCoreConfig_Validate(rootDir, filesDir):
     assert theConf.max_permitted_size == 100000
     assert theConf.mmd_xslt_path is None
     assert theConf.mmd_xsd_path is None
+    assert theConf.git_jobs_path is None
 
     assert theConf.csw_service_url == "localhost"
 
     # Set valid values
     theConf.mmd_xsd_path = os.path.join(filesDir, "mmd", "mmd.xsd")
     theConf.mmd_xslt_path = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
+    theConf.git_jobs_path = tmpDir
     assert theConf._validate_config() is True
 
     # Validate XSD Path
@@ -98,6 +110,15 @@ def testCoreConfig_Validate(rootDir, filesDir):
     theConf.mmd_xslt_path = "path/to/nowhere"
     assert theConf._validate_config() is False
     theConf.mmd_xslt_path = correctVal
+    assert theConf._validate_config() is True
+
+    # Validate Git Jobs Path
+    correctVal = theConf.git_jobs_path
+    theConf.git_jobs_path = None
+    assert theConf._validate_config() is False
+    theConf.git_jobs_path = "path/to/nowhere"
+    assert theConf._validate_config() is False
+    theConf.git_jobs_path = correctVal
     assert theConf._validate_config() is True
 
 # END Test testCoreConfig_Validate

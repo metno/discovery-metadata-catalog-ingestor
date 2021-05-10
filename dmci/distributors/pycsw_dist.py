@@ -53,7 +53,6 @@ class PyCSWDist(Distributor):
             return False
 
         status = False
-
         if self._cmd == DistCmd.UPDATE:
             status = self._update()
         elif self._cmd == DistCmd.DELETE:
@@ -77,12 +76,6 @@ class PyCSWDist(Distributor):
     def _insert(self):
         """Insert in pyCSW using a Transaction
         """
-        if self._xml_file is None:
-            logger.error("File does not exist: %s" % str(self._xml_file))
-            return False
-
-        iso = self._translate(self._conf.mmd_xslt_path)
-
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
@@ -96,7 +89,7 @@ class PyCSWDist(Distributor):
             'service="CSW" version="2.0.2">'
             '    <csw:Insert>%s</csw:Insert>'
             '</csw:Transaction>'
-        ) % iso
+        ) % self._translate()
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
         status = self._get_transaction_status(self.TOTAL_INSERTED, resp)
 
@@ -114,11 +107,6 @@ class PyCSWDist(Distributor):
     def _delete(self):
         """
         """
-        if self._metadata_id is None:
-            msg = "Metadata identifier must be a non-empty string"
-            logger.error(msg)
-            return False
-
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
