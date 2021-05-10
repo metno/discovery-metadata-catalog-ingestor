@@ -19,6 +19,7 @@ limitations under the License.
 """
 
 import os
+import time
 import shutil
 import logging
 import datetime
@@ -40,9 +41,9 @@ class GitDist(Distributor):
         if not self.is_valid():
             return False
 
-        if self._cmd == DistCmd.UPDATE:
+        if self._cmd == DistCmd.INSERT:
             return self._append_job()
-        elif self._cmd == DistCmd.INSERT:
+        elif self._cmd == DistCmd.UPDATE:
             return self._append_job()
         elif self._cmd == DistCmd.DELETE:
             logger.error("The `delete' command is not implemented")
@@ -62,10 +63,13 @@ class GitDist(Distributor):
 
         jobName = None
         jobPath = None
-        for i in range(1000000):
-            jobName = "%s_N%06d.xml" % (datetime.datetime.now().strftime("%Y%m%d_%H%M%S"), i)
+        jobTime = datetime.datetime.fromtimestamp(time.time()).strftime("%Y%m%d_%H%M%S")
+        for i in range(100000):
+            jobName = "%s_N%05d.xml" % (jobTime, i)
             jobPath = os.path.join(jobsDir, jobName)
-            if not os.path.isfile(jobPath):
+            if os.path.isfile(jobPath):
+                jobName = None
+            else:
                 break
 
         if jobName is None or jobPath is None:
