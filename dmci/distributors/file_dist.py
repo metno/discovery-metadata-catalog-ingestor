@@ -80,7 +80,18 @@ class FileDist(Distributor):
         lvlA = "arch_%s" % fileUUID.hex[7]
         lvlB = "arch_%s" % fileUUID.hex[6]
         lvlC = "arch_%s" % fileUUID.hex[5]
+
         archPath = os.path.join(self._conf.file_archive_path, lvlA, lvlB, lvlC)
+        archFile = os.path.join(archPath, str(fileUUID)+".xml")
+
+        status = "added"
+        if os.path.isfile(archFile):
+            if self._cmd == DistCmd.UPDATE:
+                status = "replaced"
+            else:
+                logger.error("File already exists: %s" % archFile)
+                return False
+
         try:
             os.makedirs(archPath, exist_ok=True)
             logger.info("Created folder: %s" % archPath)
@@ -89,7 +100,6 @@ class FileDist(Distributor):
             logger.error(str(e))
             return False
 
-        archFile = os.path.join(archPath, str(fileUUID)+".xml")
         try:
             shutil.copy2(self._xml_file, archFile)
         except Exception as e:
@@ -97,6 +107,8 @@ class FileDist(Distributor):
             logger.error("Failed to archive file dst: %s" % archFile)
             logger.error(str(e))
             return False
+
+        logger.info("%s file: %s" % (status.title(), archFile))
 
         return True
 

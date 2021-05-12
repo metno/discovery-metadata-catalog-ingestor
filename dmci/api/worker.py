@@ -156,6 +156,8 @@ class Worker():
             if xml_entry.tag == "{http://www.met.no/schema/mmd}metadata_identifier":
                 self._file_metadata_id = xml_entry.text
                 logger.info("XML file metadata_identifier: %s" % self._file_metadata_id)
+                break
+
         if self._file_metadata_id is None:
             logger.warning("No metadata_identifier found in XML file")
 

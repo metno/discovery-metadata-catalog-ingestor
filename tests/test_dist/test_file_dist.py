@@ -124,4 +124,11 @@ def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
     archFile = os.path.join(dirC, "a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml")
     assert os.path.isfile(archFile)
 
+    # Should not be allowed to write the same file twice
+    assert tstDist.run() is False
+
+    # Unless command is to update
+    tstDist._cmd = DistCmd.UPDATE
+    assert tstDist.run() is True
+
 # END Test testDistFile_InsertUpdate
