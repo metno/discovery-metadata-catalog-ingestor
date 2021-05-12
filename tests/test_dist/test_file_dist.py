@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-DMCI : Git Distributor Class Test
-=================================
+DMCI : File Distributor Class Test
+==================================
 
 Copyright 2021 MET Norway
 
@@ -25,27 +25,27 @@ import datetime
 
 from tools import causeOSError
 
-from dmci.distributors import GitDist
+from dmci.distributors import FileDist
 from dmci.distributors.distributor import DistCmd
 
 @pytest.mark.dist
 def testDistGit_Init():
-    """Test the GitDist class init.
+    """Test the FileDist class init.
     """
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
-    assert GitDist("insert", metadata_id="some_id").is_valid() is False
-    assert GitDist("update", metadata_id="some_id").is_valid() is False
-    assert GitDist("delete", metadata_id="some_id").is_valid() is True
-    assert GitDist("blabla", metadata_id="some_id").is_valid() is False
+    assert FileDist("insert", metadata_id="some_id").is_valid() is False
+    assert FileDist("update", metadata_id="some_id").is_valid() is False
+    assert FileDist("delete", metadata_id="some_id").is_valid() is True
+    assert FileDist("blabla", metadata_id="some_id").is_valid() is False
 
 # END Test testDistGit_Init
 
 @pytest.mark.dist
 def testDistGit_Run(tmpDir, mockXml):
-    """Test the GitDist class run function.
+    """Test the FileDist class run function.
     """
-    tstDist = GitDist("insert", xml_file=mockXml)
+    tstDist = FileDist("insert", xml_file=mockXml)
     assert tstDist.is_valid()
 
     tstDist._valid = False
@@ -70,29 +70,29 @@ def testDistGit_Run(tmpDir, mockXml):
 
 @pytest.mark.dist
 def testDistGit_InsertUpdate(tmpDir, mockXml, monkeypatch):
-    """Test the GitDist class insert and update actions.
+    """Test the FileDist class insert and update actions.
     """
     monkeypatch.setattr(time, "time", lambda: 123.0)
-    gitDir = os.path.join(tmpDir, "git")
-    jobsDir = os.path.join(gitDir, "jobs")
+    fileDir = os.path.join(tmpDir, "file")
+    jobsDir = os.path.join(fileDir, "jobs")
 
     jobTime = datetime.datetime.fromtimestamp(123.0).strftime("%Y%m%d_%H%M%S")
     jobProc = os.getpid()
 
-    os.mkdir(gitDir)
+    os.mkdir(fileDir)
     os.mkdir(jobsDir)
 
-    tstGit = GitDist("insert", xml_file=mockXml)
+    tstGit = FileDist("insert", xml_file=mockXml)
     assert tstGit._append_job() is False
 
     # Generate a job file
-    tstGit._conf.git_jobs_path = jobsDir
+    tstGit._conf.file_jobs_path = jobsDir
     assert tstGit.run() is True
     jobName = "%s_N%05d_P%d.xml" % (jobTime, 0, jobProc)
     assert os.path.isfile(os.path.join(jobsDir, jobName))
 
     # Generate a job second file
-    tstGit._conf.git_jobs_path = jobsDir
+    tstGit._conf.file_jobs_path = jobsDir
     assert tstGit.run() is True
     jobName = "%s_N%05d_P%d.xml" % (jobTime, 1, jobProc)
     assert os.path.isfile(os.path.join(jobsDir, jobName))

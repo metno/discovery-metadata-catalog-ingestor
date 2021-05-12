@@ -24,14 +24,14 @@ from lxml import etree
 
 from dmci import CONFIG
 from dmci.mmd_tools import full_check
-from dmci.distributors import GitDist, PyCSWDist
+from dmci.distributors import FileDist, PyCSWDist
 
 logger = logging.getLogger(__name__)
 
 class Worker():
 
     CALL_MAP = {
-        "git": GitDist,
+        "file": FileDist,
         "pycsw": PyCSWDist,
     }
 

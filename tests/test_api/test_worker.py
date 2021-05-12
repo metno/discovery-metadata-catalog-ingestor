@@ -26,7 +26,7 @@ from lxml import etree
 from tools import readFile
 
 from dmci.api.worker import Worker
-from dmci.distributors import GitDist, PyCSWDist
+from dmci.distributors import FileDist, PyCSWDist
 
 @pytest.mark.api
 def testApiWorker_Init():
@@ -41,11 +41,11 @@ def testApiWorker_Init():
 def testApiWorker_Distributor(tmpDir, tmpConf, mockXml, monkeypatch):
     """Test the Worker class distributor.
     """
-    tmpConf.call_distributors = ["git", "pycsw", "blabla"]
+    tmpConf.call_distributors = ["file", "pycsw", "blabla"]
 
     # Call the distributor function with the distributors from the config
     with monkeypatch.context() as mp:
-        mp.setattr(GitDist, "run", lambda *a: True)
+        mp.setattr(FileDist, "run", lambda *a: True)
         mp.setattr(PyCSWDist, "run", lambda *a: True)
 
         tstWorker = Worker(None, None)
@@ -55,7 +55,7 @@ def testApiWorker_Distributor(tmpDir, tmpConf, mockXml, monkeypatch):
         status, valid, called, failed, skipped = tstWorker.distribute()
         assert status is True
         assert valid is True
-        assert called == ["git", "pycsw"]
+        assert called == ["file", "pycsw"]
         assert failed == []
         assert skipped == ["blabla"]
 

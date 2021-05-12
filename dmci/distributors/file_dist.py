@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-DMCI : Git Distributor
-======================
+DMCI : File Distributor
+=======================
 
 Copyright 2021 MET Norway
 
@@ -28,7 +28,7 @@ from dmci.distributors.distributor import Distributor, DistCmd
 
 logger = logging.getLogger(__name__)
 
-class GitDist(Distributor):
+class FileDist(Distributor):
 
     def __init__(self, cmd, xml_file=None, metadata_id=None, **kwargs):
         super().__init__(cmd, xml_file, metadata_id, **kwargs)
@@ -56,9 +56,9 @@ class GitDist(Distributor):
     def _append_job(self):
         """Append the xml file to the job queue.
         """
-        jobsDir = self._conf.git_jobs_path
+        jobsDir = self._conf.file_jobs_path
         if jobsDir is None:
-            logger.error("No 'git_jobs_path' set")
+            logger.error("No 'file_jobs_path' set")
             return False
 
         jobName = None
@@ -86,4 +86,4 @@ class GitDist(Distributor):
 
         return True
 
-# END Class GitDist
+# END Class FileDist

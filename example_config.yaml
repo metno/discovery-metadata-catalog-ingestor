@@ -1,6 +1,6 @@
 dmci:
   distributors:
-    - git
+    - file
     - pycsw
   distributor_cache: null
   max_permitted_size: 100000
@@ -10,5 +10,5 @@ dmci:
 pycsw:
   csw_service_url: localhost
 
-git:
-  git_jobs_path: null
+file:
+  file_jobs_path: null
