@@ -86,13 +86,13 @@ def testDistGit_InsertUpdate(tmpDir, mockXml, monkeypatch):
     assert tstGit._append_job() is False
 
     # Generate a job file
-    tstGit._conf.file_jobs_path = jobsDir
+    tstGit._conf.file_archive_path = jobsDir
     assert tstGit.run() is True
     jobName = "%s_N%05d_P%d.xml" % (jobTime, 0, jobProc)
     assert os.path.isfile(os.path.join(jobsDir, jobName))
 
     # Generate a job second file
-    tstGit._conf.file_jobs_path = jobsDir
+    tstGit._conf.file_archive_path = jobsDir
     assert tstGit.run() is True
     jobName = "%s_N%05d_P%d.xml" % (jobTime, 1, jobProc)
     assert os.path.isfile(os.path.join(jobsDir, jobName))

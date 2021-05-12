@@ -42,7 +42,7 @@ class Config():
         self.csw_service_url = "localhost"
 
         # File Distributor
-        self.file_jobs_path = None
+        self.file_archive_path = None
 
         # Internals
         self._raw_conf = {}
@@ -109,7 +109,7 @@ class Config():
         """
         conf = self._raw_conf.get("file", {})
 
-        self.file_jobs_path = conf.get("file_jobs_path", self.file_jobs_path)
+        self.file_archive_path = conf.get("file_archive_path", self.file_archive_path)
 
         return
 
@@ -137,12 +137,16 @@ class Config():
                 valid = False
 
         if "file" in self.call_distributors:
-            if self.file_jobs_path is None:
-                logger.error("Config value 'file_jobs_path' must be set for the file distributor")
+            if self.file_archive_path is None:
+                logger.error(
+                    "Config value 'file_archive_path' must be set for the file distributor"
+                )
                 valid = False
             else:
-                if not os.path.isdir(self.file_jobs_path):
-                    logger.error("Config value 'file_jobs_path' must point to an existing folder")
+                if not os.path.isdir(self.file_archive_path):
+                    logger.error(
+                        "Config value 'file_archive_path' must point to an existing folder"
+                    )
                     valid = False
 
         return valid

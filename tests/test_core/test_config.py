@@ -74,7 +74,7 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     theConf.max_permitted_size = 0
     theConf.mmd_xslt_path = "path"
     theConf.mmd_xsd_path = "path"
-    theConf.file_jobs_path = "path"
+    theConf.file_archive_path = "path"
 
     # Check the values from example_config.yaml are read
     theConf.readConfig(configFile=exampleConf)
@@ -84,14 +84,14 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     assert theConf.max_permitted_size == 100000
     assert theConf.mmd_xslt_path is None
     assert theConf.mmd_xsd_path is None
-    assert theConf.file_jobs_path is None
+    assert theConf.file_archive_path is None
 
     assert theConf.csw_service_url == "localhost"
 
     # Set valid values
     theConf.mmd_xsd_path = os.path.join(filesDir, "mmd", "mmd.xsd")
     theConf.mmd_xslt_path = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
-    theConf.file_jobs_path = tmpDir
+    theConf.file_archive_path = tmpDir
     assert theConf._validate_config() is True
 
     # Validate XSD Path
@@ -112,13 +112,13 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     theConf.mmd_xslt_path = correctVal
     assert theConf._validate_config() is True
 
-    # Validate File Jobs Path
-    correctVal = theConf.file_jobs_path
-    theConf.file_jobs_path = None
+    # Validate File Archive Path
+    correctVal = theConf.file_archive_path
+    theConf.file_archive_path = None
     assert theConf._validate_config() is False
-    theConf.file_jobs_path = "path/to/nowhere"
+    theConf.file_archive_path = "path/to/nowhere"
     assert theConf._validate_config() is False
-    theConf.file_jobs_path = correctVal
+    theConf.file_archive_path = correctVal
     assert theConf._validate_config() is True
 
 # END Test testCoreConfig_Validate

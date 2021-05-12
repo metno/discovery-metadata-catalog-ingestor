@@ -11,4 +11,4 @@ pycsw:
   csw_service_url: localhost
 
 file:
-  file_jobs_path: null
+  file_archive_path: null
