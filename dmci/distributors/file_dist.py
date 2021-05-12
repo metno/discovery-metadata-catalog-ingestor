@@ -69,9 +69,7 @@ class FileDist(Distributor):
 
         try:
             fileUUID = uuid.UUID(mdID)
-            logger.info("File UUID: %s" % fileUUID.hex)
-            logger.info("File UUID: %s" % fileUUID.urn)
-            logger.info("File UUID: %s" % str(fileUUID))
+            logger.debug("File UUID: %s" % str(fileUUID))
         except Exception as e:
             logger.error("Could not parse UUID: '%s'" % str(mdID))
             logger.error(str(e))

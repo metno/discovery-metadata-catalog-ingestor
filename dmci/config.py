@@ -39,7 +39,7 @@ class Config():
         self.mmd_xsd_path = None
 
         # PyCSW Distributor
-        self.csw_service_url = "localhost"
+        self.csw_service_url = "http://localhost"
 
         # File Distributor
         self.file_archive_path = None

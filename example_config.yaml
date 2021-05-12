@@ -8,7 +8,7 @@ dmci:
   mmd_xsd_path: null
 
 pycsw:
-  csw_service_url: localhost
+  csw_service_url: http://localhost
 
 file:
   file_archive_path: null
