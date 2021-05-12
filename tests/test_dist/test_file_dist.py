@@ -19,17 +19,17 @@ limitations under the License.
 """
 
 import os
+import lxml
 import pytest
-import time
-import datetime
 
-from tools import causeOSError
+from tools import causeOSError, readFile
 
+from dmci.api.worker import Worker
 from dmci.distributors import FileDist
 from dmci.distributors.distributor import DistCmd
 
 @pytest.mark.dist
-def testDistGit_Init():
+def testDistFile_Init():
     """Test the FileDist class init.
     """
     # Check that it initialises properly by running some of the simple
@@ -39,10 +39,10 @@ def testDistGit_Init():
     assert FileDist("delete", metadata_id="some_id").is_valid() is True
     assert FileDist("blabla", metadata_id="some_id").is_valid() is False
 
-# END Test testDistGit_Init
+# END Test testDistFile_Init
 
 @pytest.mark.dist
-def testDistGit_Run(tmpDir, mockXml):
+def testDistFile_Run(tmpDir, mockXml):
     """Test the FileDist class run function.
     """
     tstDist = FileDist("insert", xml_file=mockXml)
@@ -52,7 +52,7 @@ def testDistGit_Run(tmpDir, mockXml):
     assert tstDist.run() is False
     tstDist._valid = True
 
-    tstDist._append_job = lambda *a: True
+    tstDist._add_to_archive = lambda *a: True
 
     tstDist._cmd = DistCmd.INSERT
     assert tstDist.run() is True
@@ -66,51 +66,62 @@ def testDistGit_Run(tmpDir, mockXml):
     tstDist._cmd = 1234
     assert tstDist.run() is False
 
-# END Test testDistGit_Run
+# END Test testDistFile_Run
 
 @pytest.mark.dist
-def testDistGit_InsertUpdate(tmpDir, mockXml, monkeypatch):
+def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
     """Test the FileDist class insert and update actions.
     """
-    monkeypatch.setattr(time, "time", lambda: 123.0)
     fileDir = os.path.join(tmpDir, "file")
-    jobsDir = os.path.join(fileDir, "jobs")
+    archDir = os.path.join(fileDir, "archive")
+    passFile = os.path.join(filesDir, "api", "passing.xml")
 
-    jobTime = datetime.datetime.fromtimestamp(123.0).strftime("%Y%m%d_%H%M%S")
-    jobProc = os.getpid()
+    # Set up a Worker object
+    passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
+    tstWorker = Worker(passFile, None)
+    tstWorker._extract_metadata_id(passXML)
+    assert tstWorker._file_metadata_id is not None
 
-    os.mkdir(fileDir)
-    os.mkdir(jobsDir)
+    # No file archive path set
+    tstDist = FileDist("insert", xml_file=passFile)
+    assert tstDist._add_to_archive() is False
 
-    tstGit = FileDist("insert", xml_file=mockXml)
-    assert tstGit._append_job() is False
+    # No identifier set
+    tstDist._conf.file_archive_path = archDir
+    assert tstDist.run() is False
 
-    # Generate a job file
-    tstGit._conf.file_archive_path = jobsDir
-    assert tstGit.run() is True
-    jobName = "%s_N%05d_P%d.xml" % (jobTime, 0, jobProc)
-    assert os.path.isfile(os.path.join(jobsDir, jobName))
+    # Invalid identifier set
+    tstDist._worker = tstWorker
+    goodUUID = tstWorker._file_metadata_id
+    tstWorker._file_metadata_id = "123456789abcdefghijkl"
+    assert tstDist.run() is False
 
-    # Generate a job second file
-    tstGit._conf.file_archive_path = jobsDir
-    assert tstGit.run() is True
-    jobName = "%s_N%05d_P%d.xml" % (jobTime, 1, jobProc)
-    assert os.path.isfile(os.path.join(jobsDir, jobName))
+    # Should have a valid identifier from here on
+    tstWorker._file_metadata_id = goodUUID
 
-    # Should fail because the job path is None
+    # Fail the making of folders
     with monkeypatch.context() as mp:
-        mp.setattr("os.path.join", lambda *a: None)
-        mp.setattr("os.path.isfile", lambda *a: False)
-        assert tstGit.run() is False
+        mp.setattr("os.makedirs", causeOSError)
+        assert tstDist.run() is False
 
-    # Should fail because it cannot generate a unique file name
-    with monkeypatch.context() as mp:
-        mp.setattr("os.path.isfile", lambda *a: True)
-        assert tstGit.run() is False
-
-    # Should fail because the copy command fails
+    # Fail the copy process
     with monkeypatch.context() as mp:
         mp.setattr("shutil.copy2", causeOSError)
-        assert tstGit.run() is False
+        assert tstDist.run() is False
 
-# END Test testDistGit_InsertUpdate
+    # Finally, test a successful write
+    assert tstDist.run() is True
+
+    dirA = os.path.join(archDir, "arch_f")
+    assert os.path.isdir(dirA)
+
+    dirB = os.path.join(dirA, "arch_0")
+    assert os.path.isdir(dirB)
+
+    dirC = os.path.join(dirB, "arch_f")
+    assert os.path.isdir(dirC)
+
+    archFile = os.path.join(dirC, "a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml")
+    assert os.path.isfile(archFile)
+
+# END Test testDistFile_InsertUpdate

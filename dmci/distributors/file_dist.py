@@ -19,10 +19,9 @@ limitations under the License.
 """
 
 import os
-import time
+import uuid
 import shutil
 import logging
-import datetime
 
 from dmci.distributors.distributor import Distributor, DistCmd
 
@@ -42,9 +41,9 @@ class FileDist(Distributor):
             return False
 
         if self._cmd == DistCmd.INSERT:
-            return self._append_job()
+            return self._add_to_archive()
         elif self._cmd == DistCmd.UPDATE:
-            return self._append_job()
+            return self._add_to_archive()
         elif self._cmd == DistCmd.DELETE:
             logger.error("The `delete' command is not implemented")
             return False
@@ -53,34 +52,49 @@ class FileDist(Distributor):
 
         return False
 
-    def _append_job(self):
-        """Append the xml file to the job queue.
+    def _add_to_archive(self):
+        """Add the xml file to the archive.
         """
         jobsDir = self._conf.file_archive_path
         if jobsDir is None:
             logger.error("No 'file_archive_path' set")
             return False
 
-        jobName = None
-        jobPath = None
-        jobTime = datetime.datetime.fromtimestamp(time.time()).strftime("%Y%m%d_%H%M%S")
-        jobProc = os.getpid()
-        for i in range(100000):
-            jobName = "%s_N%05d_P%d.xml" % (jobTime, i, jobProc)
-            jobPath = os.path.join(jobsDir, jobName)
-            if os.path.isfile(jobPath):
-                jobName = None
-            else:
-                break
-
-        if jobName is None or jobPath is None:
-            logger.error("Failed to generate a unique job name")
+        mdID = None
+        if self._worker is not None:
+            mdID = self._worker._file_metadata_id
+        if mdID is None:
+            logger.error("No metadata_identifier provided, cannot archive file")
             return False
 
         try:
-            shutil.copy2(self._xml_file, jobPath)
+            fileUUID = uuid.UUID(mdID)
+            logger.info("File UUID: %s" % fileUUID.hex)
+            logger.info("File UUID: %s" % fileUUID.urn)
+            logger.info("File UUID: %s" % str(fileUUID))
         except Exception as e:
-            logger.error("Failed to create job file")
+            logger.error("Could not parse UUID: '%s'" % str(mdID))
+            logger.error(str(e))
+            return False
+
+        lvlA = "arch_%s" % fileUUID.hex[7]
+        lvlB = "arch_%s" % fileUUID.hex[6]
+        lvlC = "arch_%s" % fileUUID.hex[5]
+        archPath = os.path.join(self._conf.file_archive_path, lvlA, lvlB, lvlC)
+        try:
+            os.makedirs(archPath, exist_ok=True)
+            logger.info("Created folder: %s" % archPath)
+        except Exception as e:
+            logger.error("Could not make folder(s): %s" % archPath)
+            logger.error(str(e))
+            return False
+
+        archFile = os.path.join(archPath, str(fileUUID)+".xml")
+        try:
+            shutil.copy2(self._xml_file, archFile)
+        except Exception as e:
+            logger.error("Failed to archive file src: %s" % self._xml_file)
+            logger.error("Failed to archive file dst: %s" % archFile)
             logger.error(str(e))
             return False
 

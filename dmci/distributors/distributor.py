@@ -37,7 +37,7 @@ class DistCmd(Enum):
 
 class Distributor():
 
-    def __init__(self, cmd, xml_file=None, metadata_id=None, **kwargs):
+    def __init__(self, cmd, xml_file=None, metadata_id=None, worker=None, **kwargs):
 
         self._conf = CONFIG
         self._valid = False
@@ -45,6 +45,7 @@ class Distributor():
         self._cmd = None
         self._xml_file = None
         self._metadata_id = None
+        self._worker = worker
         self._kwargs = kwargs
 
         tmpcmd = str(cmd).upper()

@@ -46,6 +46,7 @@ class Worker():
         self._dist_xml_file = xml_file
         self._dist_metadata_id = None
         self._kwargs = kwargs
+        self._file_metadata_id = None
 
         # XML
         self._xsd_obj = xsd_validator
@@ -86,27 +87,6 @@ class Worker():
 
         return valid, msg
 
-    def _check_information_content(self, data):
-        """Check the information content in the submitted file
-        """
-        if not isinstance(data, bytes):
-            return False, "input must be bytes type"
-
-        # Read XML file
-        xml_doc = etree.fromstring(data)
-        logger.info('Performing in depth checking.')
-
-        valid = full_check(xml_doc)
-        if valid:
-            msg = "Input MMD xml file is ok"
-        else:
-            msg = (
-                "Input MMD xml file contains errors - please check your file "
-                "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
-            )
-
-        return valid, msg
-
     def distribute(self):
         """Loop through all distributors listed in the config and call
         them in the same order.
@@ -126,6 +106,7 @@ class Worker():
                 self._dist_cmd,
                 xml_file=self._dist_xml_file,
                 metadata_id=self._dist_metadata_id,
+                worker=self,
                 **self._kwargs
             )
             valid &= obj.is_valid()
@@ -138,5 +119,46 @@ class Worker():
                     failed.append(dist)
 
         return status, valid, called, failed, skipped
+
+    ##
+    #  Internal Functions
+    ##
+
+    def _check_information_content(self, data):
+        """Check the information content in the submitted file
+        """
+        if not isinstance(data, bytes):
+            return False, "input must be bytes type"
+
+        # Read XML file
+        xml_doc = etree.fromstring(data)
+        self._extract_metadata_id(xml_doc)
+
+        # Check XML file
+        logger.info("Performing in depth checking.")
+        valid = full_check(xml_doc)
+        if valid:
+            msg = "Input MMD xml file is ok"
+        else:
+            msg = (
+                "Input MMD xml file contains errors - please check your file "
+                "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
+            )
+
+        return valid, msg
+
+    def _extract_metadata_id(self, xml_doc):
+        """Extract the metadata_identifier from the xml object and set
+        the class variable.
+        """
+        self._file_metadata_id = None
+        for xml_entry in xml_doc:
+            if xml_entry.tag == "{http://www.met.no/schema/mmd}metadata_identifier":
+                self._file_metadata_id = xml_entry.text
+                logger.info("XML file metadata_identifier: %s" % self._file_metadata_id)
+        if self._file_metadata_id is None:
+            logger.warning("No metadata_identifier found in XML file")
+
+        return
 
 # END Class Worker
