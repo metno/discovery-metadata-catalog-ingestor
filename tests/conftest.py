@@ -62,6 +62,22 @@ def filesDir():
     return theDir
 
 ##
+#  Mock Files
+##
+
+@pytest.fixture(scope="session")
+def mockXml(filesDir):
+    return os.path.join(filesDir, "mock", "mock.xml")
+
+@pytest.fixture(scope="session")
+def mockXslt(filesDir):
+    return os.path.join(filesDir, "mock", "mock.xslt")
+
+@pytest.fixture(scope="session")
+def mockXsd(filesDir):
+    return os.path.join(filesDir, "mock", "mock.xsd")
+
+##
 #  Objects
 ##
 

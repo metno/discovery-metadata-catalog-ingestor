@@ -8,4 +8,7 @@ dmci:
   mmd_xsd_path: null
 
 pycsw:
-  service_url: localhost
+  csw_service_url: localhost
+
+git:
+  git_jobs_path: null

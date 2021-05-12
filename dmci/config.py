@@ -38,8 +38,11 @@ class Config():
         self.mmd_xslt_path = None
         self.mmd_xsd_path = None
 
-        # PyCSW
+        # PyCSW Distributor
         self.csw_service_url = "localhost"
+
+        # Git Distributor
+        self.git_jobs_path = None
 
         # Internals
         self._raw_conf = {}
@@ -69,6 +72,7 @@ class Config():
         # Read Values
         self._read_core()
         self._read_pycsw()
+        self._read_git()
 
         valid = self._validate_config()
 
@@ -100,8 +104,18 @@ class Config():
 
         return
 
+    def _read_git(self):
+        """Read config values under 'pycsw'.
+        """
+        conf = self._raw_conf.get("git", {})
+
+        self.git_jobs_path = conf.get("git_jobs_path", self.git_jobs_path)
+
+        return
+
     def _validate_config(self):
-        """Check config variable dependencies.
+        """Check config variable dependencies. It needs to be called after all
+        the read functions when all settings have been handled.
         """
         valid = True
 
@@ -121,6 +135,15 @@ class Config():
             if not os.path.isfile(self.mmd_xsd_path):
                 logger.error("Config value 'mmd_xsd_path' must point to an existing file")
                 valid = False
+
+        if "git" in self.call_distributors:
+            if self.git_jobs_path is None:
+                logger.error("Config value 'git_jobs_path' must be set for the git distributor")
+                valid = False
+            else:
+                if not os.path.isdir(self.git_jobs_path):
+                    logger.error("Config value 'git_jobs_path' must point to an existing folder")
+                    valid = False
 
         return valid
 

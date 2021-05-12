@@ -23,9 +23,10 @@ import pytest
 
 from lxml import etree
 
-from tools import writeFile, readFile
+from tools import readFile
 
 from dmci.api.worker import Worker
+from dmci.distributors import GitDist, PyCSWDist
 
 @pytest.mark.api
 def testApiWorker_Init():
@@ -37,39 +38,26 @@ def testApiWorker_Init():
 # END Test testApiWorker_Init
 
 @pytest.mark.api
-def testApiWorker_Distributor(tmpDir, tmpConf, monkeypatch):
+def testApiWorker_Distributor(tmpDir, tmpConf, mockXml, monkeypatch):
     """Test the Worker class distributor.
     """
-    workDir = os.path.join(tmpDir, "worker")
-    os.mkdir(workDir)
-
-    # Create a test config file and object
-    workConf = os.path.join(workDir, "distributor_config.yaml")
-    writeFile(workConf, (
-        "dmci:\n"
-        "  distributors:\n"
-        "    - git\n"
-        "    - blabla\n"
-    ))
-
-    tmpConf.readConfig(workConf)
-    assert tmpConf.call_distributors == ["git", "blabla"]
-
-    # Create a dummy xml file
-    dummyXml = os.path.join(workDir, "dummy.xml")
-    writeFile(dummyXml, "<xml />")
+    tmpConf.call_distributors = ["git", "pycsw", "blabla"]
 
     # Call the distributor function with the distributors from the config
-    tstWorker = Worker(None, None)
-    tstWorker._conf = tmpConf
-    tstWorker._dist_xml_file = dummyXml
+    with monkeypatch.context() as mp:
+        mp.setattr(GitDist, "run", lambda *a: True)
+        mp.setattr(PyCSWDist, "run", lambda *a: True)
 
-    status, valid, called, failed, skipped = tstWorker.distribute()
-    assert status is True
-    assert valid is True
-    assert called == ["git"]
-    assert failed == []
-    assert skipped == ["blabla"]
+        tstWorker = Worker(None, None)
+        tstWorker._conf = tmpConf
+        tstWorker._dist_xml_file = mockXml
+
+        status, valid, called, failed, skipped = tstWorker.distribute()
+        assert status is True
+        assert valid is True
+        assert called == ["git", "pycsw"]
+        assert failed == []
+        assert skipped == ["blabla"]
 
     # Call the distributor function with the wrong parameters
     tstWorker = Worker(None, None)

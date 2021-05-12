@@ -22,34 +22,9 @@ import os
 import pytest
 import requests
 
-from tools import readFile, writeFile
+from tools import readFile
 
 from dmci.distributors.pycsw_dist import PyCSWDist
-
-# Fixtures
-# ========
-
-@pytest.fixture(scope="module")
-def distDir(tmpDir):
-    distDir = os.path.join(tmpDir, "dist")
-    if not os.path.isdir(distDir):
-        os.mkdir(distDir)
-    return distDir
-
-@pytest.fixture(scope="module")
-def mockXml(distDir):
-    xmlFile = os.path.join(distDir, "mock.xml")
-    writeFile(xmlFile, "<xml />")
-    return xmlFile
-
-@pytest.fixture(scope="module")
-def mockXslt(distDir):
-    xsltFile = os.path.join(distDir, "mock.xslt")
-    writeFile(xsltFile, "<xml />")
-    return xsltFile
-
-# Tests
-# =====
 
 @pytest.mark.dist
 def testDistPyCSW_Init():
@@ -57,8 +32,8 @@ def testDistPyCSW_Init():
     """
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
-    assert PyCSWDist("insert", metadata_id="some_id").is_valid() is True # Should be false
-    assert PyCSWDist("update", metadata_id="some_id").is_valid() is True # should be false
+    assert PyCSWDist("insert", metadata_id="some_id").is_valid() is False
+    assert PyCSWDist("update", metadata_id="some_id").is_valid() is False
     assert PyCSWDist("delete", metadata_id="some_id").is_valid() is True
     assert PyCSWDist("blabla", metadata_id="some_id").is_valid() is False
 
@@ -74,11 +49,8 @@ def testDistPyCSW_Run():
 
 @pytest.mark.dist
 def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
-    """_insert tests
+    """Test insert commands via run()
     """
-    # return false when xml_file is None
-    assert PyCSWDist("insert")._insert() is False
-
     # insert returns True
     with monkeypatch.context() as mp:
         mp.setattr(PyCSWDist, "_translate", lambda *a: "<xml />")
@@ -88,7 +60,7 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: True)
         tstPyCSW = PyCSWDist("insert", xml_file=mockXml)
         tstPyCSW._conf.mmd_xslt_path = mockXslt
-        assert tstPyCSW._insert() is True
+        assert tstPyCSW.run() is True
 
     # insert returns false
     with monkeypatch.context() as mp:
@@ -97,14 +69,15 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
             "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: "a response object"
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: False)
+        tstPyCSW = PyCSWDist("insert", xml_file=mockXml)
         tstPyCSW._conf.mmd_xslt_path = mockXslt
-        assert tstPyCSW._insert() is False
+        assert tstPyCSW.run() is False
 
 # END Test testDistPyCSW_Insert
 
 @pytest.mark.dist
 def testDistPyCSW_Update(mockXml):
-    """_update tests
+    """Test update commands via run()
     """
     assert PyCSWDist("update", xml_file=mockXml).run() is False
     assert PyCSWDist("update", metadata_id="some_id").run() is False
@@ -113,7 +86,7 @@ def testDistPyCSW_Update(mockXml):
 
 @pytest.mark.dist
 def testDistPyCSW_Delete(monkeypatch, mockXml):
-    """_delete tests
+    """Test delete commands via run()
     """
     assert PyCSWDist("delete").run() is False
     assert PyCSWDist("delete", xml_file=mockXml).run() is False
@@ -133,9 +106,6 @@ def testDistPyCSW_Delete(monkeypatch, mockXml):
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: False)
         assert PyCSWDist("delete", metadata_id="some_id").run() is False
-
-    # return false if metadata id is None
-    assert PyCSWDist("delete")._delete() is False
 
 # END Test testDistPyCSW_Delete
 

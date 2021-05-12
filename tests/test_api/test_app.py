@@ -21,26 +21,23 @@ import os
 import pytest
 import flask
 
-from tools import causeOSError, writeFile
+from tools import causeOSError
 
 from dmci.api import App
 
 MOCK_XML = b"<xml />"
 
 @pytest.fixture(scope="function")
-def client(tmpDir, tmpConf, filesDir, monkeypatch):
+def client(tmpDir, tmpConf, filesDir, mockXsd, monkeypatch):
     """Create an instance of the API.
     """
     workDir = os.path.join(tmpDir, "api")
     if not os.path.isdir(workDir):
         os.mkdir(workDir)
 
-    xsdFile = os.path.join(tmpDir, "app_mock.xsd")
-    writeFile(xsdFile, "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" />")
-
     monkeypatch.setattr("dmci.CONFIG", tmpConf)
     tmpConf.distributor_cache = workDir
-    tmpConf.mmd_xsd_path = xsdFile
+    tmpConf.mmd_xsd_path = mockXsd
 
     app = App()
     assert app._conf.distributor_cache == workDir

@@ -18,7 +18,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
+import time
+import shutil
 import logging
+import datetime
 
 from dmci.distributors.distributor import Distributor, DistCmd
 
@@ -32,16 +36,52 @@ class GitDist(Distributor):
         return
 
     def run(self):
-        Distributor.run(self)
+        """Wrapper for the various jobs, depending on command.
+        """
+        if not self.is_valid():
+            return False
 
-        if self._cmd == DistCmd.UPDATE:
-            pass
-        elif self._cmd == DistCmd.INSERT:
-            pass
+        if self._cmd == DistCmd.INSERT:
+            return self._append_job()
+        elif self._cmd == DistCmd.UPDATE:
+            return self._append_job()
         elif self._cmd == DistCmd.DELETE:
-            pass
-        else:
-            logger.error("Invalid command: %s" % str(self._cmd))
+            logger.error("The `delete' command is not implemented")
+            return False
+
+        logger.error("Invalid command: %s" % str(self._cmd))
+
+        return False
+
+    def _append_job(self):
+        """Append the xml file to the job queue.
+        """
+        jobsDir = self._conf.git_jobs_path
+        if jobsDir is None:
+            logger.error("No 'git_jobs_path' set")
+            return False
+
+        jobName = None
+        jobPath = None
+        jobTime = datetime.datetime.fromtimestamp(time.time()).strftime("%Y%m%d_%H%M%S")
+        jobProc = os.getpid()
+        for i in range(100000):
+            jobName = "%s_N%05d_P%d.xml" % (jobTime, i, jobProc)
+            jobPath = os.path.join(jobsDir, jobName)
+            if os.path.isfile(jobPath):
+                jobName = None
+            else:
+                break
+
+        if jobName is None or jobPath is None:
+            logger.error("Failed to generate a unique job name")
+            return False
+
+        try:
+            shutil.copy2(self._xml_file, jobPath)
+        except Exception as e:
+            logger.error("Failed to create job file")
+            logger.error(str(e))
             return False
 
         return True
