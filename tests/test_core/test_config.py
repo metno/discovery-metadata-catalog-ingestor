@@ -86,7 +86,7 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     assert theConf.mmd_xsd_path is None
     assert theConf.file_archive_path is None
 
-    assert theConf.csw_service_url == "localhost"
+    assert theConf.csw_service_url == "http://localhost"
 
     # Set valid values
     theConf.mmd_xsd_path = os.path.join(filesDir, "mmd", "mmd.xsd")
