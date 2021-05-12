@@ -19,9 +19,8 @@ limitations under the License.
 """
 
 import os
+import lxml
 import pytest
-
-from lxml import etree
 
 from tools import readFile
 
@@ -79,7 +78,7 @@ def testApiWorker_Validator(monkeypatch, filesDir):
     passFile = os.path.join(filesDir, "api", "passing.xml")
     failFile = os.path.join(filesDir, "api", "failing.xml")
 
-    xsdObj = etree.XMLSchema(etree.parse(xsdFile))
+    xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
     passWorker = Worker(passFile, xsdObj)
     failWorker = Worker(failFile, xsdObj)
 
@@ -133,3 +132,23 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
         assert tstWorker._check_information_content(passData) == (False, msg)
 
 # END Test testApiWorker_CheckInfoContent
+
+@pytest.mark.api
+def testApiWorker_ExtractMetaDataID(monkeypatch, filesDir, mockXml):
+    """Test _check_information_content
+    """
+    passFile = os.path.join(filesDir, "api", "passing.xml")
+
+    # Valid File
+    passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
+    tstWorker = Worker(passFile, None)
+    tstWorker._extract_metadata_id(passXML)
+    assert tstWorker._file_metadata_id is not None
+
+    # Invalid File
+    failXML = lxml.etree.fromstring(bytes(readFile(mockXml), "utf-8"))
+    tstWorker = Worker(mockXml, None)
+    tstWorker._extract_metadata_id(failXML)
+    assert tstWorker._file_metadata_id is None
+
+# END Test testApiWorker_ExtractMetaDataID
