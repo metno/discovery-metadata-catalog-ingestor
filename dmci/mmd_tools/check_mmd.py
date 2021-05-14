@@ -38,7 +38,7 @@ def check_rectangle(rectangle): # pragma: no cover
 
     for key, val in directions.items():
         if not val:
-            logger.error('NOK - missing rectangle element %s' %key)
+            logger.error('NOK - missing rectangle element %s' % key)
             return False
 
     if not (-180 <= directions['west'] <= directions['east'] <= 180):

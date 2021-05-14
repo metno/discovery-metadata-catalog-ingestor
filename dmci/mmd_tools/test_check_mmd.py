@@ -13,7 +13,7 @@ class testMmdCheck(unittest.TestCase):
         #
         # run this test from the root directory by running:
         #
-        # python3 -m unittest 
+        # python3 -m unittest
         #
         # unset the output limit when printing the xml diff
         #
