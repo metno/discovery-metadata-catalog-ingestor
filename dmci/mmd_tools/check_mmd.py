@@ -36,6 +36,11 @@ def check_rectangle(rectangle): # pragma: no cover
             child.tag = child.tag.split('}', 1)[1]
         directions[child.tag] = float(child.text)
 
+    for key, val in directions.items():
+        if not val:
+            logger.error('NOK - missing rectangle element %s' %key)
+            return False
+
     if not (-180 <= directions['west'] <= directions['east'] <= 180):
         logger.debug('NOK - Longitudes not ok')
         ok = False

@@ -1,7 +1,8 @@
+import os
 import unittest
 import pathlib
-from py_mmd_tools.check_mmd import check_rectangle, check_urls, check_cf, check_vocabulary, \
-    full_check
+from dmci.mmd_tools.check_mmd import check_rectangle, check_urls, check_cf
+from dmci.mmd_tools.check_mmd import check_vocabulary, full_check
 import lxml.etree as ET
 
 from unittest.mock import patch
@@ -17,10 +18,12 @@ class testMmdCheck(unittest.TestCase):
         # unset the output limit when printing the xml diff
         #
         current_dir = pathlib.Path.cwd()
-        self.reference_xml = str(current_dir / 'tests' / 'data' / 'reference_mmd.xml')
-        self.reference_xsd = str(current_dir / 'tests' / 'data' / 'mmd_strict.xsd')
-        self.not_a_file = str(current_dir / 'tests' / 'data' / 'not_a_file.xml')
-        self.not_a_valid_xml = str(current_dir / 'tests' / 'data' / 'not_a_valid_xml.xml')
+        self.reference_xml = os.path.join(current_dir, 'tests', 'files', 'mmd',
+                                          'reference_mmd.xml')
+        self.reference_xsd = os.path.join(current_dir, 'tests', 'files', 'mmd', 'mmd.xsd')
+        self.not_a_file = os.path.join(current_dir, 'tests', 'files', 'mmd', 'not_a_file.xml')
+        self.not_a_valid_xml = os.path.join(current_dir, 'tests', 'files', 'mmd',
+                                            'not_a_valid_xml.xml')
         self.doc = ET.ElementTree(file=self.reference_xml)
         self.etree_ref = ET.ElementTree(ET.XML(
             "<root>"
