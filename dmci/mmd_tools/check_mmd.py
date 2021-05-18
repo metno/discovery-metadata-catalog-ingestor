@@ -11,7 +11,7 @@ import pythesint as pti
 
 logger = logging.getLogger(__name__)
 
-def check_rectangle(rectangle): # pragma: no cover
+def check_rectangle(rectangle):
     """Check if element geographic extent/rectangle is valid:
         - only 1 existing rectangle element
         - rectangle has north / south / west / east subelements
@@ -52,7 +52,7 @@ def check_rectangle(rectangle): # pragma: no cover
 
     return ok
 
-def check_urls(url_list): # pragma: no cover
+def check_urls(url_list):
     """Check that a list of URLs is valid
     Args:
         url_list: list of URLs
@@ -79,7 +79,7 @@ def check_urls(url_list): # pragma: no cover
 
     return ok
 
-def check_cf(cf_names): # pragma: no cover
+def check_cf(cf_names):
     """Check that names are valid CF standard names
     Args:
         cf_names: list of names to test
@@ -97,7 +97,7 @@ def check_cf(cf_names): # pragma: no cover
 
     return ok
 
-def check_vocabulary(xmldoc): # pragma: no cover
+def check_vocabulary(xmldoc):
     """Check controlled vocabularies for elements:
         - access_constraint
         - activity_type
@@ -140,7 +140,7 @@ def check_vocabulary(xmldoc): # pragma: no cover
 
     return ok
 
-def full_check(doc): # pragma: no cover
+def full_check(doc):
     """Main checking scripts for in depth checking of XML file.
      - checking URLs
      - checking lat-lon within geographic_extent/rectangle
