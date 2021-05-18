@@ -9,6 +9,8 @@ import logging
 import requests
 import pythesint as pti
 
+from lxml import etree
+
 logger = logging.getLogger(__name__)
 
 def check_rectangle(rectangle):
@@ -23,7 +25,7 @@ def check_rectangle(rectangle):
     Returns:
         True / False
     """
-    directions = dict.fromkeys(['north', 'south', 'west', 'east'])
+    directions = dict.fromkeys(['north', 'south', 'west', 'east'], None)
 
     ok = True
     if len(rectangle) > 1:
@@ -31,14 +33,13 @@ def check_rectangle(rectangle):
         return False
 
     for child in rectangle[0]:
-        # Remove namespace if any
-        if child.tag.startswith("{"):
-            child.tag = child.tag.split('}', 1)[1]
-        directions[child.tag] = float(child.text)
+        # Also removes namespace, if any
+        child_ns = etree.QName(child)
+        directions[child_ns.localname] = float(child.text)
 
     for key, val in directions.items():
-        if not val:
-            logger.error('NOK - missing rectangle element %s' % key)
+        if val is None:
+            logger.error('NOK - Missing rectangle element %s' % key)
             return False
 
     if not (-180 <= directions['west'] <= directions['east'] <= 180):
