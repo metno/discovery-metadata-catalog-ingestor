@@ -4,13 +4,13 @@ FROM alpine:3.13
 LABEL no.met.project="s-enda"
 LABEL source="https://github.com/metno/container-dmci"
 LABEL issues="https://github.com/metno/container-dmci/issues"
-LABEL description="Discovery Metadata Catalog Ingestor used in the S-ENDA prosject."
+LABEL description="Discovery Metadata Catalog Ingestor used in the S-ENDA project."
 
 # Make us able to change version and repo when building
 ARG DMCI_VERION=main
 ARG DMCI_REPO=https://github.com/metno/discovery-metadata-catalog-ingestor
 ARG MMD_REPO=https://github.com/metno/mmd
-ARG MMD_VERSION=issue125_temporal_extent_maxOccurs
+ARG MMD_VERSION=v3.1
 
 # Set config file for dmci
 ENV DMCI_CONFIG=/config.yaml
