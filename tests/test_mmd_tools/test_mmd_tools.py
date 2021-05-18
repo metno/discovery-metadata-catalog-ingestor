@@ -23,26 +23,50 @@ import logging
 
 from lxml import etree
 
-from dmci.mmd_tools.check_mmd import check_rectangle, check_urls, check_cf, check_vocabulary
+from dmci.mmd_tools.check_mmd import (
+    check_rectangle, check_urls, check_cf, check_vocabulary, full_check
+)
 
-@pytest.fixture(scope="function")
-def etreeRef():
-    return etree.ElementTree(etree.XML(
-        "<root>"
-        "  <a x=\"123\">https://www.met.no</a>"
-        "  <geographic_extent>"
-        "    <rectangle>"
-        "      <north>76.199661</north>"
-        "      <south>71.63427</south>"
-        "      <west>-28.114723</west>"
-        "      <east>-11.169785</east>"
-        "    </rectangle>"
-        "  </geographic_extent>"
-        "</root>"
-    ))
+etreeRef = etree.ElementTree(etree.XML(
+    "<root>"
+    "  <a x='123'>https://www.met.no</a>"
+    "  <geographic_extent>"
+    "    <rectangle>"
+    "      <north>76.199661</north>"
+    "      <south>71.63427</south>"
+    "      <west>-28.114723</west>"
+    "      <east>-11.169785</east>"
+    "    </rectangle>"
+    "  </geographic_extent>"
+    "</root>"
+))
+
+etreeRefEmpty = etree.ElementTree(etree.XML(
+    "<root>"
+    "  <a x=\"123\">'xxx'/><c/><b/></a>"
+    "</root>"
+))
+
+etreeUrlRectNok = etree.ElementTree(etree.XML(
+    "<root>"
+    "  <a x='123'>https://www.met.not</a>"
+    "  <geographic_extent>"
+    "    <rectangle>"
+    "      <north>76.199661</north>"
+    "      <south>71.63427</south>"
+    "      <west>-28.114723</west>"
+    "    </rectangle>"
+    "  </geographic_extent>"
+    "  <keywords vocabulary='Climate and Forecast Standard Names'>"
+    "    <keyword>sea_surface_temperature</keyword>"
+    "    <keyword>air_surface_temperature</keyword>"
+    "  </keywords>"
+    "  <operational_status>NotOpen</operational_status>"
+    "</root>"
+))
 
 @pytest.mark.mmd_tools
-def testMMDTools_CheckRectangle(etreeRef, caplog):
+def testMMDTools_CheckRectangle(caplog):
     """Test the check_rectangle function.
     """
     caplog.set_level(logging.DEBUG, logger="dmci")
@@ -139,3 +163,39 @@ def testMMDTools_CheckVocabulary():
     ))) is False
 
 # END Test testMMDTools_CheckVocabulary
+
+@pytest.mark.mmd_tools
+def testMMDTools_FullCheck():
+    """Test the full_check function.
+    """
+    # Full check
+    assert full_check(etreeRef) is True
+
+    # Full check with no elements to check
+    assert full_check(etreeRefEmpty) is True
+
+    # Full check with invalid elements
+    assert full_check(etreeUrlRectNok) is False
+
+    # Twice the element keywords for the same vocabulary
+    root = etree.Element("toto")
+    key1 = etree.SubElement(root, "keywords", vocabulary="Climate and Forecast Standard Names")
+    etree.SubElement(key1, "keyword").text = "air_temperature"
+    key2 = etree.SubElement(root, "keywords", vocabulary="Climate and Forecast Standard Names")
+    etree.SubElement(key2, "keyword").text = "air_temperature"
+    assert full_check(root) is False
+
+    # Correct case
+    root = etree.Element("toto")
+    root1 = etree.SubElement(root, "keywords", vocabulary="Climate and Forecast Standard Names")
+    etree.SubElement(root1, "keyword").text = "sea_surface_temperature"
+    assert full_check(root) is True
+
+    # Two standard names provided
+    root = etree.Element("toto")
+    root1 = etree.SubElement(root, "keywords", vocabulary="Climate and Forecast Standard Names")
+    etree.SubElement(root1, "keyword").text = "air_temperature"
+    etree.SubElement(root1, "keyword").text = "sea_surface_temperature"
+    assert full_check(root) is False
+
+# END Test testMMDTools_FullCheck
