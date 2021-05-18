@@ -153,7 +153,8 @@ class Worker():
         """
         self._file_metadata_id = None
         for xml_entry in xml_doc:
-            if xml_entry.tag == "{http://www.met.no/schema/mmd}metadata_identifier":
+            local = etree.QName(xml_entry)
+            if local.localname == "metadata_identifier":
                 self._file_metadata_id = xml_entry.text
                 logger.info("XML file metadata_identifier: %s" % self._file_metadata_id)
                 break
