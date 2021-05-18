@@ -1,7 +1,7 @@
 import os
 import unittest
 import pathlib
-from dmci.mmd_tools.check_mmd import check_rectangle, check_urls, check_cf
+from dmci.mmd_tools.check_mmd import check_urls, check_cf
 from dmci.mmd_tools.check_mmd import check_vocabulary, full_check
 import lxml.etree as ET
 
@@ -86,50 +86,6 @@ class testMmdCheck(unittest.TestCase):
     def test_special_urls_2(self, mock_head):
         # Check urls with string dodsC
         self.assertTrue(check_urls(['dodsC/fake/url']))
-
-    # Check lat/lon OK from rectangle
-    def test_rectangle_1(self):
-        rect = self.etree_ref.findall('./{*}geographic_extent/{*}rectangle')
-        self.assertTrue(check_rectangle(rectangle=rect))
-
-    # Check longitude NOK
-    def test_rectangle_2(self):
-        root = ET.Element("rectangle")
-        ET.SubElement(root, "south").text = '20'
-        ET.SubElement(root, "north").text = '50'
-        ET.SubElement(root, 'west').text = '50'
-        ET.SubElement(root, 'east').text = '0'
-        self.assertFalse(check_rectangle([root]))
-
-    # Check latitude NOK
-    def test_rectangle_3(self):
-        root = ET.Element("rectangle")
-        ET.SubElement(root, "south").text = '-182'
-        ET.SubElement(root, "north").text = '50'
-        ET.SubElement(root, 'west').text = '0'
-        ET.SubElement(root, 'east').text = '180'
-        self.assertFalse(check_rectangle([root]))
-
-    # Check more than one rectangle as input
-    def test_rectangle_4(self):
-        self.assertFalse(check_rectangle(['elem1', 'elem2']))
-
-    # Check lat & long OK with namespace
-    def test_rectangle_5(self):
-        root = ET.Element("rectangle")
-        ET.SubElement(root, '{http://www.met.no/schema/mmd}south').text = '20'
-        ET.SubElement(root, '{http://www.met.no/schema/mmd}north').text = '50'
-        ET.SubElement(root, '{http://www.met.no/schema/mmd}west').text = '50'
-        ET.SubElement(root, '{http://www.met.no/schema/mmd}east').text = '0'
-        self.assertFalse(check_rectangle([root]))
-
-    # Check rectangle with one missing element (no west)
-    def test_rectangle_6(self):
-        root = ET.Element("rectangle")
-        ET.SubElement(root, "south").text = '-182'
-        ET.SubElement(root, "north").text = '50'
-        ET.SubElement(root, 'east').text = '180'
-        self.assertFalse(check_rectangle([root]))
 
     # One real standard name and one fake
     def test_cf_1(self):
