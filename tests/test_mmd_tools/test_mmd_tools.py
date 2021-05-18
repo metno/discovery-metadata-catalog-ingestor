@@ -23,7 +23,7 @@ import logging
 
 from lxml import etree
 
-from dmci.mmd_tools.check_mmd import check_rectangle
+from dmci.mmd_tools.check_mmd import check_rectangle, check_urls
 
 @pytest.fixture(scope="function")
 def etreeRef():
@@ -90,3 +90,29 @@ def testMMDTools_CheckRectangle(etreeRef, caplog):
     assert "Missing rectangle element west" in caplog.text
 
 # END Test testMMDTools_CheckRectangle
+
+@pytest.mark.mmd_tools
+def testMMDTools_CheckURLs(monkeypatch):
+    """Test the check_urls function.
+    """
+    class MockResponse:
+        def close(self):
+            pass
+
+        def raise_for_status(self):
+            pass
+
+    # Check both valid and invalid URLs
+    assert check_urls(["https://www.met.no"]) is True
+    assert check_urls(["http://met.not"]) is False
+
+    with monkeypatch.context() as mp:
+        mp.setattr("requests.get", lambda *a, **k: MockResponse())
+        assert check_urls(["WMS&ploppetyboppety&GetCapabilities"]) is True
+        assert check_urls(["WMS"]) is False
+
+    with monkeypatch.context() as mp:
+        mp.setattr("requests.head", lambda *a, **k: MockResponse())
+        assert check_urls(["dodsC/fake/url"]) is True
+
+# END Test testMMDTools_CheckURLs
