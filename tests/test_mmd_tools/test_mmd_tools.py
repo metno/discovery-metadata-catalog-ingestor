@@ -23,13 +23,13 @@ import logging
 
 from lxml import etree
 
-from dmci.mmd_tools.check_mmd import check_rectangle, check_urls
+from dmci.mmd_tools.check_mmd import check_rectangle, check_urls, check_cf, check_vocabulary
 
 @pytest.fixture(scope="function")
 def etreeRef():
     return etree.ElementTree(etree.XML(
         "<root>"
-        "  <a x='123'>https://www.met.no</a>"
+        "  <a x=\"123\">https://www.met.no</a>"
         "  <geographic_extent>"
         "    <rectangle>"
         "      <north>76.199661</north>"
@@ -116,3 +116,26 @@ def testMMDTools_CheckURLs(monkeypatch):
         assert check_urls(["dodsC/fake/url"]) is True
 
 # END Test testMMDTools_CheckURLs
+
+@pytest.mark.mmd_tools
+def testMMDTools_CheckCF():
+    """Test the check_cf function.
+    """
+    assert check_cf(["sea_surface_temperature"]) is True
+    assert check_cf(["sea_surace_temperature"]) is False
+
+# END Test testMMDTools_CheckCF
+
+@pytest.mark.mmd_tools
+def testMMDTools_CheckVocabulary():
+    """Test the check_vocabulary function.
+    """
+    assert check_vocabulary(etree.ElementTree(etree.XML(
+        "<root><operational_status>Operational</operational_status></root>"
+    ))) is True
+
+    assert check_vocabulary(etree.ElementTree(etree.XML(
+        "<root><operational_status>OOperational</operational_status></root>"
+    ))) is False
+
+# END Test testMMDTools_CheckVocabulary

@@ -1,8 +1,7 @@
 import os
 import unittest
 import pathlib
-from dmci.mmd_tools.check_mmd import check_cf
-from dmci.mmd_tools.check_mmd import check_vocabulary, full_check
+from dmci.mmd_tools.check_mmd import full_check
 import lxml.etree as ET
 
 class testMmdCheck(unittest.TestCase):
@@ -67,11 +66,6 @@ class testMmdCheck(unittest.TestCase):
     def test_full_check_3(self):
         self.assertFalse(full_check(self.etree_url_rect_nok))
 
-    # One real standard name and one fake
-    def test_cf_1(self):
-        self.assertTrue(check_cf(['sea_surface_temperature']))
-        self.assertFalse(check_cf(['sea_surace_temperature']))
-
     # Twice the element keywords for the same vocabulary
     def test_cf_2(self):
         root = ET.Element("toto")
@@ -95,17 +89,3 @@ class testMmdCheck(unittest.TestCase):
         ET.SubElement(root1, "keyword").text = 'air_temperature'
         ET.SubElement(root1, "keyword").text = 'sea_surface_temperature'
         self.assertFalse(full_check(root))
-
-    # Test vocabularies
-    def test_voc_1(self):
-        self.assertTrue(check_vocabulary(ET.ElementTree(ET.XML(
-            "<root>"
-            "<operational_status>Operational</operational_status>"
-            "</root>"))))
-
-    # Test vocabularies
-    def test_voc_2(self):
-        self.assertFalse(check_vocabulary(ET.ElementTree(ET.XML(
-            "<root>"
-            "<operational_status>OOperational</operational_status>"
-            "</root>"))))
