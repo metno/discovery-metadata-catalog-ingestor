@@ -54,6 +54,21 @@ To increase logging level to include info and debug messages, set the environmen
 `DMCI_LOGLEVEL` to the desired level. Valid levels are `CRITICAL`, `ERROR`, `WARNING`, `INFO`, and
 `DEBUG`.
 
+## Usage
+
+First initialize the config.yaml or use environment-variables. Then, to start the API run:
+
+```python
+python dmci_start_api.py
+```
+
+Then you can post with curl to the api - endpoint:
+
+```bash
+curl --data "@<PATH_TO_MMD_FILE>" localhost:5000/v1/insert
+```
+insert is currently the only implemented command. Other commands will return 
+
 ## Licence
 
 Copyright 2021 MET Norway
