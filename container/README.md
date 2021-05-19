@@ -8,7 +8,7 @@ Default `config.yaml`:
 ---
 dmci:
   distributors:
-    - git
+    - file
     - pycsw
   distributor_cache: /workdir
   max_permitted_size: 100000
@@ -16,7 +16,10 @@ dmci:
   mmd_xsd_path: /usr/share/mmd/xsd/mmd.xsd
 
 pycsw:
-  service_url: localhost
+  service_url: http://localhost
+
+file:
+  file_archive_path: /workdir
 ```
 
 ## Supported tags
