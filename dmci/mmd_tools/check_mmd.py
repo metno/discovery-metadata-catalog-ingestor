@@ -1,17 +1,32 @@
+# -*- coding: utf-8 -*-
 """
-Tools for checking if an XML MMD file is valid.
+DMCI : MMD Checker Functions
+============================
 
-License: This file is part of py-mmd-tools, licensed under the Apache License 2.0
-         (https://www.apache.org/licenses/LICENSE-2.0).
+Copyright 2021 MET Norway
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 """
 
 import logging
 import requests
 import pythesint as pti
 
+from lxml import etree
+
 logger = logging.getLogger(__name__)
 
-def check_rectangle(rectangle): # pragma: no cover
+def check_rectangle(rectangle):
     """Check if element geographic extent/rectangle is valid:
         - only 1 existing rectangle element
         - rectangle has north / south / west / east subelements
@@ -23,7 +38,7 @@ def check_rectangle(rectangle): # pragma: no cover
     Returns:
         True / False
     """
-    directions = dict.fromkeys(['north', 'south', 'west', 'east'])
+    directions = dict.fromkeys(['north', 'south', 'west', 'east'], None)
 
     ok = True
     if len(rectangle) > 1:
@@ -31,10 +46,14 @@ def check_rectangle(rectangle): # pragma: no cover
         return False
 
     for child in rectangle[0]:
-        # Remove namespace if any
-        if child.tag.startswith("{"):
-            child.tag = child.tag.split('}', 1)[1]
-        directions[child.tag] = float(child.text)
+        # Also removes namespace, if any
+        child_ns = etree.QName(child)
+        directions[child_ns.localname] = float(child.text)
+
+    for key, val in directions.items():
+        if val is None:
+            logger.error('NOK - Missing rectangle element %s' % key)
+            return False
 
     if not (-180 <= directions['west'] <= directions['east'] <= 180):
         logger.debug('NOK - Longitudes not ok')
@@ -47,7 +66,7 @@ def check_rectangle(rectangle): # pragma: no cover
 
     return ok
 
-def check_urls(url_list): # pragma: no cover
+def check_urls(url_list):
     """Check that a list of URLs is valid
     Args:
         url_list: list of URLs
@@ -74,7 +93,7 @@ def check_urls(url_list): # pragma: no cover
 
     return ok
 
-def check_cf(cf_names): # pragma: no cover
+def check_cf(cf_names):
     """Check that names are valid CF standard names
     Args:
         cf_names: list of names to test
@@ -92,7 +111,7 @@ def check_cf(cf_names): # pragma: no cover
 
     return ok
 
-def check_vocabulary(xmldoc): # pragma: no cover
+def check_vocabulary(xmldoc):
     """Check controlled vocabularies for elements:
         - access_constraint
         - activity_type
@@ -135,7 +154,7 @@ def check_vocabulary(xmldoc): # pragma: no cover
 
     return ok
 
-def full_check(doc): # pragma: no cover
+def full_check(doc):
     """Main checking scripts for in depth checking of XML file.
      - checking URLs
      - checking lat-lon within geographic_extent/rectangle
