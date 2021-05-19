@@ -60,19 +60,12 @@ class FileDist(Distributor):
             logger.error("No 'file_archive_path' set")
             return False
 
-        mdID = None
+        fileUUID = None
         if self._worker is not None:
-            mdID = self._worker._file_metadata_id
-        if mdID is None:
-            logger.error("No metadata_identifier provided, cannot archive file")
-            return False
+            fileUUID = self._worker._file_metadata_id
 
-        try:
-            fileUUID = uuid.UUID(mdID)
-            logger.debug("File UUID: %s" % str(fileUUID))
-        except Exception as e:
-            logger.error("Could not parse UUID: '%s'" % str(mdID))
-            logger.error(str(e))
+        if not isinstance(fileUUID, uuid.UUID):
+            logger.error("No valid metadata_identifier provided, cannot archive file")
             return False
 
         lvlA = "arch_%s" % fileUUID.hex[7]

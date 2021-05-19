@@ -20,6 +20,7 @@ limitations under the License.
 
 import os
 import lxml
+import uuid
 import pytest
 
 from tools import causeOSError, readFile
@@ -79,7 +80,7 @@ def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
     # Set up a Worker object
     passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
     tstWorker = Worker(passFile, None)
-    tstWorker._extract_metadata_id(passXML)
+    assert tstWorker._extract_metadata_id(passXML) is True
     assert tstWorker._file_metadata_id is not None
 
     # No file archive path set
@@ -98,6 +99,7 @@ def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
 
     # Should have a valid identifier from here on
     tstWorker._file_metadata_id = goodUUID
+    tstWorker._file_metadata_id = uuid.UUID("a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b")
 
     # Fail the making of folders
     with monkeypatch.context() as mp:
