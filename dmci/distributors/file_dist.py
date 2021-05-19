@@ -60,10 +60,11 @@ class FileDist(Distributor):
             logger.error("No 'file_archive_path' set")
             return False
 
-        fileUUID = None
-        if self._worker is not None:
-            fileUUID = self._worker._file_metadata_id
+        if self._worker is None:
+            logger.error("No worker object sent to file_dist")
+            return False
 
+        fileUUID = self._worker._file_metadata_id
         if not isinstance(fileUUID, uuid.UUID):
             logger.error("No valid metadata_identifier provided, cannot archive file")
             return False
