@@ -18,6 +18,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import uuid
 import logging
 
 from lxml import etree
@@ -132,18 +133,17 @@ class Worker():
 
         # Read XML file
         xml_doc = etree.fromstring(data)
-        self._extract_metadata_id(xml_doc)
+        valid = self._extract_metadata_id(xml_doc)
+        if not valid:
+            return False, "Input MMD XML file has no valid UUID metadata_identifier"
 
         # Check XML file
         logger.info("Performing in depth checking.")
         valid = full_check(xml_doc)
         if valid:
-            msg = "Input MMD xml file is ok"
+            msg = "Input MMD XML file is ok"
         else:
-            msg = (
-                "Input MMD xml file contains errors - please check your file "
-                "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
-            )
+            msg = "Input MMD XML file contains errors, please check your file"
 
         return valid, msg
 
@@ -152,16 +152,26 @@ class Worker():
         the class variable.
         """
         self._file_metadata_id = None
+        fileUUID = None
         for xml_entry in xml_doc:
             local = etree.QName(xml_entry)
             if local.localname == "metadata_identifier":
-                self._file_metadata_id = xml_entry.text
-                logger.info("XML file metadata_identifier: %s" % self._file_metadata_id)
+                fileUUID = xml_entry.text
+                logger.info("XML file metadata_identifier: %s" % fileUUID)
                 break
 
-        if self._file_metadata_id is None:
+        if fileUUID is None:
             logger.warning("No metadata_identifier found in XML file")
+            return False
 
-        return
+        try:
+            self._file_metadata_id = uuid.UUID(fileUUID)
+            logger.debug("File UUID: %s" % str(fileUUID))
+        except Exception as e:
+            logger.error("Could not parse UUID: '%s'" % str(fileUUID))
+            logger.error(str(e))
+            return False
+
+        return True
 
 # END Class Worker
