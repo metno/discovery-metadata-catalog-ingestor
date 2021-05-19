@@ -39,10 +39,10 @@ class Config():
         self.mmd_xsd_path = None
 
         # PyCSW Distributor
-        self.csw_service_url = "localhost"
+        self.csw_service_url = "http://localhost"
 
-        # Git Distributor
-        self.git_jobs_path = None
+        # File Distributor
+        self.file_archive_path = None
 
         # Internals
         self._raw_conf = {}
@@ -72,7 +72,7 @@ class Config():
         # Read Values
         self._read_core()
         self._read_pycsw()
-        self._read_git()
+        self._read_file()
 
         valid = self._validate_config()
 
@@ -104,12 +104,12 @@ class Config():
 
         return
 
-    def _read_git(self):
+    def _read_file(self):
         """Read config values under 'pycsw'.
         """
-        conf = self._raw_conf.get("git", {})
+        conf = self._raw_conf.get("file", {})
 
-        self.git_jobs_path = conf.get("git_jobs_path", self.git_jobs_path)
+        self.file_archive_path = conf.get("file_archive_path", self.file_archive_path)
 
         return
 
@@ -136,13 +136,17 @@ class Config():
                 logger.error("Config value 'mmd_xsd_path' must point to an existing file")
                 valid = False
 
-        if "git" in self.call_distributors:
-            if self.git_jobs_path is None:
-                logger.error("Config value 'git_jobs_path' must be set for the git distributor")
+        if "file" in self.call_distributors:
+            if self.file_archive_path is None:
+                logger.error(
+                    "Config value 'file_archive_path' must be set for the file distributor"
+                )
                 valid = False
             else:
-                if not os.path.isdir(self.git_jobs_path):
-                    logger.error("Config value 'git_jobs_path' must point to an existing folder")
+                if not os.path.isdir(self.file_archive_path):
+                    logger.error(
+                        "Config value 'file_archive_path' must point to an existing folder"
+                    )
                     valid = False
 
         return valid

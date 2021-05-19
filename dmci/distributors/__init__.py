@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-DMCI : Git Distributor Init
-===========================
+DMCI : File Distributor Init
+============================
 
 Copyright 2021 MET Norway
 
@@ -18,10 +18,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dmci.distributors.git_dist import GitDist
+from dmci.distributors.file_dist import FileDist
 from dmci.distributors.pycsw_dist import PyCSWDist
 
 __all__ = [
-    "GitDist",
+    "FileDist",
     "PyCSWDist"
 ]

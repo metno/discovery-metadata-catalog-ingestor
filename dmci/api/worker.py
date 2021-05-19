@@ -18,20 +18,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import uuid
 import logging
 
 from lxml import etree
 
 from dmci import CONFIG
 from dmci.mmd_tools import full_check
-from dmci.distributors import GitDist, PyCSWDist
+from dmci.distributors import FileDist, PyCSWDist
 
 logger = logging.getLogger(__name__)
 
 class Worker():
 
     CALL_MAP = {
-        "git": GitDist,
+        "file": FileDist,
         "pycsw": PyCSWDist,
     }
 
@@ -46,6 +47,7 @@ class Worker():
         self._dist_xml_file = xml_file
         self._dist_metadata_id = None
         self._kwargs = kwargs
+        self._file_metadata_id = None
 
         # XML
         self._xsd_obj = xsd_validator
@@ -86,27 +88,6 @@ class Worker():
 
         return valid, msg
 
-    def _check_information_content(self, data):
-        """Check the information content in the submitted file
-        """
-        if not isinstance(data, bytes):
-            return False, "input must be bytes type"
-
-        # Read XML file
-        xml_doc = etree.fromstring(data)
-        logger.info('Performing in depth checking.')
-
-        valid = full_check(xml_doc)
-        if valid:
-            msg = "Input MMD xml file is ok"
-        else:
-            msg = (
-                "Input MMD xml file contains errors - please check your file "
-                "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
-            )
-
-        return valid, msg
-
     def distribute(self):
         """Loop through all distributors listed in the config and call
         them in the same order.
@@ -126,6 +107,7 @@ class Worker():
                 self._dist_cmd,
                 xml_file=self._dist_xml_file,
                 metadata_id=self._dist_metadata_id,
+                worker=self,
                 **self._kwargs
             )
             valid &= obj.is_valid()
@@ -138,5 +120,58 @@ class Worker():
                     failed.append(dist)
 
         return status, valid, called, failed, skipped
+
+    ##
+    #  Internal Functions
+    ##
+
+    def _check_information_content(self, data):
+        """Check the information content in the submitted file
+        """
+        if not isinstance(data, bytes):
+            return False, "input must be bytes type"
+
+        # Read XML file
+        xml_doc = etree.fromstring(data)
+        valid = self._extract_metadata_id(xml_doc)
+        if not valid:
+            return False, "Input MMD XML file has no valid UUID metadata_identifier"
+
+        # Check XML file
+        logger.info("Performing in depth checking.")
+        valid = full_check(xml_doc)
+        if valid:
+            msg = "Input MMD XML file is ok"
+        else:
+            msg = "Input MMD XML file contains errors, please check your file"
+
+        return valid, msg
+
+    def _extract_metadata_id(self, xml_doc):
+        """Extract the metadata_identifier from the xml object and set
+        the class variable.
+        """
+        self._file_metadata_id = None
+        fileUUID = None
+        for xml_entry in xml_doc:
+            local = etree.QName(xml_entry)
+            if local.localname == "metadata_identifier":
+                fileUUID = xml_entry.text
+                logger.info("XML file metadata_identifier: %s" % fileUUID)
+                break
+
+        if fileUUID is None:
+            logger.warning("No metadata_identifier found in XML file")
+            return False
+
+        try:
+            self._file_metadata_id = uuid.UUID(fileUUID)
+            logger.debug("File UUID: %s" % str(fileUUID))
+        except Exception as e:
+            logger.error("Could not parse UUID: '%s'" % str(fileUUID))
+            logger.error(str(e))
+            return False
+
+        return True
 
 # END Class Worker

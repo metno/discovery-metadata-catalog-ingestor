@@ -19,14 +19,13 @@ limitations under the License.
 """
 
 import os
+import lxml
 import pytest
-
-from lxml import etree
 
 from tools import readFile
 
 from dmci.api.worker import Worker
-from dmci.distributors import GitDist, PyCSWDist
+from dmci.distributors import FileDist, PyCSWDist
 
 @pytest.mark.api
 def testApiWorker_Init():
@@ -41,11 +40,11 @@ def testApiWorker_Init():
 def testApiWorker_Distributor(tmpDir, tmpConf, mockXml, monkeypatch):
     """Test the Worker class distributor.
     """
-    tmpConf.call_distributors = ["git", "pycsw", "blabla"]
+    tmpConf.call_distributors = ["file", "pycsw", "blabla"]
 
     # Call the distributor function with the distributors from the config
     with monkeypatch.context() as mp:
-        mp.setattr(GitDist, "run", lambda *a: True)
+        mp.setattr(FileDist, "run", lambda *a: True)
         mp.setattr(PyCSWDist, "run", lambda *a: True)
 
         tstWorker = Worker(None, None)
@@ -55,7 +54,7 @@ def testApiWorker_Distributor(tmpDir, tmpConf, mockXml, monkeypatch):
         status, valid, called, failed, skipped = tstWorker.distribute()
         assert status is True
         assert valid is True
-        assert called == ["git", "pycsw"]
+        assert called == ["file", "pycsw"]
         assert failed == []
         assert skipped == ["blabla"]
 
@@ -79,7 +78,7 @@ def testApiWorker_Validator(monkeypatch, filesDir):
     passFile = os.path.join(filesDir, "api", "passing.xml")
     failFile = os.path.join(filesDir, "api", "failing.xml")
 
-    xsdObj = etree.XMLSchema(etree.parse(xsdFile))
+    xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
     passWorker = Worker(passFile, xsdObj)
     failWorker = Worker(failFile, xsdObj)
 
@@ -120,16 +119,48 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
     with monkeypatch.context() as mp:
         mp.setattr("dmci.mmd_tools.check_mmd.check_urls", lambda *a: True)
         passData = bytes(readFile(passFile), "utf-8")
-        assert tstWorker._check_information_content(passData) == (True, "Input MMD xml file is ok")
+        assert tstWorker._check_information_content(passData) == (True, "Input MMD XML file is ok")
 
     # Valid data format, invalid content
-    msg = (
-        "Input MMD xml file contains errors - please check your file "
-        "(see https://github.com/metno/py-mmd-tools/blob/master/script/check_MMD)"
-    )
     with monkeypatch.context() as mp:
         mp.setattr("dmci.mmd_tools.check_mmd.check_urls", lambda *a: False)
         passData = bytes(readFile(passFile), "utf-8")
-        assert tstWorker._check_information_content(passData) == (False, msg)
+        assert tstWorker._check_information_content(passData) == (
+            False, "Input MMD XML file contains errors, please check your file"
+        )
+
+    # Invalid XML file
+    failFile = os.path.join(filesDir, "api", "failing.xml")
+    failData = bytes(readFile(failFile), "utf-8")
+    assert tstWorker._check_information_content(failData) == (
+        False, "Input MMD XML file has no valid UUID metadata_identifier"
+    )
 
 # END Test testApiWorker_CheckInfoContent
+
+@pytest.mark.api
+def testApiWorker_ExtractMetaDataID(filesDir, mockXml):
+    """Test _check_information_content
+    """
+    passFile = os.path.join(filesDir, "api", "passing.xml")
+    failFile = os.path.join(filesDir, "api", "failing.xml")
+
+    # Valid File
+    passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
+    tstWorker = Worker(passFile, None)
+    assert tstWorker._extract_metadata_id(passXML) is True
+    assert tstWorker._file_metadata_id is not None
+
+    # Invalid File
+    mockData = lxml.etree.fromstring(bytes(readFile(mockXml), "utf-8"))
+    tstWorker = Worker(mockXml, None)
+    assert tstWorker._extract_metadata_id(mockData) is False
+    assert tstWorker._file_metadata_id is None
+
+    # Invalid UUID
+    failXML = lxml.etree.fromstring(bytes(readFile(failFile), "utf-8"))
+    tstWorker = Worker(failFile, None)
+    assert tstWorker._extract_metadata_id(failXML) is False
+    assert tstWorker._file_metadata_id is None
+
+# END Test testApiWorker_ExtractMetaDataID
