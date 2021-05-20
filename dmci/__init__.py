@@ -42,7 +42,7 @@ def _init_logging(log_obj):
         log_level = logging.INFO
 
     if log_level < logging.INFO:
-        msg_format = "[{asctime:}] {name:>27}:{lineno:<4d} {levelname:8s} {message:}"
+        msg_format = "[{asctime:}] {name:>28}:{lineno:<4d} {levelname:8s} {message:}"
     else:
         msg_format = "{levelname:8s} {message:}"
 

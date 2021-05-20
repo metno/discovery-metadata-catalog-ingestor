@@ -71,7 +71,7 @@ class PyCSWDist(Distributor):
         transform = etree.XSLT(etree.parse(self._conf.mmd_xslt_path))
         new_doc = transform(xml_doc)
 
-        return etree.tostring(new_doc, pretty_print=True, encoding="unicode")
+        return etree.tostring(new_doc, pretty_print=True, encoding="utf-8")
 
     def _insert(self):
         """Insert in pyCSW using a Transaction
@@ -207,7 +207,6 @@ class PyCSWDist(Distributor):
             n_del = node.getElementsByTagName('csw:totalDeleted')[0].childNodes[0].data
         else:
             msg = "This should not happen"
-            print(msg)
             logger.error(msg)
 
         res_dict = {
