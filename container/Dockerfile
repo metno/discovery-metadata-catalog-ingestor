@@ -19,6 +19,7 @@ ENV DMCI_CONFIG=/config.yaml
 RUN apk add --no-cache \
       ca-certificates \
       dumb-init \
+      wget \
       git \
       libxml2 \
       libxslt \
@@ -46,6 +47,12 @@ RUN git clone --depth 1 --branch ${MMD_VERSION} ${MMD_REPO} /tmp/mmd; \
     cp /tmp/mmd/xslt/* /usr/share/mmd/xslt; \
     cp /tmp/mmd/xsd/* /usr/share/mmd/xsd; \
     rm -rf /tmp/mmd
+
+# Use local copy of schema
+RUN sed -Ei 's#http\://www.w3.org/2001/(xml.xsd)#\1#g' /usr/share/mmd/xsd/*.xsd
+
+# Fetch schema
+RUN wget -O /usr/share/mmd/xsd/xml.xsd http://www.w3.org/2001/xml.xsd
 
 # Add configuration file
 ADD config.yaml /
