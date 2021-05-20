@@ -21,14 +21,14 @@ import os
 import pytest
 import flask
 
-from tools import causeOSError
+from tools import causeOSError, writeFile
 
 from dmci.api import App
 
 MOCK_XML = b"<xml />"
 
 @pytest.fixture(scope="function")
-def client(tmpDir, tmpConf, filesDir, mockXsd, monkeypatch):
+def client(tmpDir, tmpConf, mockXsd, monkeypatch):
     """Create an instance of the API.
     """
     workDir = os.path.join(tmpDir, "api")
@@ -69,6 +69,13 @@ def testApiApp_Init(tmpConf, tmpDir, monkeypatch):
 
     assert sysExit.type == SystemExit
     assert sysExit.value.code == 1
+
+    # Check Invalid XML Schema
+    failXsd = os.path.join(tmpDir, "app_invalid.xsd")
+    writeFile(failXsd, "blablabla")
+    tmpConf.mmd_xsd_path = failXsd
+    with pytest.raises(SystemExit) as sysExit:
+        App()
 
 # END Test testApiApp_Init
 

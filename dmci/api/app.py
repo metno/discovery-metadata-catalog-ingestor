@@ -46,7 +46,12 @@ class App(Flask):
             sys.exit(1)
 
         # Create the XML Validator Object
-        self._xsd_obj = etree.XMLSchema(etree.parse(self._conf.mmd_xsd_path))
+        try:
+            self._xsd_obj = etree.XMLSchema(etree.parse(self._conf.mmd_xsd_path))
+        except Exception as e:
+            logger.critical("XML Schema could not be parsed: %s" % str(self._conf.mmd_xsd_path))
+            logger.critical(str(e))
+            sys.exit(1)
 
         # Set up api entry points
         @self.route("/v1/insert", methods=["POST"])
