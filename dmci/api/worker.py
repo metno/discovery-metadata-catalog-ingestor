@@ -24,7 +24,7 @@ import logging
 from lxml import etree
 
 from dmci import CONFIG
-from dmci.mmd_tools import full_check
+# from dmci.mmd_tools import full_check
 from dmci.distributors import FileDist, PyCSWDist
 
 logger = logging.getLogger(__name__)
@@ -137,15 +137,23 @@ class Worker():
         if not valid:
             return False, "Input MMD XML file has no valid UUID metadata_identifier"
 
-        # Check XML file
-        logger.info("Performing in depth checking.")
-        valid = full_check(xml_doc)
-        if valid:
-            msg = "Input MMD XML file is ok"
-        else:
-            msg = "Input MMD XML file contains errors, please check your file"
+        return True, "Input MMD XML file is ok"
 
-        return valid, msg
+        # Commented out until mmd_tools / pythesint has been fixed
+        # When this is commented in again remember to:
+        #  - Remove "-m 'not mmd_tools'" from .github/workflows/pytest.yml
+        #  - Remove "= pragma: no cover" from dmci/mmd_tools/check_mmd.py
+        #  - Comment back in the check for the below code in test_worker.py
+
+        # # Check XML file
+        # logger.info("Performing in depth checking.")
+        # valid = full_check(xml_doc)
+        # if valid:
+        #     msg = "Input MMD XML file is ok"
+        # else:
+        #     msg = "Input MMD XML file contains errors, please check your file"
+
+        # return valid, msg
 
     def _extract_metadata_id(self, xml_doc):
         """Extract the metadata_identifier from the xml object and set

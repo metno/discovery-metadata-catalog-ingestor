@@ -26,7 +26,7 @@ from lxml import etree
 
 logger = logging.getLogger(__name__)
 
-def check_rectangle(rectangle):
+def check_rectangle(rectangle): # pragma: no cover
     """Check if element geographic extent/rectangle is valid:
         - only 1 existing rectangle element
         - rectangle has north / south / west / east subelements
@@ -66,7 +66,7 @@ def check_rectangle(rectangle):
 
     return ok
 
-def check_urls(url_list):
+def check_urls(url_list): # pragma: no cover
     """Check that a list of URLs is valid
     Args:
         url_list: list of URLs
@@ -93,7 +93,7 @@ def check_urls(url_list):
 
     return ok
 
-def check_cf(cf_names):
+def check_cf(cf_names): # pragma: no cover
     """Check that names are valid CF standard names
     Args:
         cf_names: list of names to test
@@ -111,7 +111,7 @@ def check_cf(cf_names):
 
     return ok
 
-def check_vocabulary(xmldoc):
+def check_vocabulary(xmldoc): # pragma: no cover
     """Check controlled vocabularies for elements:
         - access_constraint
         - activity_type
@@ -154,7 +154,7 @@ def check_vocabulary(xmldoc):
 
     return ok
 
-def full_check(doc):
+def full_check(doc): # pragma: no cover
     """Main checking scripts for in depth checking of XML file.
      - checking URLs
      - checking lat-lon within geographic_extent/rectangle
