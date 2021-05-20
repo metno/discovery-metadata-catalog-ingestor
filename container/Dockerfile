@@ -19,6 +19,7 @@ ENV DMCI_CONFIG=/config.yaml
 RUN apk add --no-cache \
       ca-certificates \
       dumb-init \
+      wget \
       git \
       libxml2 \
       libxslt \
