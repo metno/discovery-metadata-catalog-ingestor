@@ -27,8 +27,6 @@ jobs:
           pip install pytest-timeout
           pip install pytest-cov
       - name: Run Tests
-        run: |
-          export DMCI_LOGLEVEL=DEBUG
-          python -m pytest -v --cov=dmci --timeout=60 -m 'not mmd_tools'
+        run: python -m pytest -v --cov=dmci --timeout=60 -m 'not mmd_tools'
       - name: Upload to Codecov
         uses: codecov/codecov-action@v1

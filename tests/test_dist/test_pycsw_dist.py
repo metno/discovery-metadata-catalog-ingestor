@@ -124,11 +124,11 @@ def testDistPyCSW_Translate(filesDir, caplog):
     tstPyCSW._conf.mmd_xslt_path = xsltFile
     assert tstPyCSW._translate() == outData.encode("utf-8")
 
+    caplog.clear()
     tstPyCSW = PyCSWDist("insert", xml_file=failFile)
     tstPyCSW._conf.mmd_xslt_path = xsltFile
     assert tstPyCSW._translate() == ""
-    assert caplog.messages[-2] == "Failed to translate MMD to ISO19139"
-    assert caplog.messages[-1].startswith("Input object has no document:")
+    assert "Failed to translate MMD to ISO19139" in caplog.messages
 
 # END Test testDistPyCSW_Translate
 
@@ -301,6 +301,7 @@ def testDistPyCSW_ReadResponse(mockXml, caplog):
     ) is False
 
     # delete unknown tag
+    caplog.clear()
     md_id = "S1A_EW_GRDM_1SDH_20200420T023244_20200420T023348_032205_03B97F_72EB"
     text = (
         '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
@@ -318,9 +319,10 @@ def testDistPyCSW_ReadResponse(mockXml, caplog):
     )._read_response_text(
         "total_deleted", text
     ) is False
-    assert caplog.messages[-1] == "This should not happen"
+    assert "This should not happen" in caplog.messages
 
     # insert but dataset already exists, unparsable error
+    caplog.clear()
     text = (
         '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
         '<!-- pycsw 2.7.dev0 -->'
@@ -335,9 +337,10 @@ def testDistPyCSW_ReadResponse(mockXml, caplog):
     )
     key = "total_inserted"
     assert PyCSWDist("insert", xml_file=mockXml)._read_response_text(key, text) is False
-    assert caplog.messages[-1] == "Unknown Error"
+    assert "Unknown Error" in caplog.messages
 
     # unparsable response (truncated)
+    caplog.clear()
     text = (
         '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
         '<!-- pycsw 2.7.dev0 -->'
@@ -348,6 +351,6 @@ def testDistPyCSW_ReadResponse(mockXml, caplog):
     )
     key = "total_inserted"
     assert PyCSWDist("insert", xml_file=mockXml)._read_response_text(key, text) is False
-    assert caplog.messages[-1].startswith("AttValue:")
+    assert "Could not parse response XML from PyCSW" in caplog.messages
 
 # END Test testDistPyCSW_ReadResponse
