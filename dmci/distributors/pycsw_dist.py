@@ -20,7 +20,6 @@ limitations under the License.
 
 import logging
 import requests
-import xml.dom.minidom
 
 from lxml import etree
 
@@ -188,23 +187,35 @@ class PyCSWDist(Distributor):
             return False
 
         status = False
-        dom = xml.dom.minidom.parseString(text.encode('utf-8').strip())
+        try:
+            root = etree.fromstring(text.encode("utf-8").strip())
+        except Exception as e:
+            logger.error("Could not parse response XML from PyCSW")
+            logger.error(str(e))
+            return status
 
-        # should only contain the standard_name_table:
-        node0 = dom.childNodes[1]
-        tag_name = node0.tagName
+        ns_ows = root.nsmap.get("ows", "")
+        ns_csw = root.nsmap.get("csw", "")
 
-        n_ins = 0
-        n_upd = 0
-        n_del = 0
-        if tag_name == 'ows:ExceptionReport':
-            msg = node0.getElementsByTagName('ows:ExceptionText')[0].childNodes[0].data
+        n_ins = "0"
+        n_upd = "0"
+        n_del = "0"
+        if root.tag == "{%s}ExceptionReport" % ns_ows:
+            node = root.find("{%s}Exception" % ns_ows, root.nsmap)
+            msg = "Unknown Error"
+            if node is not None:
+                msg = node.findtext("{%s}ExceptionText" % ns_ows, "Unknown Error", root.nsmap)
+            else:
+                msg = "Unknown Error"
             logger.error(msg)
-        elif tag_name == 'csw:TransactionResponse':
-            node = node0.getElementsByTagName('csw:TransactionSummary')[0]
-            n_ins = node.getElementsByTagName('csw:totalInserted')[0].childNodes[0].data
-            n_upd = node.getElementsByTagName('csw:totalUpdated')[0].childNodes[0].data
-            n_del = node.getElementsByTagName('csw:totalDeleted')[0].childNodes[0].data
+
+        elif root.tag == "{%s}TransactionResponse" % ns_csw:
+            node = root.find("{%s}TransactionSummary" % ns_csw, root.nsmap)
+            if node is not None:
+                n_ins = node.findtext("{%s}totalInserted" % ns_csw, "0", root.nsmap)
+                n_upd = node.findtext("{%s}totalUpdated" % ns_csw, "0", root.nsmap)
+                n_del = node.findtext("{%s}totalDeleted" % ns_csw, "0", root.nsmap)
+
         else:
             msg = "This should not happen"
             logger.error(msg)
@@ -215,7 +226,7 @@ class PyCSWDist(Distributor):
             self.TOTAL_DELETED: n_del,
         }
 
-        # In principle, we can insert, update or delete multiple datasets...
+        # In principle, we can insert, update or delete multiple datasets
         if int(res_dict[key]) >= 1:
             status = True
 

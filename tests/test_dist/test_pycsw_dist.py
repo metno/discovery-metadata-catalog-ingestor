@@ -176,7 +176,7 @@ def testDistPyCSW_GetTransactionStatus(monkeypatch, mockXml):
 # END Test testDistPyCSW_GetTransactionStatus
 
 @pytest.mark.dist
-def testDistPyCSW_ReadResponse(mockXml):
+def testDistPyCSW_ReadResponse(mockXml, caplog):
     """_read_response_text tests
     """
     # text wrongkey
@@ -311,5 +311,36 @@ def testDistPyCSW_ReadResponse(mockXml):
     )._read_response_text(
         "total_deleted", text
     ) is False
+    assert caplog.messages[-1] == "This should not happen"
+
+    # insert but dataset already exists, unparsable error
+    text = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
+        '<!-- pycsw 2.7.dev0 -->'
+        '<ows:ExceptionReport xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
+        'xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dct="http://purl.org/dc/terms/" '
+        'xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gml="http://www.opengis.net/gml" '
+        'xmlns:ows="http://www.opengis.net/ows" xmlns:xs="http://www.w3.org/2001/XMLSchema" '
+        'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2.0" '
+        'language="en-US" xsi:schemaLocation="http://www.opengis.net/ows '
+        'http://schemas.opengis.net/ows/1.0.0/owsExceptionReport.xsd">'
+        '</ows:ExceptionReport>'
+    )
+    key = "total_inserted"
+    assert PyCSWDist("insert", xml_file=mockXml)._read_response_text(key, text) is False
+    assert caplog.messages[-1] == "Unknown Error"
+
+    # unparsable response (truncated)
+    text = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
+        '<!-- pycsw 2.7.dev0 -->'
+        '<ows:ExceptionReport xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
+        'xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dct="http://purl.org/dc/terms/" '
+        'xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gml="http://www.opengis.net/gml" '
+        'xmlns:ows="http:/'
+    )
+    key = "total_inserted"
+    assert PyCSWDist("insert", xml_file=mockXml)._read_response_text(key, text) is False
+    assert caplog.messages[-1].startswith("AttValue:")
 
 # END Test testDistPyCSW_ReadResponse
