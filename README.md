@@ -69,7 +69,7 @@ curl --data "@<PATH_TO_MMD_FILE>" localhost:5000/v1/insert
 ```
 insert is currently the only implemented command. Other commands will return 404 Not Found until implementation.
 
-The API uses HTML return codes, and expected returns are:
+The API uses HTTP return codes, and expected returns are:
 
     200 for validated and queued requests.
     404 for non-implemented commands.
