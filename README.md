@@ -54,6 +54,29 @@ To increase logging level to include info and debug messages, set the environmen
 `DMCI_LOGLEVEL` to the desired level. Valid levels are `CRITICAL`, `ERROR`, `WARNING`, `INFO`, and
 `DEBUG`.
 
+## Usage
+
+First initialize the config.yaml or use environment-variables. Then, to start the API run:
+
+```python
+python dmci_start_api.py
+```
+
+Then you can post with curl to the api - endpoint:
+
+```bash
+curl --data "@<PATH_TO_MMD_FILE>" localhost:5000/v1/insert
+```
+insert is currently the only implemented command. Other commands will return 404 Not Found until implementation.
+
+The API uses HTTP return codes, and expected returns are:
+
+    200 for validated and queued requests.
+    404 for non-implemented commands.
+    413 for files being bigger than treshold (Default is 10MB, given as max_permitted_size)
+    500 for validation errors and other internal server problems
+    507 if file could not be saved to the work queue
+
 ## Licence
 
 Copyright 2021 MET Norway
