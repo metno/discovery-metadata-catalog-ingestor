@@ -67,11 +67,11 @@ EXPOSE 8000
 # Override workdirectory, expected to have persistent storage
 VOLUME /workdir
 
-# Override config file in this folder as config.yaml
-#VOLUME /dmci
+# Override archive directory, expected to have persistent storage
+VOLUME /archive
 
 # Catch interrupts and send to all sub-processes
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start application
-CMD gunicorn --worker-class sync --workers 1 --bind 0.0.0.0:8000 wsgi:app --keep-alive 5 --keep-alive 5 --log-level info
+CMD gunicorn --worker-class sync --workers 5 --bind 0.0.0.0:8000 wsgi:app --keep-alive 5 --log-level info
