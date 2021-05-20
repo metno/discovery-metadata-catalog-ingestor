@@ -20,7 +20,7 @@ limitations under the License.
 
 import logging
 import requests
-import xml
+import xml.dom.minidom
 
 from lxml import etree
 
