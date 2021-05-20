@@ -9,7 +9,7 @@ dmci:
   mmd_xsd_path: /usr/share/mmd/xsd/mmd_strict.xsd
 
 pycsw:
-  service_url: http://localhost
+  csw_service_url: http://localhost
 
 file:
   file_archive_path: /workdir
