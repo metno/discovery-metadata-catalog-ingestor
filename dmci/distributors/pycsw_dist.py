@@ -36,7 +36,6 @@ class PyCSWDist(Distributor):
 
     def __init__(self, cmd, xml_file=None, metadata_id=None, **kwargs):
         super().__init__(cmd, xml_file, metadata_id, **kwargs)
-
         return
 
     def run(self):
@@ -66,11 +65,17 @@ class PyCSWDist(Distributor):
     def _translate(self):
         """Convert from MMD to ISO19139, Norwegian INSPIRE profile
         """
-        xml_doc = etree.ElementTree(file=self._xml_file)
-        transform = etree.XSLT(etree.parse(self._conf.mmd_xslt_path))
-        new_doc = transform(xml_doc)
+        pretty = ""
+        try:
+            xml_doc = etree.ElementTree(file=self._xml_file)
+            transform = etree.XSLT(etree.parse(self._conf.mmd_xslt_path))
+            new_doc = transform(xml_doc)
+            pretty = etree.tostring(new_doc, pretty_print=True, encoding="utf-8")
+        except Exception as e:
+            logger.error("Failed to translate MMD to ISO19139")
+            logger.debug(str(e))
 
-        return etree.tostring(new_doc, pretty_print=True, encoding="utf-8")
+        return pretty
 
     def _insert(self):
         """Insert in pyCSW using a Transaction
@@ -191,7 +196,7 @@ class PyCSWDist(Distributor):
             root = etree.fromstring(text.encode("utf-8").strip())
         except Exception as e:
             logger.error("Could not parse response XML from PyCSW")
-            logger.error(str(e))
+            logger.debug(str(e))
             return status
 
         ns_ows = root.nsmap.get("ows", "")

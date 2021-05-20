@@ -110,10 +110,11 @@ def testDistPyCSW_Delete(monkeypatch, mockXml):
 # END Test testDistPyCSW_Delete
 
 @pytest.mark.dist
-def testDistPyCSW_Translate(monkeypatch, mockXml, filesDir):
+def testDistPyCSW_Translate(filesDir, caplog):
     """_translate tests
     """
     passFile = os.path.join(filesDir, "api", "passing.xml")
+    failFile = os.path.join(filesDir, "not_an_xml_file.xml")
     xsltFile = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
 
     outFile = os.path.join(filesDir, "reference", "passing_translated.xml")
@@ -122,6 +123,12 @@ def testDistPyCSW_Translate(monkeypatch, mockXml, filesDir):
     tstPyCSW = PyCSWDist("insert", xml_file=passFile)
     tstPyCSW._conf.mmd_xslt_path = xsltFile
     assert tstPyCSW._translate() == outData.encode("utf-8")
+
+    tstPyCSW = PyCSWDist("insert", xml_file=failFile)
+    tstPyCSW._conf.mmd_xslt_path = xsltFile
+    assert tstPyCSW._translate() == ""
+    assert caplog.messages[-2] == "Failed to translate MMD to ISO19139"
+    assert caplog.messages[-1].startswith("Input object has no document:")
 
 # END Test testDistPyCSW_Translate
 
