@@ -20,6 +20,7 @@ RUN apk add --no-cache \
       ca-certificates \
       dumb-init \
       wget \
+      htop \
       git \
       libxml2 \
       libxslt \
