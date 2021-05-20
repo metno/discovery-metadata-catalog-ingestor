@@ -34,12 +34,12 @@ class Config():
         # Core Values
         self.call_distributors = []
         self.distributor_cache = None
-        self.max_permitted_size = 100000   # Size of files permitted through API
+        self.max_permitted_size = 100000 # Size of files permitted through API
         self.mmd_xslt_path = None
         self.mmd_xsd_path = None
 
         # PyCSW Distributor
-        self.csw_service_url = "http://localhost"
+        self.csw_service_url = None
 
         # File Distributor
         self.file_archive_path = None
