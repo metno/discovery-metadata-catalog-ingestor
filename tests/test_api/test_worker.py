@@ -123,7 +123,8 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
         passData = bytes(readFile(passFile), "utf-8")
         assert tstWorker._check_information_content(passData) == (True, "Input MMD XML file is ok")
 
-    # # Valid data format, invalid content
+    # Valid data format, invalid content
+    # Commented out until the checks are turned back on
     # with monkeypatch.context() as mp:
     #     mp.setattr("dmci.mmd_tools.check_mmd.check_urls", lambda *a: False)
     #     passData = bytes(readFile(passFile), "utf-8")

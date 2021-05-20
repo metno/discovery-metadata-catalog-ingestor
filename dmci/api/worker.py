@@ -142,10 +142,10 @@ class Worker():
         # Commented out until mmd_tools / pythesint has been fixed
         # When this is commented in again remember to:
         #  - Remove "-m 'not mmd_tools'" from .github/workflows/pytest.yml
-        #  - Remove "= pragma: no cover" from dmci/mmd_tools/check_mmd.py
+        #  - Remove "# pragma: no cover" from dmci/mmd_tools/check_mmd.py
         #  - Comment back in the check for the below code in test_worker.py
 
-        # # Check XML file
+        # Check XML file
         # logger.info("Performing in depth checking.")
         # valid = full_check(xml_doc)
         # if valid:
