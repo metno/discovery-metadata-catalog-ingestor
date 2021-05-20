@@ -67,7 +67,15 @@ Then you can post with curl to the api - endpoint:
 ```bash
 curl --data "@<PATH_TO_MMD_FILE>" localhost:5000/v1/insert
 ```
-insert is currently the only implemented command. Other commands will return 
+insert is currently the only implemented command. Other commands will return 404 Not Found until implementation.
+
+The API uses HTML return codes, and expected returns are:
+
+    200 for validated and queued requests.
+    404 for non-implemented commands.
+    413 for files being bigger than treshold (Default is 10MB, given as max_permitted_size)
+    500 for validation errors and other internal server problems
+    507 if file could not be saved to the work queue
 
 ## Licence
 
