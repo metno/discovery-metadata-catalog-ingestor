@@ -81,7 +81,7 @@ class Worker():
 
         # Check xml file against XML schema definition
         valid = self._xsd_obj.validate(etree.fromstring(data))
-        msg = self._xsd_obj.error_log
+        msg = repr(self._xsd_obj.error_log)
         if valid:
             # Check information content
             valid, msg = self._check_information_content(data)
