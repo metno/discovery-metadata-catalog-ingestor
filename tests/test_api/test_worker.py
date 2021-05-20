@@ -94,12 +94,14 @@ def testApiWorker_Validator(monkeypatch, filesDir):
         passData = bytes(readFile(passFile), "utf-8")
         valid, msg = passWorker.validate(passData)
         assert valid is True
+        assert isinstance(msg, str)
         assert not msg
 
         # Invalid XML
         failData = bytes(readFile(failFile), "utf-8")
         valid, msg = failWorker.validate(failData)
         assert valid is False
+        assert isinstance(msg, str)
         assert msg
 
 # END Test testApiWorker_Validator
