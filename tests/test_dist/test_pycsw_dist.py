@@ -121,7 +121,7 @@ def testDistPyCSW_Translate(monkeypatch, mockXml, filesDir):
 
     tstPyCSW = PyCSWDist("insert", xml_file=passFile)
     tstPyCSW._conf.mmd_xslt_path = xsltFile
-    assert tstPyCSW._translate() == outData
+    assert tstPyCSW._translate() == outData.encode("utf-8")
 
 # END Test testDistPyCSW_Translate
 
