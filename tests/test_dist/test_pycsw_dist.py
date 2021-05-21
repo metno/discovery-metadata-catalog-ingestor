@@ -22,7 +22,7 @@ import os
 import pytest
 import requests
 
-from tools import readFile
+from lxml import etree
 
 from dmci.distributors.pycsw_dist import PyCSWDist
 
@@ -117,12 +117,13 @@ def testDistPyCSW_Translate(filesDir, caplog):
     failFile = os.path.join(filesDir, "not_an_xml_file.xml")
     xsltFile = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
 
-    outFile = os.path.join(filesDir, "reference", "passing_translated.xml")
-    outData = readFile(outFile)
+    outFile = os.path.join(filesDir, "reference", "pycsw_dist_translated.xml")
+    outTree = etree.parse(outFile)
+    outData = etree.tostring(outTree, pretty_print=False, encoding="unicode")
 
     tstPyCSW = PyCSWDist("insert", xml_file=passFile)
     tstPyCSW._conf.mmd_xslt_path = xsltFile
-    assert tstPyCSW._translate() == outData.encode("utf-8")
+    assert tstPyCSW._translate() == outData
 
     caplog.clear()
     tstPyCSW = PyCSWDist("insert", xml_file=failFile)
