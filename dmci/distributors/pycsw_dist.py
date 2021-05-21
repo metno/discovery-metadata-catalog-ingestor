@@ -65,17 +65,18 @@ class PyCSWDist(Distributor):
     def _translate(self):
         """Convert from MMD to ISO19139, Norwegian INSPIRE profile
         """
-        pretty = ""
+        result = ""
         try:
             xml_doc = etree.ElementTree(file=self._xml_file)
             transform = etree.XSLT(etree.parse(self._conf.mmd_xslt_path))
             new_doc = transform(xml_doc)
-            pretty = etree.tostring(new_doc, pretty_print=False, encoding="utf-8")
+            # Note: encoding=unicode makes the result a Python string
+            result = etree.tostring(new_doc, pretty_print=False, encoding="unicode")
         except Exception as e:
             logger.error("Failed to translate MMD to ISO19139")
             logger.debug(str(e))
 
-        return pretty
+        return result
 
     def _insert(self):
         """Insert in pyCSW using a Transaction
