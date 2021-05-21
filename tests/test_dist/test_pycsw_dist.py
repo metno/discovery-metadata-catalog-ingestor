@@ -118,7 +118,7 @@ def testDistPyCSW_Translate(filesDir, caplog):
     xsltFile = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
 
     outFile = os.path.join(filesDir, "reference", "pycsw_dist_translated.xml")
-    outTree = etree.parse(outFile)
+    outTree = etree.parse(outFile, parser=etree.XMLParser(remove_blank_text=True))
     outData = etree.tostring(outTree, pretty_print=False, encoding="unicode")
 
     tstPyCSW = PyCSWDist("insert", xml_file=passFile)
