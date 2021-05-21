@@ -70,7 +70,7 @@ class PyCSWDist(Distributor):
             xml_doc = etree.ElementTree(file=self._xml_file)
             transform = etree.XSLT(etree.parse(self._conf.mmd_xslt_path))
             new_doc = transform(xml_doc)
-            pretty = etree.tostring(new_doc, pretty_print=True, encoding="utf-8")
+            pretty = etree.tostring(new_doc, pretty_print=False, encoding="utf-8")
         except Exception as e:
             logger.error("Failed to translate MMD to ISO19139")
             logger.debug(str(e))
@@ -91,7 +91,7 @@ class PyCSWDist(Distributor):
             'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
             'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd" '
             'service="CSW" version="2.0.2">'
-            '    <csw:Insert>%s</csw:Insert>'
+            '<csw:Insert>%s</csw:Insert>'
             '</csw:Transaction>'
         ) % self._translate()
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
