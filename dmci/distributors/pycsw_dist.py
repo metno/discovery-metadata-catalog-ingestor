@@ -70,7 +70,8 @@ class PyCSWDist(Distributor):
             xml_doc = etree.ElementTree(file=self._xml_file)
             transform = etree.XSLT(etree.parse(self._conf.mmd_xslt_path))
             new_doc = transform(xml_doc)
-            result = etree.tostring(new_doc, pretty_print=False, encoding="utf-8")
+            # get bytes object and convert to string
+            result = etree.tostring(new_doc, pretty_print=False, encoding="utf-8").decode("utf-8")
         except Exception as e:
             logger.error("Failed to translate MMD to ISO19139")
             logger.debug(str(e))

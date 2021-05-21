@@ -119,10 +119,11 @@ def testDistPyCSW_Translate(filesDir, caplog):
 
     outFile = os.path.join(filesDir, "reference", "pycsw_dist_translated.xml")
     outTree = etree.parse(outFile, parser=etree.XMLParser(remove_blank_text=True))
-    outData = etree.tostring(outTree, pretty_print=False, encoding="utf-8")
+    outData = etree.tostring(outTree, pretty_print=False, encoding="utf-8").decode("utf-8")
 
     tstPyCSW = PyCSWDist("insert", xml_file=passFile)
     tstPyCSW._conf.mmd_xslt_path = xsltFile
+    assert type(tstPyCSW._translate()) == str
     assert tstPyCSW._translate() == outData
 
     caplog.clear()
