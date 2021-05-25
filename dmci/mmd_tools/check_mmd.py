@@ -19,14 +19,14 @@ limitations under the License.
 """
 
 import logging
-import requests
 import pythesint as pti
 
 from lxml import etree
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
-def check_rectangle(rectangle): # pragma: no cover
+def check_rectangle(rectangle):
     """Check if element geographic extent/rectangle is valid:
         - only 1 existing rectangle element
         - rectangle has north / south / west / east subelements
@@ -66,32 +66,50 @@ def check_rectangle(rectangle): # pragma: no cover
 
     return ok
 
-def check_urls(url_list): # pragma: no cover
+def check_urls(url_list, allow_no_path=False):
     """Check that a list of URLs is valid
     Args:
         url_list: list of URLs
     Returns:
         True / False
     """
-    ok = True
+    result = True
     for url in url_list:
-
-        if 'dodsC' in url:
-            url += ".html"
         try:
-            if 'WMS' in url and 'GetCapabilities' in url:
-                r = requests.get(url, timeout=60)
-            else:
-                r = requests.head(url, timeout=10)
-            r.raise_for_status()
-            logger.debug(f'OK - {url}')
-            r.close()
-        except Exception as e:
-            logger.debug(f'NOK - {url}')
-            logger.debug(e)
-            ok = False
+            parsed = urlparse(url)
+            if parsed.scheme not in ("http", "https", "ftp", "sftp"):
+                logger.debug(f"NOK - {url}")
+                logger.debug("URL scheme not allowed")
+                result = False
+                continue
 
-    return ok
+            if not (parsed.netloc and "." in parsed.netloc):
+                logger.debug(f"NOK - {url}")
+                logger.debug("No valid domain in URL")
+                result = False
+                continue
+
+            if not (parsed.path or allow_no_path):
+                logger.debug(f"NOK - {url}")
+                logger.debug("No path in URL")
+                result = False
+                continue
+
+        except Exception:
+            logger.debug(f"NOK - {url}")
+            logger.debug("URL cannot be parsed by urllib")
+            result = False
+            continue
+
+        try:
+            url.encode("ascii")
+        except Exception:
+            logger.debug(f"NOK - {url}")
+            logger.debug("URL contains non-ASCII characters")
+            result = False
+            continue
+
+    return result
 
 def check_cf(cf_names): # pragma: no cover
     """Check that names are valid CF standard names
@@ -154,7 +172,7 @@ def check_vocabulary(xmldoc): # pragma: no cover
 
     return ok
 
-def full_check(doc): # pragma: no cover
+def full_check(doc):
     """Main checking scripts for in depth checking of XML file.
      - checking URLs
      - checking lat-lon within geographic_extent/rectangle
@@ -174,12 +192,12 @@ def full_check(doc): # pragma: no cover
     urls = [elem.text for elem in url_elements]
     if len(urls) > 0:
         logger.debug('Checking element(s) containing URL ...')
-        urls_ok = check_urls(urls)
+        urls_ok = check_urls(urls, allow_no_path=True)
         if urls_ok:
             logger.info('OK - URLs')
         else:
             logger.info('NOK - URLs -> check debug log')
-        valid = valid and urls_ok
+        valid &= urls_ok
     else:
         logger.debug('No element containing URL.')
 
@@ -192,38 +210,40 @@ def full_check(doc): # pragma: no cover
             logger.info('OK - geographic_extent/rectangle')
         else:
             logger.info('NOK - geographic_extent/rectangle -> check debug log')
-        valid = valid and rect_ok
+        valid &= rect_ok
     else:
         logger.debug('No geographic_extent/rectangle element.')
 
     # Check that cf name provided exist in reference Standard Name Table
-    cf_elements = doc.findall('./{*}keywords[@vocabulary="Climate and Forecast Standard Names"]')
-    if len(cf_elements) == 1:
-        logger.debug('Checking elements keyword from vocabulary CF ...')
-        cf_list = [elem.text for elem in cf_elements[0]]
-        if len(cf_list) > 1:
-            logger.info(f'NOK - CF names -> only one CF name should be provided - {cf_list}')
-            valid = False
-        # Check CF names even if more than one provided
-        cf_ok = check_cf(cf_list)
-        if cf_ok:
-            logger.info('OK - CF names')
-        else:
-            logger.info('NOK - CF names -> check debug log')
-        valid = valid and cf_ok
-    elif len(cf_elements) > 1:
-        valid = False
-        logger.debug('NOK - More than one element with keywords[@vocabulary="Climate and '
-                     'Forecast Standard Names"]')
-    else:
-        logger.debug('No CF standard names element.')
+    # cf_elements = doc.findall('./{*}keywords[@vocabulary="Climate and Forecast Standard Names"]')
+    # if len(cf_elements) == 1:
+    #     logger.debug('Checking elements keyword from vocabulary CF ...')
+    #     cf_list = [elem.text for elem in cf_elements[0]]
+    #     if len(cf_list) > 1:
+    #         logger.info(f'NOK - CF names -> only one CF name should be provided - {cf_list}')
+    #         valid = False
+    #     # Check CF names even if more than one provided
+    #     cf_ok = check_cf(cf_list)
+    #     if cf_ok:
+    #         logger.info('OK - CF names')
+    #     else:
+    #         logger.info('NOK - CF names -> check debug log')
+    #     valid &= cf_ok
+    # elif len(cf_elements) > 1:
+    #     valid = False
+    #     logger.debug(
+    #         'NOK - More than one element with keywords[@vocabulary="Climate and '
+    #         'Forecast Standard Names"]'
+    #     )
+    # else:
+    #     logger.debug('No CF standard names element.')
 
     # Check controlled vocabularies
-    voc_ok = check_vocabulary(doc)
-    valid = valid and voc_ok
-    if voc_ok:
-        logger.info('OK - Controlled vocabularies.')
-    else:
-        logger.info('NOK - Controlled vocabularies -> check debug log')
+    # voc_ok = check_vocabulary(doc)
+    # valid &= voc_ok
+    # if voc_ok:
+    #     logger.info('OK - Controlled vocabularies.')
+    # else:
+    #     logger.info('NOK - Controlled vocabularies -> check debug log')
 
     return valid
