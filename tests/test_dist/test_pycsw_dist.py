@@ -53,7 +53,7 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
     """
     # insert returns True
     with monkeypatch.context() as mp:
-        mp.setattr(PyCSWDist, "_translate", lambda *a: "<xml />")
+        mp.setattr(PyCSWDist, "_translate", lambda *a: b"<xml />")
         mp.setattr(
             "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: "a response object"
         )
@@ -64,7 +64,7 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
 
     # insert returns false
     with monkeypatch.context() as mp:
-        mp.setattr(PyCSWDist, "_translate", lambda *a: "<xml />")
+        mp.setattr(PyCSWDist, "_translate", lambda *a: b"<xml />")
         mp.setattr(
             "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: "a response object"
         )
@@ -119,17 +119,18 @@ def testDistPyCSW_Translate(filesDir, caplog):
 
     outFile = os.path.join(filesDir, "reference", "pycsw_dist_translated.xml")
     outTree = etree.parse(outFile, parser=etree.XMLParser(remove_blank_text=True))
-    outData = etree.tostring(outTree, pretty_print=False, encoding="utf-8").decode("utf-8")
+    outData = etree.tostring(outTree, pretty_print=False, encoding="utf-8")
 
     tstPyCSW = PyCSWDist("insert", xml_file=passFile)
     tstPyCSW._conf.mmd_xslt_path = xsltFile
-    assert type(tstPyCSW._translate()) == str
-    assert tstPyCSW._translate() == outData
+    result = tstPyCSW._translate()
+    assert isinstance(result, bytes)
+    assert result == outData
 
     caplog.clear()
     tstPyCSW = PyCSWDist("insert", xml_file=failFile)
     tstPyCSW._conf.mmd_xslt_path = xsltFile
-    assert tstPyCSW._translate() == ""
+    assert tstPyCSW._translate() == b""
     assert "Failed to translate MMD to ISO19139" in caplog.messages
 
 # END Test testDistPyCSW_Translate
