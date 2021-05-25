@@ -65,16 +65,18 @@ class PyCSWDist(Distributor):
     def _translate(self):
         """Convert from MMD to ISO19139, Norwegian INSPIRE profile
         """
-        result = ""
+        result = b""
         try:
             xml_doc = etree.ElementTree(file=self._xml_file)
             transform = etree.XSLT(etree.parse(self._conf.mmd_xslt_path))
             new_doc = transform(xml_doc)
-            # get bytes object and convert to string
-            result = etree.tostring(new_doc, pretty_print=False, encoding="utf-8").decode("utf-8")
+            result = etree.tostring(new_doc, pretty_print=False, encoding="utf-8")
         except Exception as e:
             logger.error("Failed to translate MMD to ISO19139")
             logger.debug(str(e))
+
+        if result is None:
+            result = b""
 
         return result
 
@@ -84,18 +86,18 @@ class PyCSWDist(Distributor):
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
-        xml_as_string = (
-            '<?xml version="1.0" encoding="UTF-8"?>'
-            '<csw:Transaction xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
-            'xmlns:ows="http://www.opengis.net/ows" '
-            'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
-            'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
-            'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd" '
-            'service="CSW" version="2.0.2">'
-            '<csw:Insert>%s</csw:Insert>'
-            '</csw:Transaction>'
-        ) % self._translate()
-        resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
+        xml = (
+            b'<?xml version="1.0" encoding="UTF-8"?>'
+            b'<csw:Transaction xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
+            b'xmlns:ows="http://www.opengis.net/ows" '
+            b'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+            b'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
+            b'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd" '
+            b'service="CSW" version="2.0.2"><csw:Insert>'
+        )
+        xml += self._translate()
+        xml += b"</csw:Insert></csw:Transaction>"
+        resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
         status = self._get_transaction_status(self.TOTAL_INSERTED, resp)
 
         return status
