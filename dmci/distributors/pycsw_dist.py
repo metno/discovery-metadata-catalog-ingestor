@@ -75,10 +75,7 @@ class PyCSWDist(Distributor):
             logger.error("Failed to translate MMD to ISO19139")
             logger.debug(str(e))
 
-        if result is None:
-            result = b""
-
-        return result
+        return b"" if result is None else result
 
     def _insert(self):
         """Insert in pyCSW using a Transaction
