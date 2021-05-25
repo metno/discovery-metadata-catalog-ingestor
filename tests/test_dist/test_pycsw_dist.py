@@ -22,7 +22,7 @@ import os
 import pytest
 import requests
 
-from tools import readFile
+from lxml import etree
 
 from dmci.distributors.pycsw_dist import PyCSWDist
 
@@ -110,18 +110,27 @@ def testDistPyCSW_Delete(monkeypatch, mockXml):
 # END Test testDistPyCSW_Delete
 
 @pytest.mark.dist
-def testDistPyCSW_Translate(monkeypatch, mockXml, filesDir):
+def testDistPyCSW_Translate(filesDir, caplog):
     """_translate tests
     """
     passFile = os.path.join(filesDir, "api", "passing.xml")
+    failFile = os.path.join(filesDir, "not_an_xml_file.xml")
     xsltFile = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
 
-    outFile = os.path.join(filesDir, "reference", "passing_translated.xml")
-    outData = readFile(outFile)
+    outFile = os.path.join(filesDir, "reference", "pycsw_dist_translated.xml")
+    outTree = etree.parse(outFile, parser=etree.XMLParser(remove_blank_text=True))
+    outData = etree.tostring(outTree, pretty_print=False, encoding="utf-8").decode("utf-8")
 
     tstPyCSW = PyCSWDist("insert", xml_file=passFile)
     tstPyCSW._conf.mmd_xslt_path = xsltFile
+    assert type(tstPyCSW._translate()) == str
     assert tstPyCSW._translate() == outData
+
+    caplog.clear()
+    tstPyCSW = PyCSWDist("insert", xml_file=failFile)
+    tstPyCSW._conf.mmd_xslt_path = xsltFile
+    assert tstPyCSW._translate() == ""
+    assert "Failed to translate MMD to ISO19139" in caplog.messages
 
 # END Test testDistPyCSW_Translate
 
@@ -176,7 +185,7 @@ def testDistPyCSW_GetTransactionStatus(monkeypatch, mockXml):
 # END Test testDistPyCSW_GetTransactionStatus
 
 @pytest.mark.dist
-def testDistPyCSW_ReadResponse(mockXml):
+def testDistPyCSW_ReadResponse(mockXml, caplog):
     """_read_response_text tests
     """
     # text wrongkey
@@ -294,6 +303,7 @@ def testDistPyCSW_ReadResponse(mockXml):
     ) is False
 
     # delete unknown tag
+    caplog.clear()
     md_id = "S1A_EW_GRDM_1SDH_20200420T023244_20200420T023348_032205_03B97F_72EB"
     text = (
         '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
@@ -311,5 +321,38 @@ def testDistPyCSW_ReadResponse(mockXml):
     )._read_response_text(
         "total_deleted", text
     ) is False
+    assert "This should not happen" in caplog.messages
+
+    # insert but dataset already exists, unparsable error
+    caplog.clear()
+    text = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
+        '<!-- pycsw 2.7.dev0 -->'
+        '<ows:ExceptionReport xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
+        'xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dct="http://purl.org/dc/terms/" '
+        'xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gml="http://www.opengis.net/gml" '
+        'xmlns:ows="http://www.opengis.net/ows" xmlns:xs="http://www.w3.org/2001/XMLSchema" '
+        'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2.0" '
+        'language="en-US" xsi:schemaLocation="http://www.opengis.net/ows '
+        'http://schemas.opengis.net/ows/1.0.0/owsExceptionReport.xsd">'
+        '</ows:ExceptionReport>'
+    )
+    key = "total_inserted"
+    assert PyCSWDist("insert", xml_file=mockXml)._read_response_text(key, text) is False
+    assert "Unknown Error" in caplog.messages
+
+    # unparsable response (truncated)
+    caplog.clear()
+    text = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'
+        '<!-- pycsw 2.7.dev0 -->'
+        '<ows:ExceptionReport xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
+        'xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dct="http://purl.org/dc/terms/" '
+        'xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gml="http://www.opengis.net/gml" '
+        'xmlns:ows="http:/'
+    )
+    key = "total_inserted"
+    assert PyCSWDist("insert", xml_file=mockXml)._read_response_text(key, text) is False
+    assert "Could not parse response XML from PyCSW" in caplog.messages
 
 # END Test testDistPyCSW_ReadResponse

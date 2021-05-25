@@ -20,7 +20,6 @@ limitations under the License.
 
 import logging
 import requests
-import xml.dom.minidom
 
 from lxml import etree
 
@@ -37,7 +36,6 @@ class PyCSWDist(Distributor):
 
     def __init__(self, cmd, xml_file=None, metadata_id=None, **kwargs):
         super().__init__(cmd, xml_file, metadata_id, **kwargs)
-
         return
 
     def run(self):
@@ -67,11 +65,18 @@ class PyCSWDist(Distributor):
     def _translate(self):
         """Convert from MMD to ISO19139, Norwegian INSPIRE profile
         """
-        xml_doc = etree.ElementTree(file=self._xml_file)
-        transform = etree.XSLT(etree.parse(self._conf.mmd_xslt_path))
-        new_doc = transform(xml_doc)
+        result = ""
+        try:
+            xml_doc = etree.ElementTree(file=self._xml_file)
+            transform = etree.XSLT(etree.parse(self._conf.mmd_xslt_path))
+            new_doc = transform(xml_doc)
+            # get bytes object and convert to string
+            result = etree.tostring(new_doc, pretty_print=False, encoding="utf-8").decode("utf-8")
+        except Exception as e:
+            logger.error("Failed to translate MMD to ISO19139")
+            logger.debug(str(e))
 
-        return etree.tostring(new_doc, pretty_print=True, encoding="utf-8")
+        return result
 
     def _insert(self):
         """Insert in pyCSW using a Transaction
@@ -87,7 +92,7 @@ class PyCSWDist(Distributor):
             'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
             'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd" '
             'service="CSW" version="2.0.2">'
-            '    <csw:Insert>%s</csw:Insert>'
+            '<csw:Insert>%s</csw:Insert>'
             '</csw:Transaction>'
         ) % self._translate()
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
@@ -188,23 +193,35 @@ class PyCSWDist(Distributor):
             return False
 
         status = False
-        dom = xml.dom.minidom.parseString(text.encode('utf-8').strip())
+        try:
+            root = etree.fromstring(text.encode("utf-8").strip())
+        except Exception as e:
+            logger.error("Could not parse response XML from PyCSW")
+            logger.debug(str(e))
+            return status
 
-        # should only contain the standard_name_table:
-        node0 = dom.childNodes[1]
-        tag_name = node0.tagName
+        ns_ows = root.nsmap.get("ows", "")
+        ns_csw = root.nsmap.get("csw", "")
 
-        n_ins = 0
-        n_upd = 0
-        n_del = 0
-        if tag_name == 'ows:ExceptionReport':
-            msg = node0.getElementsByTagName('ows:ExceptionText')[0].childNodes[0].data
+        n_ins = "0"
+        n_upd = "0"
+        n_del = "0"
+        if root.tag == "{%s}ExceptionReport" % ns_ows:
+            node = root.find("{%s}Exception" % ns_ows, root.nsmap)
+            msg = "Unknown Error"
+            if node is not None:
+                msg = node.findtext("{%s}ExceptionText" % ns_ows, "Unknown Error", root.nsmap)
+            else:
+                msg = "Unknown Error"
             logger.error(msg)
-        elif tag_name == 'csw:TransactionResponse':
-            node = node0.getElementsByTagName('csw:TransactionSummary')[0]
-            n_ins = node.getElementsByTagName('csw:totalInserted')[0].childNodes[0].data
-            n_upd = node.getElementsByTagName('csw:totalUpdated')[0].childNodes[0].data
-            n_del = node.getElementsByTagName('csw:totalDeleted')[0].childNodes[0].data
+
+        elif root.tag == "{%s}TransactionResponse" % ns_csw:
+            node = root.find("{%s}TransactionSummary" % ns_csw, root.nsmap)
+            if node is not None:
+                n_ins = node.findtext("{%s}totalInserted" % ns_csw, "0", root.nsmap)
+                n_upd = node.findtext("{%s}totalUpdated" % ns_csw, "0", root.nsmap)
+                n_del = node.findtext("{%s}totalDeleted" % ns_csw, "0", root.nsmap)
+
         else:
             msg = "This should not happen"
             logger.error(msg)
@@ -215,7 +232,7 @@ class PyCSWDist(Distributor):
             self.TOTAL_DELETED: n_del,
         }
 
-        # In principle, we can insert, update or delete multiple datasets...
+        # In principle, we can insert, update or delete multiple datasets
         if int(res_dict[key]) >= 1:
             status = True
 

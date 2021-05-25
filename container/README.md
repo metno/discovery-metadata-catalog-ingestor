@@ -32,7 +32,8 @@ file:
 
 ## Volumes / mounts
 
-* `/workdir` --- directory for persistent storage for the work queue.
+* `/workdir` --- temporary storage for work queue.
+* `/archive` --- archive directory for persistent storage for the work queue
 * `/config.yaml` --- where to mount in configuration file.
 
 ## Build
