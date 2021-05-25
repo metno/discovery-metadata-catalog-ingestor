@@ -1,4 +1,4 @@
-FROM ubuntu:focal
+FROM alpine:3.13
 
 # Label the container
 LABEL no.met.project="s-enda"
@@ -15,23 +15,19 @@ ARG MMD_VERSION=v3.1
 # Set config file for dmci
 ENV DMCI_CONFIG=/config.yaml
 
-# Set non interactive
-ENV DEBIAN_FRONTEND=noninteractive
-
 # Install requirements
-RUN apt-get update; apt-get install -y \
+RUN apk add --no-cache \
       ca-certificates \
       dumb-init \
       wget \
       htop \
       git \
       libxml2 \
-      libxslt1.1 \
+      libxslt \
       # install lxml by package, since it takes forever to build
-      python3-lxml \
-      python3-pip \
-      python3-wheel; \
-      apt-get clean
+      py3-lxml \
+      py3-pip \
+      py3-wheel
 
 # Esure latest version
 RUN pip3 install --upgrade setuptools pip
