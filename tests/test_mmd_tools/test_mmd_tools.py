@@ -18,58 +18,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
 import pytest
 import logging
 
 from lxml import etree
 
 from dmci.mmd_tools.check_mmd import (
-    check_rectangle, check_urls, check_cf, check_vocabulary, full_check
+    check_rectangle, check_url, check_cf, check_vocabulary, full_check
 )
-
-etreeRef = etree.ElementTree(etree.XML(
-    "<root>"
-    "  <a x='123'>https://www.met.no</a>"
-    "  <geographic_extent>"
-    "    <rectangle>"
-    "      <north>76.199661</north>"
-    "      <south>71.63427</south>"
-    "      <west>-28.114723</west>"
-    "      <east>-11.169785</east>"
-    "    </rectangle>"
-    "  </geographic_extent>"
-    "</root>"
-))
-
-etreeRefEmpty = etree.ElementTree(etree.XML(
-    "<root>"
-    "  <a x=\"123\">'xxx'/><c/><b/></a>"
-    "</root>"
-))
-
-etreeUrlRectNok = etree.ElementTree(etree.XML(
-    "<root>"
-    "  <a x='123'>https://www.mæt.no</a>"
-    "  <geographic_extent>"
-    "    <rectangle>"
-    "      <north>76.199661</north>"
-    "      <south>71.63427</south>"
-    "      <west>-28.114723</west>"
-    "    </rectangle>"
-    "  </geographic_extent>"
-    "  <keywords vocabulary='Climate and Forecast Standard Names'>"
-    "    <keyword>sea_surface_temperature</keyword>"
-    "    <keyword>air_surface_temperature</keyword>"
-    "  </keywords>"
-    "  <operational_status>NotOpen</operational_status>"
-    "</root>"
-))
 
 @pytest.mark.mmd_tools
 def testMMDTools_CheckRectangle(caplog):
     """Test the check_rectangle function.
     """
     caplog.set_level(logging.DEBUG, logger="dmci")
+    etreeRef = etree.ElementTree(etree.XML(
+        "<root>"
+        "  <resource>https://www.met.no/</resource>"
+        "  <geographic_extent>"
+        "    <rectangle>"
+        "      <north>76.199661</north>"
+        "      <south>71.63427</south>"
+        "      <west>-28.114723</west>"
+        "      <east>-11.169785</east>"
+        "    </rectangle>"
+        "  </geographic_extent>"
+        "</root>"
+    ))
 
     # Check lat/lon OK from rectangle
     rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
@@ -116,36 +92,36 @@ def testMMDTools_CheckRectangle(caplog):
 # END Test testMMDTools_CheckRectangle
 
 @pytest.mark.mmd_tools
-def testMMDTools_CheckURLs(monkeypatch):
-    """Test the check_urls function.
+def testMMDTools_CheckURLs():
+    """Test the check_url function.
     """
     # Valid URL
-    assert check_urls(["https://www.met.no/"]) is True
+    assert check_url("https://www.met.no/") is True
 
     # Schemes
-    assert check_urls(["https://www.met.no/"]) is True
-    assert check_urls(["http://www.met.no/"]) is True
-    assert check_urls(["file://www.met.no/"]) is False
-    assert check_urls(["imap://www.met.no/"]) is False
-    assert check_urls(["stuff://www.met.no/"]) is False
+    assert check_url("https://www.met.no/") is True
+    assert check_url("http://www.met.no/") is True
+    assert check_url("file://www.met.no/") is False
+    assert check_url("imap://www.met.no/") is False
+    assert check_url("stuff://www.met.no/") is False
 
     # Domains
-    assert check_urls(["https://www.met.no/"]) is True
-    assert check_urls(["https://met.no/"]) is True
-    assert check_urls(["https:/www.met.no/"]) is False
-    assert check_urls(["https://metno/"]) is False
+    assert check_url("https://www.met.no/") is True
+    assert check_url("https://met.no/") is True
+    assert check_url("https:/www.met.no/") is False
+    assert check_url("https://metno/") is False
 
     # Path
-    assert check_urls(["https://www.met.no"], allow_no_path=True) is True
-    assert check_urls(["https://www.met.no"]) is False
-    assert check_urls(["https://www.met.no/"]) is True
-    assert check_urls(["https://www.met.no/location"]) is True
+    assert check_url("https://www.met.no", allow_no_path=True) is True
+    assert check_url("https://www.met.no") is False
+    assert check_url("https://www.met.no/") is True
+    assert check_url("https://www.met.no/location") is True
 
     # Non-ASCII characters
-    assert check_urls(["https://www.mæt.no/"]) is False
+    assert check_url("https://www.mæt.no/") is False
 
     # Unparsable
-    assert check_urls([12345]) is False
+    assert check_url(12345) is False
 
 # END Test testMMDTools_CheckURLs
 
@@ -173,17 +149,47 @@ def off_testMMDTools_CheckVocabulary():
 # END Test testMMDTools_CheckVocabulary
 
 @pytest.mark.mmd_tools
-def testMMDTools_FullCheck():
+def testMMDTools_FullCheck(filesDir, caplog):
     """Test the full_check function.
     """
+    caplog.set_level(logging.DEBUG, logger="dmci")
+    passFile = os.path.join(filesDir, "api", "passing.xml")
+    passTree = etree.parse(passFile, parser=etree.XMLParser(remove_blank_text=True))
+
     # Full check
-    assert full_check(etreeRef) is True
+    caplog.clear()
+    assert full_check(passTree) is True
+    assert "OK: 9 URLs" in caplog.text
+    assert "OK: geographic_extent/rectangle" in caplog.text
 
     # Full check with no elements to check
-    assert full_check(etreeRefEmpty) is True
+    caplog.clear()
+    assert full_check(etree.ElementTree(etree.XML("<xml />"))) is True
+    assert "Found no elements contained an URL" in caplog.text
+    assert "Found no geographic_extent/rectangle element" in caplog.text
 
     # Full check with invalid elements
+    etreeUrlRectNok = etree.ElementTree(etree.XML(
+        "<root>"
+        "  <resource>https://www.mæt.no/</resource>"
+        "  <geographic_extent>"
+        "    <rectangle>"
+        "      <north>76.199661</north>"
+        "      <south>71.63427</south>"
+        "      <west>-28.114723</west>"
+        "    </rectangle>"
+        "  </geographic_extent>"
+        "  <keywords vocabulary='Climate and Forecast Standard Names'>"
+        "    <keyword>sea_surface_temperature</keyword>"
+        "    <keyword>air_surface_temperature</keyword>"
+        "  </keywords>"
+        "  <operational_status>NotOpen</operational_status>"
+        "</root>"
+    ))
+    caplog.clear()
     assert full_check(etreeUrlRectNok) is False
+    assert "NOK: URLs" in caplog.text
+    assert "NOK: geographic_extent/rectangle" in caplog.text
 
     # Twice the element keywords for the same vocabulary
     # root = etree.Element("toto")

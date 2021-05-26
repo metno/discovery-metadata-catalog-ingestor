@@ -42,7 +42,7 @@ def check_rectangle(rectangle):
 
     ok = True
     if len(rectangle) > 1:
-        logger.debug("NOK - Multiple rectangle elements in file.")
+        logger.debug("NOK: Multiple rectangle elements in file.")
         return False
 
     for child in rectangle[0]:
@@ -52,64 +52,53 @@ def check_rectangle(rectangle):
 
     for key, val in directions.items():
         if val is None:
-            logger.error('NOK - Missing rectangle element %s' % key)
+            logger.error("NOK: Missing rectangle element %s" % key)
             return False
 
     if not (-180 <= directions['west'] <= directions['east'] <= 180):
-        logger.debug('NOK - Longitudes not ok')
+        logger.debug("NOK: Longitudes not ok")
         ok = False
     if not (-90 <= directions['south'] <= directions['north'] <= 90):
-        logger.debug('NOK - Latitudes not ok')
+        logger.debug("NOK: Latitudes not ok")
         ok = False
     if not ok:
         logger.debug(directions)
 
     return ok
 
-def check_urls(url_list, allow_no_path=False):
-    """Check that a list of URLs is valid
-    Args:
-        url_list: list of URLs
-    Returns:
-        True / False
+def check_url(url, allow_no_path=False):
+    """Check that an URL is valid.
     """
-    result = True
-    for url in url_list:
-        try:
-            parsed = urlparse(url)
-            if parsed.scheme not in ("http", "https", "ftp", "sftp"):
-                logger.debug(f"NOK - {url}")
-                logger.debug("URL scheme not allowed")
-                result = False
-                continue
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https", "ftp", "sftp"):
+            logger.debug(f"NOK: {url}")
+            logger.debug("URL scheme not allowed")
+            return False
 
-            if not (parsed.netloc and "." in parsed.netloc):
-                logger.debug(f"NOK - {url}")
-                logger.debug("No valid domain in URL")
-                result = False
-                continue
+        if not (parsed.netloc and "." in parsed.netloc):
+            logger.debug(f"NOK: {url}")
+            logger.debug("No valid domain in URL")
+            return False
 
-            if not (parsed.path or allow_no_path):
-                logger.debug(f"NOK - {url}")
-                logger.debug("No path in URL")
-                result = False
-                continue
+        if not (parsed.path or allow_no_path):
+            logger.debug(f"NOK: {url}")
+            logger.debug("No path in URL")
+            return False
 
-        except Exception:
-            logger.debug(f"NOK - {url}")
-            logger.debug("URL cannot be parsed by urllib")
-            result = False
-            continue
+    except Exception:
+        logger.debug(f"NOK: {url}")
+        logger.debug("URL cannot be parsed by urllib")
+        return False
 
-        try:
-            url.encode("ascii")
-        except Exception:
-            logger.debug(f"NOK - {url}")
-            logger.debug("URL contains non-ASCII characters")
-            result = False
-            continue
+    try:
+        url.encode("ascii")
+    except Exception:
+        logger.debug(f"NOK: {url}")
+        logger.debug("URL contains non-ASCII characters")
+        return False
 
-    return result
+    return True
 
 def check_cf(cf_names): # pragma: no cover
     """Check that names are valid CF standard names
@@ -181,38 +170,37 @@ def full_check(doc):
        activity_type / operational_status / use_constraint)
 
     Args:
-        doc:  ElementTree containing the full XML document
+        doc: ElementTree containing the full XML document
     Returns:
-       True / False
+        True / False
     """
     valid = True
 
     # Get elements with urls and check for OK response
-    url_elements = doc.xpath('.//*[contains(text(),"http")]')
-    urls = [elem.text for elem in url_elements]
+    urls = doc.findall(".//{*}resource")
     if len(urls) > 0:
-        logger.debug('Checking element(s) containing URL ...')
-        urls_ok = check_urls(urls, allow_no_path=True)
+        logger.debug("Checking element(s) containing URL ...")
+        urls_ok = all([check_url(elem.text) for elem in urls])
         if urls_ok:
-            logger.info('OK - URLs')
+            logger.info("OK: %d URLs" % len(urls))
         else:
-            logger.info('NOK - URLs -> check debug log')
+            logger.info("NOK: URLs - check debug log")
         valid &= urls_ok
     else:
-        logger.debug('No element containing URL.')
+        logger.debug("Found no elements contained an URL")
 
     # If there is an element geographic_extent/rectangle, check that lat/lon are valid
-    rectangle = doc.findall('./{*}geographic_extent/{*}rectangle')
+    rectangle = doc.findall("./{*}geographic_extent/{*}rectangle")
     if len(rectangle) > 0:
-        logger.debug('Checking element geographic_extent/rectangle ...')
+        logger.debug("Checking element geographic_extent/rectangle ...")
         rect_ok = check_rectangle(rectangle)
         if rect_ok:
-            logger.info('OK - geographic_extent/rectangle')
+            logger.info("OK: geographic_extent/rectangle")
         else:
-            logger.info('NOK - geographic_extent/rectangle -> check debug log')
+            logger.info("NOK: geographic_extent/rectangle - check debug log")
         valid &= rect_ok
     else:
-        logger.debug('No geographic_extent/rectangle element.')
+        logger.debug("Found no geographic_extent/rectangle element")
 
     # Check that cf name provided exist in reference Standard Name Table
     # cf_elements = doc.findall('./{*}keywords[@vocabulary="Climate and Forecast Standard Names"]')
