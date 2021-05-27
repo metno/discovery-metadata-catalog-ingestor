@@ -119,18 +119,19 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
 
     # Valid data format
     with monkeypatch.context() as mp:
-        mp.setattr("dmci.mmd_tools.check_mmd.check_urls", lambda *a: True)
+        mp.setattr("dmci.mmd_tools.check_mmd.check_url", lambda *a, **k: True)
         passData = bytes(readFile(passFile), "utf-8")
-        assert tstWorker._check_information_content(passData) == (True, "Input MMD XML file is ok")
+        assert tstWorker._check_information_content(passData) == (
+            True, "Input MMD XML file is ok"
+        )
 
     # Valid data format, invalid content
-    # Commented out until the checks are turned back on
-    # with monkeypatch.context() as mp:
-    #     mp.setattr("dmci.mmd_tools.check_mmd.check_urls", lambda *a: False)
-    #     passData = bytes(readFile(passFile), "utf-8")
-    #     assert tstWorker._check_information_content(passData) == (
-    #         False, "Input MMD XML file contains errors, please check your file"
-    #     )
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.mmd_tools.check_mmd.check_url", lambda *a, **k: False)
+        passData = bytes(readFile(passFile), "utf-8")
+        assert tstWorker._check_information_content(passData) == (
+            False, "Input MMD XML file contains errors, please check your file"
+        )
 
     # Invalid XML file
     failFile = os.path.join(filesDir, "api", "failing.xml")
