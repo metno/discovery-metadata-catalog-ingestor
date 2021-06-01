@@ -20,14 +20,13 @@ limitations under the License.
 
 import os
 import pytest
-import logging
 
 from lxml import etree
 
 from dmci.mmd_tools import CheckMMD
 
 @pytest.mark.mmd_tools
-def testMMDTools_CheckRectangle(caplog):
+def testMMDTools_CheckRectangle():
     """Test the check_rectangle function.
     """
     chkMMD = CheckMMD()
@@ -50,7 +49,6 @@ def testMMDTools_CheckRectangle(caplog):
     assert chkMMD.check_rectangle(rect) == (True, [])
 
     # Check longitude NOK
-    caplog.clear()
     root = etree.Element("rectangle")
     etree.SubElement(root, "south").text = "20"
     etree.SubElement(root, "north").text = "50"
@@ -219,7 +217,7 @@ def testMMDTools_CheckCF():
         "</root>"
     )))
     assert ok is False
-    assert err == ["Keyword 'sea_surace_temperature' is not a CF standard name"]
+    assert err == ["Keyword 'sea_surace_temperature' is not a CF standard name."]
     assert n == 1
 
     ok, err, n = chkMMD.check_cf(etree.ElementTree(etree.XML(
@@ -239,41 +237,60 @@ def testMMDTools_CheckCF():
 # END Test testMMDTools_CheckCF
 
 @pytest.mark.mmd_tools
-def off_testMMDTools_CheckVocabulary():
+def testMMDTools_CheckVocabulary():
     """Test the check_vocabulary function.
     """
     chkMMD = CheckMMD()
-    assert chkMMD.check_vocabulary(etree.ElementTree(etree.XML(
+    ok, err = chkMMD.check_vocabulary(etree.ElementTree(etree.XML(
         "<root><operational_status>Operational</operational_status></root>"
-    ))) is True
+    )))
+    assert ok is True
+    assert err == []
 
-    assert chkMMD.check_vocabulary(etree.ElementTree(etree.XML(
+    ok, err = chkMMD.check_vocabulary(etree.ElementTree(etree.XML(
         "<root><operational_status>OOperational</operational_status></root>"
-    ))) is False
+    )))
+    assert ok is False
+    assert err == ["Incorrect vocabulary 'OOperational' for element 'operational_status'."]
 
 # END Test testMMDTools_CheckVocabulary
 
 @pytest.mark.mmd_tools
-def testMMDTools_FullCheck(filesDir, caplog):
+def testMMDTools_FullCheck(filesDir):
     """Test the full_check function.
     """
     chkMMD = CheckMMD()
-
-    caplog.set_level(logging.DEBUG, logger="dmci")
     passFile = os.path.join(filesDir, "api", "passing.xml")
     passTree = etree.parse(passFile, parser=etree.XMLParser(remove_blank_text=True))
 
     # Full check
-    caplog.clear()
     assert chkMMD.full_check(passTree) is True
-    assert "OK: 9 URLs" in caplog.text
-    assert "OK: geographic_extent/rectangle" in caplog.text
+    ok, msgs = chkMMD.status()
+    assert ok is True
+    assert "\n".join(msgs) == (
+        "Passed: URL Check on 'https://gcmdservices.gsfc.nasa.gov/static/kms/'\n"
+        "Passed: URL Check on 'http://inspire.ec.europa.eu/theme'\n"
+        "Passed: URL Check on 'https://register.geonorge.no/subregister/metadata-kodelister/kartve"
+        "rket/nasjonal-temainndeling'\n"
+        "Passed: URL Check on 'http://spdx.org/licenses/CC-BY-4.0'\n"
+        "Passed: URL Check on 'https://thredds.met.no/thredds/dodsC/remotesensingsatellite/polar-s"
+        "wath/2021/04/29/aqua-modis-1km-20210429002844-20210429003955.nc'\n"
+        "Passed: URL Check on 'https://thredds.met.no/thredds/wms/remotesensingsatellite/polar-swa"
+        "th/2021/04/29/aqua-modis-1km-20210429002844-20210429003955.nc?service=WMS&version=1.3.0&r"
+        "equest=GetCapabilities'\n"
+        "Passed: URL Check on 'https://thredds.met.no/thredds/fileServer/remotesensingsatellite/po"
+        "lar-swath/2021/04/29/aqua-modis-1km-20210429002844-20210429003955.nc'\n"
+        "Passed: URL Check on 'https://www.wmo-sat.info/oscar/satellites/view/aqua'\n"
+        "Passed: URL Check on 'https://www.wmo-sat.info/oscar/instruments/view/modis'\n"
+        "Passed: Rectangle Check\n"
+        "Passed: Controlled Vocabularies Check\n"
+    ).rstrip()
 
     # Full check with no elements to check
-    caplog.clear()
     assert chkMMD.full_check(etree.ElementTree(etree.XML("<xml />"))) is True
-    assert "Found no elements contained an URL" in caplog.text
-    assert "Found no geographic_extent/rectangle element" in caplog.text
+    ok, msgs = chkMMD.status()
+    assert ok is True
+    assert "\n".join(msgs) == ""
 
     # Full check with invalid elements
     etreeUrlRectNok = etree.ElementTree(etree.XML(
@@ -293,30 +310,17 @@ def testMMDTools_FullCheck(filesDir, caplog):
         "  <operational_status>NotOpen</operational_status>"
         "</root>"
     ))
-    caplog.clear()
     assert chkMMD.full_check(etreeUrlRectNok) is False
-    assert "NOK: URLs" in caplog.text
-    assert "NOK: geographic_extent/rectangle" in caplog.text
-
-    # Twice the element keywords for the same vocabulary
-    # root = etree.Element("toto")
-    # key1 = etree.SubElement(root, "keywords", vocabulary="Climate and Forecast Standard Names")
-    # etree.SubElement(key1, "keyword").text = "air_temperature"
-    # key2 = etree.SubElement(root, "keywords", vocabulary="Climate and Forecast Standard Names")
-    # etree.SubElement(key2, "keyword").text = "air_temperature"
-    # assert full_check(root) is False
-
-    # Correct case
-    # root = etree.Element("toto")
-    # root1 = etree.SubElement(root, "keywords", vocabulary="Climate and Forecast Standard Names")
-    # etree.SubElement(root1, "keyword").text = "sea_surface_temperature"
-    # assert full_check(root) is True
-
-    # Two standard names provided
-    # root = etree.Element("toto")
-    # root1 = etree.SubElement(root, "keywords", vocabulary="Climate and Forecast Standard Names")
-    # etree.SubElement(root1, "keyword").text = "air_temperature"
-    # etree.SubElement(root1, "keyword").text = "sea_surface_temperature"
-    # assert full_check(root) is False
+    ok, msgs = chkMMD.status()
+    assert ok is False
+    assert "\n".join(msgs) == (
+        "Failed: URL Check on 'https://www.mæt.no/'\n"
+        " - URL contains non-ASCII characters.\n"
+        "Failed: Climate and Forecast Standard Names Check\n"
+        " - Only one CF name should be provided, got 2.\n"
+        " - Keyword 'air_surface_temperature' is not a CF standard name.\n"
+        "Failed: Controlled Vocabularies Check\n"
+        " - Incorrect vocabulary 'NotOpen' for element 'operational_status'.\n"
+    ).rstrip()
 
 # END Test testMMDTools_FullCheck

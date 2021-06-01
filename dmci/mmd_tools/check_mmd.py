@@ -144,7 +144,7 @@ class CheckMMD():
                 try:
                     pti.get_cf_standard_name(cf_name)
                 except IndexError:
-                    err.append("Keyword '%s' is not a CF standard name" % cf_name)
+                    err.append("Keyword '%s' is not a CF standard name." % cf_name)
                     ok = False
 
         elif n_cf > 1:
@@ -157,58 +157,55 @@ class CheckMMD():
         return ok, err, n_cf
 
     # The following function needs to be reimplemented
-    # def check_vocabulary(self, xmldoc): # pragma: no cover
-    #     """Check controlled vocabularies for elements:
-    #         - access_constraint
-    #         - activity_type
-    #         - operational_status
-    #         - use_constraint
-    #     Args:
-    #         xmldoc: ElementTree containing the full XML document
-    #     Returns:
-    #         True / False
-
-    #     Comments: The following elements have test functions available
-    #     in pythesint but are not used:
-    #     - area -> because it does not correspond to an element in
-    #     currently tested files
-    #     - platform type -> because erroneous thesaurus in mmd repo?
-    #     """
-    #     vocabularies = {
-    #         'access_constraint': 'access_constraints',
-    #         'activity_type': 'activity_type',
-    #         'operational_status': 'operstatus',
-    #         'use_constraint': 'use_constraint_type',
-    #     }
-    #     ok = True
-    #     for element_name, f_name in vocabularies.items():
-    #         if f_name == 'use_constraint_type':
-    #             elems_found = xmldoc.findall('./{*}' + element_name + '/{*}identifier')
-    #         else:
-    #             elems_found = xmldoc.findall('./{*}' + element_name)
-
-    #         if len(elems_found) >= 1:
-    #             for rep in elems_found:
-    #                 try:
-    #                     getattr(pti, 'get_mmd_'+f_name)(rep.text)
-    #                     logger.debug(
-    #                         f'OK - {rep.text} is correct vocabulary for element {element_name}.'
-    #                     )
-    #                 except IndexError:
-    #                     logger.debug(
-    #                         f'NOK - {rep.text} is not correct vocabulary for element'
-    #                         f' {element_name}. \n Accepted vocabularies are '
-    #                         f'{getattr(pti, "get_mmd_"+f_name+"_list")()}'
-    #                     )
-    #                     ok = False
-    #         else:
-    #             logger.debug(f'Element {element_name} not present.')
-
-    #     return ok
-
-    # Placeholders
     def check_vocabulary(self, xmldoc):
-        return True, []
+        """Check controlled vocabularies for elements:
+            - access_constraint
+            - activity_type
+            - operational_status
+            - use_constraint
+        Args:
+            xmldoc: ElementTree containing the full XML document
+        Returns:
+            True / False
+            List of errors
+
+        Comments: The following elements have test functions available
+        in pythesint but are not used:
+        - area -> because it does not correspond to an element in
+        currently tested files
+        - platform type -> because erroneous thesaurus in mmd repo?
+        """
+        vocabularies = {
+            "access_constraint":  pti.get_mmd_access_constraints,
+            "activity_type":      pti.get_mmd_activity_type,
+            "operational_status": pti.get_mmd_operstatus,
+            "use_constraint":     pti.get_mmd_use_constraint_type,
+        }
+        ok = True
+        err = []
+        num = 0
+
+        for element_name, f_name in vocabularies.items():
+            if element_name == "use_constraint":
+                elems_found = xmldoc.findall("./{*}" + element_name + "/{*}identifier")
+            else:
+                elems_found = xmldoc.findall("./{*}" + element_name)
+
+            if len(elems_found) >= 1:
+                for rep in elems_found:
+                    num += 1
+                    try:
+                        f_name(rep.text)
+                    except IndexError:
+                        err.append("Incorrect vocabulary '%s' for element '%s'." % (
+                            rep.text, element_name
+                        ))
+                        ok = False
+
+        if num > 0:
+            self._log_result("Controlled Vocabularies Check", ok, err)
+
+        return ok, err
 
     def full_check(self, doc):
         """Main checking scripts for in depth checking of XML file.
@@ -233,8 +230,6 @@ class CheckMMD():
             for elem in urls:
                 urls_ok, _ = self.check_url(elem.text)
                 valid &= urls_ok
-        else:
-            logger.debug("Found no elements contained an URL")
 
         # If there is an element geographic_extent/rectangle, check that lat/lon are valid
         rectangle = doc.findall("./{*}geographic_extent/{*}rectangle")
@@ -242,22 +237,14 @@ class CheckMMD():
             logger.debug("Checking element geographic_extent/rectangle ...")
             rect_ok, _ = self.check_rectangle(rectangle)
             valid &= rect_ok
-        else:
-            logger.debug("Found no geographic_extent/rectangle element")
 
         # Check that cf name provided exist in reference Standard Name Table
-        cf_ok, _, n = self.check_cf(doc)
+        cf_ok, _, _ = self.check_cf(doc)
         valid &= cf_ok
-        if n == 0:
-            logger.debug("No CF standard names element.")
 
         # Check controlled vocabularies
-        # voc_ok = check_vocabulary(doc)
-        # valid &= voc_ok
-        # if voc_ok:
-        #     logger.info('OK - Controlled vocabularies.')
-        # else:
-        #     logger.info('NOK - Controlled vocabularies -> check debug log')
+        voc_ok, _ = self.check_vocabulary(doc)
+        valid &= voc_ok
 
         return valid
 
