@@ -29,11 +29,21 @@ logger = logging.getLogger(__name__)
 class CheckMMD():
 
     def __init__(self):
-
-        self.status_msg = ""
-        self.status_ok = False
-
+        self._status_msgs = []
+        self._status_ok = True
         return
+
+    def clear(self):
+        """Clear the status data.
+        """
+        self._status_msgs = []
+        self._status_ok = True
+        return
+
+    def status(self):
+        """Return the status of checks run since last clear.
+        """
+        return self._status_ok, self._status_msgs
 
     def check_rectangle(self, rectangle):
         """Check if element geographic extent/rectangle is valid:
@@ -42,74 +52,74 @@ class CheckMMD():
             - -180 <= min_lat <= max_lat <= 180
             -    0 <= min_lon <= max_lon <= 360
         Args:
-            rectangle: list of elements found when requesting node(s) geographic_extent/rectangle
-            (output of ET request findall)
+            rectangle: list of elements found when requesting node(s)
+            geographic_extent/rectangle
         Returns:
             True / False
         """
-        directions = dict.fromkeys(['north', 'south', 'west', 'east'], None)
+        directions = dict.fromkeys(["north", "south", "west", "east"], None)
 
         ok = True
+        err = []
         if len(rectangle) > 1:
-            logger.debug("NOK: Multiple rectangle elements in file.")
-            return False
+            err.append("Multiple rectangle elements in file.")
+            return False, err
 
         for child in rectangle[0]:
-            # Also removes namespace, if any
             child_ns = etree.QName(child)
             directions[child_ns.localname] = float(child.text)
 
         for key, val in directions.items():
             if val is None:
-                logger.error("NOK: Missing rectangle element %s" % key)
-                return False
+                err.append("Missing rectangle element '%s'." % key)
+                return False, err
 
-        if not (-180 <= directions['west'] <= directions['east'] <= 180):
-            logger.debug("NOK: Longitudes not ok")
+        if not (-180.0 <= directions["west"] <= directions["east"] <= 180.0):
+            err.append("Longitudes not in range -180 <= west <= east <= 180.")
             ok = False
-        if not (-90 <= directions['south'] <= directions['north'] <= 90):
-            logger.debug("NOK: Latitudes not ok")
-            ok = False
-        if not ok:
-            logger.debug(directions)
 
-        return ok
+        if not (-90.0 <= directions["south"] <= directions["north"] <= 90.0):
+            err.append("Latitudes not in range -90 <= south <= north <= 90.")
+            ok = False
+
+        self._log_result("Rectangle Check", ok, err)
+
+        return ok, err
 
     def check_url(self, url, allow_no_path=False):
         """Check that an URL is valid.
         """
-        try:
-            parsed = urlparse(url)
-            if parsed.scheme not in ("http", "https", "ftp", "sftp"):
-                logger.debug(f"NOK: {url}")
-                logger.debug("URL scheme not allowed")
-                return False
-
-            if not (parsed.netloc and "." in parsed.netloc):
-                logger.debug(f"NOK: {url}")
-                logger.debug("No valid domain in URL")
-                return False
-
-            if not (parsed.path or allow_no_path):
-                logger.debug(f"NOK: {url}")
-                logger.debug("No path in URL")
-                return False
-
-        except Exception:
-            logger.debug(f"NOK: {url}")
-            logger.debug("URL cannot be parsed by urllib")
-            return False
-
+        ok = True
+        err = []
         try:
             url.encode("ascii")
         except Exception:
-            logger.debug(f"NOK: {url}")
-            logger.debug("URL contains non-ASCII characters")
-            return False
+            err.append("URL contains non-ASCII characters.")
+            ok = False
 
-        return True
+        try:
+            parsed = urlparse(url)
+            if parsed.scheme not in ("http", "https", "ftp", "sftp"):
+                err.append("URL scheme '%s' not allowed." % parsed.scheme)
+                ok = False
 
-    def check_cf(self, cf_names): # pragma: no cover
+            if not (parsed.netloc and "." in parsed.netloc):
+                err.append("Domain '%s' is not valid." % parsed.netloc)
+                ok = False
+
+            if not (parsed.path or allow_no_path):
+                err.append("URL contains no path. At least '/' is required.")
+                ok = False
+
+        except Exception:
+            err.append("URL cannot be parsed by urllib.")
+            ok = False
+
+        self._log_result(f"URL Check on '{url}'", ok, err)
+
+        return ok, err
+
+    def check_cf(self, xmldoc):
         """Check that names are valid CF standard names
         Args:
             cf_names: list of names to test
@@ -117,64 +127,88 @@ class CheckMMD():
             True / False
         """
         ok = True
-        for cf_name in cf_names:
-            try:
-                pti.get_cf_standard_name(cf_name)
-                logger.debug(f'OK - {cf_name} is a CF standard name.')
-            except IndexError:
-                logger.debug(f'NOK - {cf_name} is not a CF standard name.')
+        err = []
+
+        cf_elements = xmldoc.findall(
+            "./{*}keywords[@vocabulary=\"Climate and Forecast Standard Names\"]"
+        )
+        n_cf = len(cf_elements)
+        if n_cf == 1:
+            cf_list = [elem.text for elem in cf_elements[0]]
+            if len(cf_list) > 1:
+                err.append("Only one CF name should be provided, got %d." % len(cf_list))
                 ok = False
 
-        return ok
+            # Check CF names even if more than one provided
+            for cf_name in cf_list:
+                try:
+                    pti.get_cf_standard_name(cf_name)
+                except IndexError:
+                    err.append("Keyword '%s' is not a CF standard name" % cf_name)
+                    ok = False
 
-    def check_vocabulary(self, xmldoc): # pragma: no cover
-        """Check controlled vocabularies for elements:
-            - access_constraint
-            - activity_type
-            - operational_status
-            - use_constraint
-        Args:
-            xmldoc: ElementTree containing the full XML document
-        Returns:
-            True / False
+        elif n_cf > 1:
+            err.append("More than one CF entry found. Only one is allowed.")
+            ok = False
 
-        Comments: The following elements have test functions available
-        in pythesint but are not used:
-        - area -> because it does not correspond to an element in
-        currently tested files
-        - platform type -> because erroneous thesaurus in mmd repo?
-        """
-        vocabularies = {
-            'access_constraint': 'access_constraints',
-            'activity_type': 'activity_type',
-            'operational_status': 'operstatus',
-            'use_constraint': 'use_constraint_type',
-        }
-        ok = True
-        for element_name, f_name in vocabularies.items():
-            if f_name == 'use_constraint_type':
-                elems_found = xmldoc.findall('./{*}' + element_name + '/{*}identifier')
-            else:
-                elems_found = xmldoc.findall('./{*}' + element_name)
+        if n_cf > 0:
+            self._log_result("Climate and Forecast Standard Names Check", ok, err)
 
-            if len(elems_found) >= 1:
-                for rep in elems_found:
-                    try:
-                        getattr(pti, 'get_mmd_'+f_name)(rep.text)
-                        logger.debug(
-                            f'OK - {rep.text} is correct vocabulary for element {element_name}.'
-                        )
-                    except IndexError:
-                        logger.debug(
-                            f'NOK - {rep.text} is not correct vocabulary for element'
-                            f' {element_name}. \n Accepted vocabularies are '
-                            f'{getattr(pti, "get_mmd_"+f_name+"_list")()}'
-                        )
-                        ok = False
-            else:
-                logger.debug(f'Element {element_name} not present.')
+        return ok, err, n_cf
 
-        return ok
+    # The following function needs to be reimplemented
+    # def check_vocabulary(self, xmldoc): # pragma: no cover
+    #     """Check controlled vocabularies for elements:
+    #         - access_constraint
+    #         - activity_type
+    #         - operational_status
+    #         - use_constraint
+    #     Args:
+    #         xmldoc: ElementTree containing the full XML document
+    #     Returns:
+    #         True / False
+
+    #     Comments: The following elements have test functions available
+    #     in pythesint but are not used:
+    #     - area -> because it does not correspond to an element in
+    #     currently tested files
+    #     - platform type -> because erroneous thesaurus in mmd repo?
+    #     """
+    #     vocabularies = {
+    #         'access_constraint': 'access_constraints',
+    #         'activity_type': 'activity_type',
+    #         'operational_status': 'operstatus',
+    #         'use_constraint': 'use_constraint_type',
+    #     }
+    #     ok = True
+    #     for element_name, f_name in vocabularies.items():
+    #         if f_name == 'use_constraint_type':
+    #             elems_found = xmldoc.findall('./{*}' + element_name + '/{*}identifier')
+    #         else:
+    #             elems_found = xmldoc.findall('./{*}' + element_name)
+
+    #         if len(elems_found) >= 1:
+    #             for rep in elems_found:
+    #                 try:
+    #                     getattr(pti, 'get_mmd_'+f_name)(rep.text)
+    #                     logger.debug(
+    #                         f'OK - {rep.text} is correct vocabulary for element {element_name}.'
+    #                     )
+    #                 except IndexError:
+    #                     logger.debug(
+    #                         f'NOK - {rep.text} is not correct vocabulary for element'
+    #                         f' {element_name}. \n Accepted vocabularies are '
+    #                         f'{getattr(pti, "get_mmd_"+f_name+"_list")()}'
+    #                     )
+    #                     ok = False
+    #         else:
+    #             logger.debug(f'Element {element_name} not present.')
+
+    #     return ok
+
+    # Placeholders
+    def check_vocabulary(self, xmldoc):
+        return True, []
 
     def full_check(self, doc):
         """Main checking scripts for in depth checking of XML file.
@@ -189,18 +223,16 @@ class CheckMMD():
         Returns:
             True / False
         """
+        self.clear()
         valid = True
 
         # Get elements with urls and check for OK response
         urls = doc.findall(".//{*}resource")
         if len(urls) > 0:
             logger.debug("Checking element(s) containing URL ...")
-            urls_ok = all([self.check_url(elem.text) for elem in urls])
-            if urls_ok:
-                logger.info("OK: %d URLs" % len(urls))
-            else:
-                logger.info("NOK: URLs - check debug log")
-            valid &= urls_ok
+            for elem in urls:
+                urls_ok, _ = self.check_url(elem.text)
+                valid &= urls_ok
         else:
             logger.debug("Found no elements contained an URL")
 
@@ -208,40 +240,16 @@ class CheckMMD():
         rectangle = doc.findall("./{*}geographic_extent/{*}rectangle")
         if len(rectangle) > 0:
             logger.debug("Checking element geographic_extent/rectangle ...")
-            rect_ok = self.check_rectangle(rectangle)
-            if rect_ok:
-                logger.info("OK: geographic_extent/rectangle")
-            else:
-                logger.info("NOK: geographic_extent/rectangle - check debug log")
+            rect_ok, _ = self.check_rectangle(rectangle)
             valid &= rect_ok
         else:
             logger.debug("Found no geographic_extent/rectangle element")
 
         # Check that cf name provided exist in reference Standard Name Table
-        # cf_elements = doc.findall(
-        #     './{*}keywords[@vocabulary="Climate and Forecast Standard Names"]'
-        # )
-        # if len(cf_elements) == 1:
-        #     logger.debug('Checking elements keyword from vocabulary CF ...')
-        #     cf_list = [elem.text for elem in cf_elements[0]]
-        #     if len(cf_list) > 1:
-        #         logger.info(f'NOK - CF names -> only one CF name should be provided - {cf_list}')
-        #         valid = False
-        #     # Check CF names even if more than one provided
-        #     cf_ok = check_cf(cf_list)
-        #     if cf_ok:
-        #         logger.info('OK - CF names')
-        #     else:
-        #         logger.info('NOK - CF names -> check debug log')
-        #     valid &= cf_ok
-        # elif len(cf_elements) > 1:
-        #     valid = False
-        #     logger.debug(
-        #         'NOK - More than one element with keywords[@vocabulary="Climate and '
-        #         'Forecast Standard Names"]'
-        #     )
-        # else:
-        #     logger.debug('No CF standard names element.')
+        cf_ok, _, n = self.check_cf(doc)
+        valid &= cf_ok
+        if n == 0:
+            logger.debug("No CF standard names element.")
 
         # Check controlled vocabularies
         # voc_ok = check_vocabulary(doc)
@@ -252,3 +260,23 @@ class CheckMMD():
         #     logger.info('NOK - Controlled vocabularies -> check debug log')
 
         return valid
+
+    ##
+    #  Internal Functions
+    ##
+
+    def _log_result(self, check, ok, err):
+        """Write the result of a check to the status variables.
+        """
+        if ok:
+            self._status_msgs.append("Passed: %s" % check)
+        else:
+            self._status_msgs.append("Failed: %s" % check)
+            for fail in err:
+                self._status_msgs.append(" - %s" % fail)
+
+        self._status_ok &= ok
+
+        return
+
+# END Class CheckMMD

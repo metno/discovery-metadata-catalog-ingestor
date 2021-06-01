@@ -31,8 +31,6 @@ def testMMDTools_CheckRectangle(caplog):
     """Test the check_rectangle function.
     """
     chkMMD = CheckMMD()
-
-    caplog.set_level(logging.DEBUG, logger="dmci")
     etreeRef = etree.ElementTree(etree.XML(
         "<root>"
         "  <resource>https://www.met.no/</resource>"
@@ -49,16 +47,18 @@ def testMMDTools_CheckRectangle(caplog):
 
     # Check lat/lon OK from rectangle
     rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
-    assert chkMMD.check_rectangle(rect) is True
+    assert chkMMD.check_rectangle(rect) == (True, [])
 
     # Check longitude NOK
+    caplog.clear()
     root = etree.Element("rectangle")
     etree.SubElement(root, "south").text = "20"
     etree.SubElement(root, "north").text = "50"
     etree.SubElement(root, "west").text = "50"
     etree.SubElement(root, "east").text = "0"
-    assert chkMMD.check_rectangle([root]) is False
-    assert "Longitudes not ok" in caplog.text
+    ok, err = chkMMD.check_rectangle([root])
+    assert ok is False
+    assert err == ["Longitudes not in range -180 <= west <= east <= 180."]
 
     # Check latitude NOK
     root = etree.Element("rectangle")
@@ -66,12 +66,14 @@ def testMMDTools_CheckRectangle(caplog):
     etree.SubElement(root, "north").text = "50"
     etree.SubElement(root, "west").text = "0"
     etree.SubElement(root, "east").text = "180"
-    assert chkMMD.check_rectangle([root]) is False
-    assert "Latitudes not ok" in caplog.text
+    ok, err = chkMMD.check_rectangle([root])
+    assert ok is False
+    assert err == ["Latitudes not in range -90 <= south <= north <= 90."]
 
     # Check more than one rectangle as input
-    assert chkMMD.check_rectangle(["elem1", "elem2"]) is False
-    assert "Multiple rectangle elements in file" in caplog.text
+    ok, err = chkMMD.check_rectangle(["elem1", "elem2"])
+    assert ok is False
+    assert err == ["Multiple rectangle elements in file."]
 
     # Check lat & long OK with namespace
     root = etree.Element("rectangle")
@@ -79,15 +81,26 @@ def testMMDTools_CheckRectangle(caplog):
     etree.SubElement(root, "{http://www.met.no/schema/mmd}north").text = "50"
     etree.SubElement(root, "{http://www.met.no/schema/mmd}west").text = "0"
     etree.SubElement(root, "{http://www.met.no/schema/mmd}east").text = "50"
-    assert chkMMD.check_rectangle([root]) is True
+    assert chkMMD.check_rectangle([root]) == (True, [])
 
     # Check rectangle with one missing element (no west)
     root = etree.Element("rectangle")
     etree.SubElement(root, "south").text = "-182"
     etree.SubElement(root, "north").text = "50"
     etree.SubElement(root, "east").text = "180"
-    assert chkMMD.check_rectangle([root]) is False
-    assert "Missing rectangle element west" in caplog.text
+    ok, err = chkMMD.check_rectangle([root])
+    assert ok is False
+    assert err == ["Missing rectangle element 'west'."]
+
+    # Check rectangle with element with typo
+    root = etree.Element("rectangle")
+    etree.SubElement(root, "south").text = "20"
+    etree.SubElement(root, "north").text = "50"
+    etree.SubElement(root, "west").text = "0"
+    etree.SubElement(root, "easttt").text = "50"
+    ok, err = chkMMD.check_rectangle([root])
+    assert ok is False
+    assert err == ["Missing rectangle element 'east'."]
 
 # END Test testMMDTools_CheckRectangle
 
@@ -98,42 +111,130 @@ def testMMDTools_CheckURLs():
     chkMMD = CheckMMD()
 
     # Valid URL
-    assert chkMMD.check_url("https://www.met.no/") is True
+    ok, err = chkMMD.check_url("https://www.met.no/")
+    assert ok is True
+    assert err == []
 
     # Schemes
-    assert chkMMD.check_url("https://www.met.no/") is True
-    assert chkMMD.check_url("http://www.met.no/") is True
-    assert chkMMD.check_url("file://www.met.no/") is False
-    assert chkMMD.check_url("imap://www.met.no/") is False
-    assert chkMMD.check_url("stuff://www.met.no/") is False
+    ok, err = chkMMD.check_url("https://www.met.no/")
+    assert ok is True
+    assert err == []
+
+    ok, err = chkMMD.check_url("http://www.met.no/")
+    assert ok is True
+    assert err == []
+
+    ok, err = chkMMD.check_url("file://www.met.no/")
+    assert ok is False
+    assert err == ["URL scheme 'file' not allowed."]
+
+    ok, err = chkMMD.check_url("imap://www.met.no/")
+    assert ok is False
+    assert err == ["URL scheme 'imap' not allowed."]
+
+    ok, err = chkMMD.check_url("stuff://www.met.no/")
+    assert ok is False
+    assert err == ["URL scheme 'stuff' not allowed."]
 
     # Domains
-    assert chkMMD.check_url("https://www.met.no/") is True
-    assert chkMMD.check_url("https://met.no/") is True
-    assert chkMMD.check_url("https:/www.met.no/") is False
-    assert chkMMD.check_url("https://metno/") is False
+    ok, err = chkMMD.check_url("https://www.met.no/")
+    assert ok is True
+    assert err == []
+
+    ok, err = chkMMD.check_url("https://met.no/")
+    assert ok is True
+    assert err == []
+
+    ok, err = chkMMD.check_url("https:/www.met.no/")
+    assert ok is False
+    assert err == ["Domain '' is not valid."]
+
+    ok, err = chkMMD.check_url("https://metno/")
+    assert ok is False
+    assert err == ["Domain 'metno' is not valid."]
 
     # Path
-    assert chkMMD.check_url("https://www.met.no", allow_no_path=True) is True
-    assert chkMMD.check_url("https://www.met.no") is False
-    assert chkMMD.check_url("https://www.met.no/") is True
-    assert chkMMD.check_url("https://www.met.no/location") is True
+    ok, err = chkMMD.check_url("https://www.met.no", allow_no_path=True)
+    assert ok is True
+    assert err == []
+
+    ok, err = chkMMD.check_url("https://www.met.no")
+    assert ok is False
+    assert err == ["URL contains no path. At least '/' is required."]
+
+    ok, err = chkMMD.check_url("https://www.met.no/")
+    assert ok is True
+    assert err == []
+
+    ok, err = chkMMD.check_url("https://www.met.no/location")
+    assert ok is True
+    assert err == []
 
     # Non-ASCII characters
-    assert chkMMD.check_url("https://www.mæt.no/") is False
+    ok, err = chkMMD.check_url("https://www.mæt.no/")
+    assert ok is False
+    assert err == ["URL contains non-ASCII characters."]
 
     # Unparsable
-    assert chkMMD.check_url(12345) is False
+    ok, err = chkMMD.check_url(12345)
+    assert ok is False
+    assert err == ["URL contains non-ASCII characters.", "URL cannot be parsed by urllib."]
 
 # END Test testMMDTools_CheckURLs
 
 @pytest.mark.mmd_tools
-def off_testMMDTools_CheckCF():
+def testMMDTools_CheckCF():
     """Test the check_cf function.
     """
     chkMMD = CheckMMD()
-    assert chkMMD.check_cf(["sea_surface_temperature"]) is True
-    assert chkMMD.check_cf(["sea_surace_temperature"]) is False
+
+    ok, err, n = chkMMD.check_cf(etree.ElementTree(etree.XML(
+        "<root>"
+        "  <keywords vocabulary='Climate and Forecast Standard Names'>"
+        "    <keyword>sea_surface_temperature</keyword>"
+        "  </keywords>"
+        "</root>"
+    )))
+    assert ok is True
+    assert err == []
+    assert n == 1
+
+    ok, err, n = chkMMD.check_cf(etree.ElementTree(etree.XML(
+        "<root>"
+        "  <keywords vocabulary='Climate and Forecast Standard Names'>"
+        "    <keyword>sea_surface_temperature</keyword>"
+        "    <keyword>sea_surface_temperature</keyword>"
+        "  </keywords>"
+        "</root>"
+    )))
+    assert ok is False
+    assert err == ["Only one CF name should be provided, got 2."]
+    assert n == 1
+
+    ok, err, n = chkMMD.check_cf(etree.ElementTree(etree.XML(
+        "<root>"
+        "  <keywords vocabulary='Climate and Forecast Standard Names'>"
+        "    <keyword>sea_surace_temperature</keyword>"
+        "  </keywords>"
+        "</root>"
+    )))
+    assert ok is False
+    assert err == ["Keyword 'sea_surace_temperature' is not a CF standard name"]
+    assert n == 1
+
+    ok, err, n = chkMMD.check_cf(etree.ElementTree(etree.XML(
+        "<root>"
+        "  <keywords vocabulary='Climate and Forecast Standard Names'>"
+        "    <keyword>sea_surface_temperature</keyword>"
+        "  </keywords>"
+        "  <keywords vocabulary='Climate and Forecast Standard Names'>"
+        "    <keyword>sea_surface_temperature</keyword>"
+        "  </keywords>"
+        "</root>"
+    )))
+    assert ok is False
+    assert err == ["More than one CF entry found. Only one is allowed."]
+    assert n == 2
 
 # END Test testMMDTools_CheckCF
 
