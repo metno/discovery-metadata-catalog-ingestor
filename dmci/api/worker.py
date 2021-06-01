@@ -24,7 +24,7 @@ import logging
 from lxml import etree
 
 from dmci import CONFIG
-from dmci.mmd_tools import full_check
+from dmci.mmd_tools import CheckMMD
 from dmci.distributors import FileDist, PyCSWDist
 
 logger = logging.getLogger(__name__)
@@ -139,7 +139,8 @@ class Worker():
 
         # Check XML file
         logger.info("Performing in depth checking.")
-        valid = full_check(xml_doc)
+        checker = CheckMMD()
+        valid = checker.full_check(xml_doc)
         if valid:
             msg = "Input MMD XML file is ok"
         else:
