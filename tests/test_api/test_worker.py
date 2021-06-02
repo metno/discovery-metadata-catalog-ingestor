@@ -26,7 +26,7 @@ from tools import readFile
 
 from dmci.api.worker import Worker
 from dmci.distributors import FileDist, PyCSWDist
-from dmci.mmd_tools import CheckMMD
+from dmci.tools import CheckMMD
 
 @pytest.mark.api
 def testApiWorker_Init():
@@ -163,7 +163,7 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
             " - URL scheme 'imap' not allowed.\n"
             " - URL contains no path. At least '/' is required.\n"
             "Failed: Rectangle Check\n"
-            " - Missing rectangle element 'east'.\n",
+            " - Missing rectangle element 'east'.\n"
         ).rstrip()
     )
 

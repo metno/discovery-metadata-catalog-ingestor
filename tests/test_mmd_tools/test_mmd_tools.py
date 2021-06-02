@@ -23,9 +23,9 @@ import pytest
 
 from lxml import etree
 
-from dmci.mmd_tools import CheckMMD
+from dmci.tools import CheckMMD
 
-@pytest.mark.mmd_tools
+@pytest.mark.tools
 def testMMDTools_CheckRectangle():
     """Test the check_rectangle function.
     """
@@ -170,7 +170,7 @@ def testMMDTools_CheckRectangle():
 
 # END Test testMMDTools_CheckRectangle
 
-@pytest.mark.mmd_tools
+@pytest.mark.tools
 def testMMDTools_CheckURLs():
     """Test the check_url function.
     """
@@ -248,7 +248,7 @@ def testMMDTools_CheckURLs():
 
 # END Test testMMDTools_CheckURLs
 
-@pytest.mark.mmd_tools
+@pytest.mark.tools
 def testMMDTools_CheckCF():
     """Test the check_cf function.
     """
@@ -304,7 +304,7 @@ def testMMDTools_CheckCF():
 
 # END Test testMMDTools_CheckCF
 
-@pytest.mark.mmd_tools
+@pytest.mark.tools
 def testMMDTools_CheckVocabulary():
     """Test the check_vocabulary function.
     """
@@ -323,7 +323,7 @@ def testMMDTools_CheckVocabulary():
 
 # END Test testMMDTools_CheckVocabulary
 
-@pytest.mark.mmd_tools
+@pytest.mark.tools
 def testMMDTools_FullCheck(filesDir):
     """Test the full_check function.
     """

@@ -24,7 +24,7 @@ import logging
 from lxml import etree
 
 from dmci import CONFIG
-from dmci.mmd_tools import CheckMMD
+from dmci.tools import CheckMMD
 from dmci.distributors import FileDist, PyCSWDist
 
 logger = logging.getLogger(__name__)
