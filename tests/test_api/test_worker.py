@@ -141,6 +141,32 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
         False, "Input MMD XML file has no valid UUID metadata_identifier"
     )
 
+    # Check Error report
+    failFile = os.path.join(filesDir, "api", "failing.xml")
+    failData = (
+        b"<root>"
+        b"  <metadata_identifier>00000000-0000-0000-0000-000000000000</metadata_identifier>"
+        b"  <resource>imap://met.no</resource>"
+        b"  <geographic_extent>"
+        b"    <rectangle>"
+        b"      <north>76.199661</north>"
+        b"      <south>71.63427</south>"
+        b"      <west>-28.114723</west>"
+        b"    </rectangle>"
+        b"  </geographic_extent>"
+        b"</root>"
+    )
+    assert tstWorker._check_information_content(failData) == (
+        False, (
+            "Input MMD XML file contains errors, please check your file\n"
+            "Failed: URL Check on 'imap://met.no'\n"
+            " - URL scheme 'imap' not allowed.\n"
+            " - URL contains no path. At least '/' is required.\n"
+            "Failed: Rectangle Check\n"
+            " - Missing rectangle element 'east'.\n",
+        ).rstrip()
+    )
+
 # END Test testApiWorker_CheckInfoContent
 
 @pytest.mark.api

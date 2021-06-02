@@ -144,7 +144,10 @@ class Worker():
         if valid:
             msg = "Input MMD XML file is ok"
         else:
+            _, _, err = checker.status()
             msg = "Input MMD XML file contains errors, please check your file"
+            if err:
+                msg += "\n" + "\n".join(err)
 
         return valid, msg
 

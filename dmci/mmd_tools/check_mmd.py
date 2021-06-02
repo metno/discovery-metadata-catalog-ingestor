@@ -59,30 +59,41 @@ class CheckMMD():
         Returns:
             True / False
         """
-        directions = dict.fromkeys(["north", "south", "west", "east"], None)
+        keys = ["north", "south", "west", "east"]
+        directions = dict.fromkeys(keys, None)
 
         ok = True
         err = []
         if len(rectangle) > 1:
             err.append("Multiple rectangle elements in file.")
-            return False, err
+            ok = False
 
         for child in rectangle[0]:
             child_ns = etree.QName(child)
-            directions[child_ns.localname] = float(child.text)
+            tag = child_ns.localname
+            if tag not in keys:
+                err.append("The element '%s' is not a valid rectangle element." % tag)
+                ok = False
+            try:
+                directions[tag] = float(child.text)
+            except ValueError:
+                err.append("Value of rectangle element '%s' is not a number." % tag)
+                ok = False
 
         for key, val in directions.items():
             if val is None:
                 err.append("Missing rectangle element '%s'." % key)
-                return False, err
+                ok = False
 
-        if not (-180.0 <= directions["west"] <= directions["east"] <= 180.0):
-            err.append("Longitudes not in range -180 <= west <= east <= 180.")
-            ok = False
+        if ok:
+            # Only check this if all values are successfully read
+            if not (-180.0 <= directions["west"] <= directions["east"] <= 180.0):
+                err.append("Longitudes not in range -180 <= west <= east <= 180.")
+                ok = False
 
-        if not (-90.0 <= directions["south"] <= directions["north"] <= 90.0):
-            err.append("Latitudes not in range -90 <= south <= north <= 90.")
-            ok = False
+            if not (-90.0 <= directions["south"] <= directions["north"] <= 90.0):
+                err.append("Latitudes not in range -90 <= south <= north <= 90.")
+                ok = False
 
         self._log_result("Rectangle Check", ok, err)
 

@@ -30,9 +30,10 @@ def testMMDTools_CheckRectangle():
     """Test the check_rectangle function.
     """
     chkMMD = CheckMMD()
+
+    # Check lat/lon OK from rectangle
     etreeRef = etree.ElementTree(etree.XML(
         "<root>"
-        "  <resource>https://www.met.no/</resource>"
         "  <geographic_extent>"
         "    <rectangle>"
         "      <north>76.199661</north>"
@@ -43,62 +44,129 @@ def testMMDTools_CheckRectangle():
         "  </geographic_extent>"
         "</root>"
     ))
-
-    # Check lat/lon OK from rectangle
     rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
-    assert chkMMD.check_rectangle(rect) == (True, [])
+    ok, err = chkMMD.check_rectangle(rect)
+    assert ok is True
+    assert err == []
 
-    # Check longitude NOK
-    root = etree.Element("rectangle")
-    etree.SubElement(root, "south").text = "20"
-    etree.SubElement(root, "north").text = "50"
-    etree.SubElement(root, "west").text = "50"
-    etree.SubElement(root, "east").text = "0"
-    ok, err = chkMMD.check_rectangle([root])
+    # Check direction missing
+    etreeRef = etree.ElementTree(etree.XML(
+        "<root>"
+        "  <geographic_extent>"
+        "    <rectangle>"
+        "      <north>76.199661</north>"
+        "      <south>71.63427</south>"
+        "      <west>-28.114723</west>"
+        "    </rectangle>"
+        "  </geographic_extent>"
+        "</root>"
+    ))
+    rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
+    ok, err = chkMMD.check_rectangle(rect)
+    assert ok is False
+    assert err == ["Missing rectangle element 'east'."]
+
+    # Check invalid longitude
+    etreeRef = etree.ElementTree(etree.XML(
+        "<root>"
+        "  <geographic_extent>"
+        "    <rectangle>"
+        "      <north>50</north>"
+        "      <south>20</south>"
+        "      <west>50</west>"
+        "      <east>0</east>"
+        "    </rectangle>"
+        "  </geographic_extent>"
+        "</root>"
+    ))
+    rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
+    ok, err = chkMMD.check_rectangle(rect)
     assert ok is False
     assert err == ["Longitudes not in range -180 <= west <= east <= 180."]
 
-    # Check latitude NOK
-    root = etree.Element("rectangle")
-    etree.SubElement(root, "south").text = "-182"
-    etree.SubElement(root, "north").text = "50"
-    etree.SubElement(root, "west").text = "0"
-    etree.SubElement(root, "east").text = "180"
-    ok, err = chkMMD.check_rectangle([root])
+    # Check invalid longitude
+    etreeRef = etree.ElementTree(etree.XML(
+        "<root>"
+        "  <geographic_extent>"
+        "    <rectangle>"
+        "      <north>-182</north>"
+        "      <south>50</south>"
+        "      <west>0</west>"
+        "      <east>180</east>"
+        "    </rectangle>"
+        "  </geographic_extent>"
+        "</root>"
+    ))
+    rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
+    ok, err = chkMMD.check_rectangle(rect)
     assert ok is False
     assert err == ["Latitudes not in range -90 <= south <= north <= 90."]
 
     # Check more than one rectangle as input
-    ok, err = chkMMD.check_rectangle(["elem1", "elem2"])
+    elem = etree.Element("rectangle")
+    ok, err = chkMMD.check_rectangle([elem, elem])
     assert ok is False
-    assert err == ["Multiple rectangle elements in file."]
+    assert err[0] == "Multiple rectangle elements in file."
 
     # Check lat & long OK with namespace
-    root = etree.Element("rectangle")
-    etree.SubElement(root, "{http://www.met.no/schema/mmd}south").text = "20"
-    etree.SubElement(root, "{http://www.met.no/schema/mmd}north").text = "50"
-    etree.SubElement(root, "{http://www.met.no/schema/mmd}west").text = "0"
-    etree.SubElement(root, "{http://www.met.no/schema/mmd}east").text = "50"
-    assert chkMMD.check_rectangle([root]) == (True, [])
-
-    # Check rectangle with one missing element (no west)
-    root = etree.Element("rectangle")
-    etree.SubElement(root, "south").text = "-182"
-    etree.SubElement(root, "north").text = "50"
-    etree.SubElement(root, "east").text = "180"
-    ok, err = chkMMD.check_rectangle([root])
-    assert ok is False
-    assert err == ["Missing rectangle element 'west'."]
+    etreeRef = etree.ElementTree(etree.XML(
+        "<mmd:root xmlns:mmd=\"http://www.met.no/schema/mmd\">"
+        "  <mmd:geographic_extent>"
+        "    <mmd:rectangle>"
+        "      <mmd:north>76.199661</mmd:north>"
+        "      <mmd:south>71.63427</mmd:south>"
+        "      <mmd:west>-28.114723</mmd:west>"
+        "      <mmd:east>-11.169785</mmd:east>"
+        "    </mmd:rectangle>"
+        "  </mmd:geographic_extent>"
+        "</mmd:root>"
+    ))
+    rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
+    ok, err = chkMMD.check_rectangle(rect)
+    assert ok is True
+    assert err == []
 
     # Check rectangle with element with typo
-    root = etree.Element("rectangle")
-    etree.SubElement(root, "south").text = "20"
-    etree.SubElement(root, "north").text = "50"
-    etree.SubElement(root, "west").text = "0"
-    etree.SubElement(root, "easttt").text = "50"
-    ok, err = chkMMD.check_rectangle([root])
+    etreeRef = etree.ElementTree(etree.XML(
+        "<root>"
+        "  <geographic_extent>"
+        "    <rectangle>"
+        "      <north>76.199661</north>"
+        "      <south>71.63427</south>"
+        "      <west>-28.114723</west>"
+        "      <easttt>-11.169785</easttt>"
+        "    </rectangle>"
+        "  </geographic_extent>"
+        "</root>"
+    ))
+    rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
+    ok, err = chkMMD.check_rectangle(rect)
     assert ok is False
-    assert err == ["Missing rectangle element 'east'."]
+    assert err == [
+        "The element 'easttt' is not a valid rectangle element.",
+        "Missing rectangle element 'east'."
+    ]
+
+    # Check rectangle with non-numeric value
+    etreeRef = etree.ElementTree(etree.XML(
+        "<root>"
+        "  <geographic_extent>"
+        "    <rectangle>"
+        "      <north>76.199661</north>"
+        "      <south>71.63427</south>"
+        "      <west>-28.114723</west>"
+        "      <east>-stuff</east>"
+        "    </rectangle>"
+        "  </geographic_extent>"
+        "</root>"
+    ))
+    rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
+    ok, err = chkMMD.check_rectangle(rect)
+    assert ok is False
+    assert err == [
+        "Value of rectangle element 'east' is not a number.",
+        "Missing rectangle element 'east'."
+    ]
 
 # END Test testMMDTools_CheckRectangle
 
@@ -319,6 +387,8 @@ def testMMDTools_FullCheck(filesDir):
     assert "\n".join(failed) == (
         "Failed: URL Check on 'https://www.mæt.no/'\n"
         " - URL contains non-ASCII characters.\n"
+        "Failed: Rectangle Check\n"
+        " - Missing rectangle element 'east'.\n"
         "Failed: Climate and Forecast Standard Names Check\n"
         " - Only one CF name should be provided, got 2.\n"
         " - Keyword 'air_surface_temperature' is not a CF standard name.\n"
