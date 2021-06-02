@@ -265,9 +265,10 @@ def testMMDTools_FullCheck(filesDir):
 
     # Full check
     assert chkMMD.full_check(passTree) is True
-    ok, msgs = chkMMD.status()
+    ok, passed, failed = chkMMD.status()
     assert ok is True
-    assert "\n".join(msgs) == (
+    assert failed == []
+    assert "\n".join(passed) == (
         "Passed: URL Check on 'https://gcmdservices.gsfc.nasa.gov/static/kms/'\n"
         "Passed: URL Check on 'http://inspire.ec.europa.eu/theme'\n"
         "Passed: URL Check on 'https://register.geonorge.no/subregister/metadata-kodelister/kartve"
@@ -288,9 +289,10 @@ def testMMDTools_FullCheck(filesDir):
 
     # Full check with no elements to check
     assert chkMMD.full_check(etree.ElementTree(etree.XML("<xml />"))) is True
-    ok, msgs = chkMMD.status()
+    ok, passed, failed = chkMMD.status()
     assert ok is True
-    assert "\n".join(msgs) == ""
+    assert passed == []
+    assert failed == []
 
     # Full check with invalid elements
     etreeUrlRectNok = etree.ElementTree(etree.XML(
@@ -311,9 +313,10 @@ def testMMDTools_FullCheck(filesDir):
         "</root>"
     ))
     assert chkMMD.full_check(etreeUrlRectNok) is False
-    ok, msgs = chkMMD.status()
+    ok, passed, failed = chkMMD.status()
     assert ok is False
-    assert "\n".join(msgs) == (
+    assert passed == []
+    assert "\n".join(failed) == (
         "Failed: URL Check on 'https://www.mæt.no/'\n"
         " - URL contains non-ASCII characters.\n"
         "Failed: Climate and Forecast Standard Names Check\n"

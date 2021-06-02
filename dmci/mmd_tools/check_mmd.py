@@ -29,21 +29,23 @@ logger = logging.getLogger(__name__)
 class CheckMMD():
 
     def __init__(self):
-        self._status_msgs = []
+        self._status_pass = []
+        self._status_fail = []
         self._status_ok = True
         return
 
     def clear(self):
         """Clear the status data.
         """
-        self._status_msgs = []
+        self._status_pass = []
+        self._status_fail = []
         self._status_ok = True
         return
 
     def status(self):
         """Return the status of checks run since last clear.
         """
-        return self._status_ok, self._status_msgs
+        return self._status_ok, self._status_pass, self._status_fail
 
     def check_rectangle(self, rectangle):
         """Check if element geographic extent/rectangle is valid:
@@ -256,11 +258,11 @@ class CheckMMD():
         """Write the result of a check to the status variables.
         """
         if ok:
-            self._status_msgs.append("Passed: %s" % check)
+            self._status_pass.append("Passed: %s" % check)
         else:
-            self._status_msgs.append("Failed: %s" % check)
+            self._status_fail.append("Failed: %s" % check)
             for fail in err:
-                self._status_msgs.append(" - %s" % fail)
+                self._status_fail.append(" - %s" % fail)
 
         self._status_ok &= ok
 
