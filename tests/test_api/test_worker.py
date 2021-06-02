@@ -59,15 +59,34 @@ def testApiWorker_Distributor(tmpDir, tmpConf, mockXml, monkeypatch):
         assert failed == []
         assert skipped == ["blabla"]
 
+    # Same as above, but jobs fail
+    with monkeypatch.context() as mp:
+        mp.setattr(FileDist, "run", lambda *a: False)
+        mp.setattr(PyCSWDist, "run", lambda *a: False)
+
+        tstWorker = Worker(None, None)
+        tstWorker._conf = tmpConf
+        tstWorker._dist_xml_file = mockXml
+
+        status, valid, called, failed, skipped = tstWorker.distribute()
+        assert status is False
+        assert valid is True
+        assert called == []
+        assert failed == ["file", "pycsw"]
+        assert skipped == ["blabla"]
+
     # Call the distributor function with the wrong parameters
     tstWorker = Worker(None, None)
     tstWorker._conf = tmpConf
     tstWorker._dist_cmd = "blabla"
     tstWorker._dist_xml_file = "/path/to/nowhere"
 
-    status, valid, _, _, _ = tstWorker.distribute()
-    assert status is False
-    assert valid is False
+    status, valid, called, failed, skipped = tstWorker.distribute()
+    assert status is True # No jobs were run since all were skipped
+    assert valid is False # All jobs were invalid due to the command
+    assert called == []
+    assert failed == []
+    assert skipped == ["file", "pycsw", "blabla"]
 
 # END Test testApiWorker_Distributor
 

@@ -25,7 +25,7 @@ import sys
 import uuid
 
 from lxml import etree
-from flask import request, Flask, after_this_request
+from flask import request, Flask
 
 from dmci.api.worker import Worker
 
@@ -55,7 +55,7 @@ class App(Flask):
 
         # Set up api entry points
         @self.route("/v1/insert", methods=["POST"])
-        def base():
+        def post_insert():
             max_permitted_size = self._conf.max_permitted_size
 
             if request.content_length > max_permitted_size:
@@ -63,25 +63,32 @@ class App(Flask):
 
             data = request.get_data()
 
+            # Cache the job file
             file_uuid = uuid.uuid4()
             path = self._conf.distributor_cache
             full_path = os.path.join(path, f"{file_uuid}.Q")
+            msg, code = self._persist_file(data, full_path)
+            if code != 200:
+                return msg, code
 
+            # Run the validator
             worker = Worker(full_path, self._xsd_obj)
+            valid, msg = worker.validate(data)
+            if not valid:
+                return msg, 400
 
-            @after_this_request
-            def dist(response):
-                nonlocal worker
-                worker.distribute()
-                return response
+            # Run the distributors
+            err = []
+            status, valid, _, failed, skipped = worker.distribute()
+            if not status:
+                err.append("The following distributors failed: %s" % ", ".join(failed))
+            if not valid:
+                err.append("The following jobs were skipped: %s" % ", ".join(skipped))
 
-            result, msg = worker.validate(data)
-            if result:
-                return self._persist_file(data, full_path)
+            if err:
+                return "\n".join(err), 500
             else:
-                return msg, 500
-
-            # TODO: shouldn't msg be logged?
+                return "Everything is OK", 200
 
         return
 
@@ -99,7 +106,7 @@ class App(Flask):
 
         except Exception as e:
             logger.error(str(e))
-            return "Can't write to file", 507
+            return "Cannot write xml data to cache file", 507
 
         return "", 200
 

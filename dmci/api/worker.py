@@ -111,13 +111,15 @@ class Worker():
                 **self._kwargs
             )
             valid &= obj.is_valid()
-            if obj.is_valid:
+            if obj.is_valid():
                 obj_status = obj.run()
                 status &= obj_status
                 if obj_status:
                     called.append(dist)
                 else:
                     failed.append(dist)
+            else:
+                skipped.append(dist)
 
         return status, valid, called, failed, skipped
 
