@@ -108,13 +108,33 @@ def testApiApp_InsertRequests(client, filesDir, monkeypatch):
     tooLargeFile = bytes(3000000)
     assert client.post("/v1/insert", data=tooLargeFile).status_code == 413
 
+    # Fail cahcing the file
+    with monkeypatch.context() as mp:
+        mp.setattr("builtins.open", causeOSError)
+        assert client.post("/v1/insert", data=MOCK_XML).status_code == 507
+
+    # Data is valid
     with monkeypatch.context() as mp:
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 200
 
+    # Data is not valid
     with monkeypatch.context() as mp:
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (False, ""))
-        assert client.post("/v1/insert", data=MOCK_XML).status_code == 500
+        assert client.post("/v1/insert", data=MOCK_XML).status_code == 400
+
+    # Data is valid, distribute fails
+    with monkeypatch.context() as mp:
+        fail = ["A", "B"]
+        skip = ["C"]
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
+        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (False, False, [], fail, skip))
+        response = client.post("/v1/insert", data=MOCK_XML)
+        assert response.status_code == 500
+        assert response.data == (
+            b"The following distributors failed: A, B\n"
+            b"The following jobs were skipped: C"
+        )
 
 # END Test testApiApp_InsertRequests
 

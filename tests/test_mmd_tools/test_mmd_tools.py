@@ -20,22 +20,20 @@ limitations under the License.
 
 import os
 import pytest
-import logging
 
 from lxml import etree
 
-from dmci.mmd_tools.check_mmd import (
-    check_rectangle, check_url, check_cf, check_vocabulary, full_check
-)
+from dmci.tools import CheckMMD
 
-@pytest.mark.mmd_tools
-def testMMDTools_CheckRectangle(caplog):
+@pytest.mark.tools
+def testMMDTools_CheckRectangle():
     """Test the check_rectangle function.
     """
-    caplog.set_level(logging.DEBUG, logger="dmci")
+    chkMMD = CheckMMD()
+
+    # Check lat/lon OK from rectangle
     etreeRef = etree.ElementTree(etree.XML(
         "<root>"
-        "  <resource>https://www.met.no/</resource>"
         "  <geographic_extent>"
         "    <rectangle>"
         "      <north>76.199661</north>"
@@ -46,127 +44,323 @@ def testMMDTools_CheckRectangle(caplog):
         "  </geographic_extent>"
         "</root>"
     ))
-
-    # Check lat/lon OK from rectangle
     rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
-    assert check_rectangle(rect) is True
+    ok, err = chkMMD.check_rectangle(rect)
+    assert ok is True
+    assert err == []
 
-    # Check longitude NOK
-    root = etree.Element("rectangle")
-    etree.SubElement(root, "south").text = "20"
-    etree.SubElement(root, "north").text = "50"
-    etree.SubElement(root, "west").text = "50"
-    etree.SubElement(root, "east").text = "0"
-    assert check_rectangle([root]) is False
-    assert "Longitudes not ok" in caplog.text
+    # Check direction missing
+    etreeRef = etree.ElementTree(etree.XML(
+        "<root>"
+        "  <geographic_extent>"
+        "    <rectangle>"
+        "      <north>76.199661</north>"
+        "      <south>71.63427</south>"
+        "      <west>-28.114723</west>"
+        "    </rectangle>"
+        "  </geographic_extent>"
+        "</root>"
+    ))
+    rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
+    ok, err = chkMMD.check_rectangle(rect)
+    assert ok is False
+    assert err == ["Missing rectangle element 'east'."]
 
-    # Check latitude NOK
-    root = etree.Element("rectangle")
-    etree.SubElement(root, "south").text = "-182"
-    etree.SubElement(root, "north").text = "50"
-    etree.SubElement(root, "west").text = "0"
-    etree.SubElement(root, "east").text = "180"
-    assert check_rectangle([root]) is False
-    assert "Latitudes not ok" in caplog.text
+    # Check invalid longitude
+    etreeRef = etree.ElementTree(etree.XML(
+        "<root>"
+        "  <geographic_extent>"
+        "    <rectangle>"
+        "      <north>50</north>"
+        "      <south>20</south>"
+        "      <west>50</west>"
+        "      <east>0</east>"
+        "    </rectangle>"
+        "  </geographic_extent>"
+        "</root>"
+    ))
+    rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
+    ok, err = chkMMD.check_rectangle(rect)
+    assert ok is False
+    assert err == ["Longitudes not in range -180 <= west <= east <= 180."]
+
+    # Check invalid longitude
+    etreeRef = etree.ElementTree(etree.XML(
+        "<root>"
+        "  <geographic_extent>"
+        "    <rectangle>"
+        "      <north>-182</north>"
+        "      <south>50</south>"
+        "      <west>0</west>"
+        "      <east>180</east>"
+        "    </rectangle>"
+        "  </geographic_extent>"
+        "</root>"
+    ))
+    rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
+    ok, err = chkMMD.check_rectangle(rect)
+    assert ok is False
+    assert err == ["Latitudes not in range -90 <= south <= north <= 90."]
 
     # Check more than one rectangle as input
-    assert check_rectangle(["elem1", "elem2"]) is False
-    assert "Multiple rectangle elements in file" in caplog.text
+    elem = etree.Element("rectangle")
+    ok, err = chkMMD.check_rectangle([elem, elem])
+    assert ok is False
+    assert err[0] == "Multiple rectangle elements in file."
 
     # Check lat & long OK with namespace
-    root = etree.Element("rectangle")
-    etree.SubElement(root, "{http://www.met.no/schema/mmd}south").text = "20"
-    etree.SubElement(root, "{http://www.met.no/schema/mmd}north").text = "50"
-    etree.SubElement(root, "{http://www.met.no/schema/mmd}west").text = "0"
-    etree.SubElement(root, "{http://www.met.no/schema/mmd}east").text = "50"
-    assert check_rectangle([root]) is True
+    etreeRef = etree.ElementTree(etree.XML(
+        "<mmd:root xmlns:mmd=\"http://www.met.no/schema/mmd\">"
+        "  <mmd:geographic_extent>"
+        "    <mmd:rectangle>"
+        "      <mmd:north>76.199661</mmd:north>"
+        "      <mmd:south>71.63427</mmd:south>"
+        "      <mmd:west>-28.114723</mmd:west>"
+        "      <mmd:east>-11.169785</mmd:east>"
+        "    </mmd:rectangle>"
+        "  </mmd:geographic_extent>"
+        "</mmd:root>"
+    ))
+    rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
+    ok, err = chkMMD.check_rectangle(rect)
+    assert ok is True
+    assert err == []
 
-    # Check rectangle with one missing element (no west)
-    root = etree.Element("rectangle")
-    etree.SubElement(root, "south").text = "-182"
-    etree.SubElement(root, "north").text = "50"
-    etree.SubElement(root, "east").text = "180"
-    assert check_rectangle([root]) is False
-    assert "Missing rectangle element west" in caplog.text
+    # Check rectangle with element with typo
+    etreeRef = etree.ElementTree(etree.XML(
+        "<root>"
+        "  <geographic_extent>"
+        "    <rectangle>"
+        "      <north>76.199661</north>"
+        "      <south>71.63427</south>"
+        "      <west>-28.114723</west>"
+        "      <easttt>-11.169785</easttt>"
+        "    </rectangle>"
+        "  </geographic_extent>"
+        "</root>"
+    ))
+    rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
+    ok, err = chkMMD.check_rectangle(rect)
+    assert ok is False
+    assert err == [
+        "The element 'easttt' is not a valid rectangle element.",
+        "Missing rectangle element 'east'."
+    ]
+
+    # Check rectangle with non-numeric value
+    etreeRef = etree.ElementTree(etree.XML(
+        "<root>"
+        "  <geographic_extent>"
+        "    <rectangle>"
+        "      <north>76.199661</north>"
+        "      <south>71.63427</south>"
+        "      <west>-28.114723</west>"
+        "      <east>-stuff</east>"
+        "    </rectangle>"
+        "  </geographic_extent>"
+        "</root>"
+    ))
+    rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
+    ok, err = chkMMD.check_rectangle(rect)
+    assert ok is False
+    assert err == [
+        "Value of rectangle element 'east' is not a number.",
+        "Missing rectangle element 'east'."
+    ]
 
 # END Test testMMDTools_CheckRectangle
 
-@pytest.mark.mmd_tools
+@pytest.mark.tools
 def testMMDTools_CheckURLs():
     """Test the check_url function.
     """
+    chkMMD = CheckMMD()
+
     # Valid URL
-    assert check_url("https://www.met.no/") is True
+    ok, err = chkMMD.check_url("https://www.met.no/")
+    assert ok is True
+    assert err == []
 
     # Schemes
-    assert check_url("https://www.met.no/") is True
-    assert check_url("http://www.met.no/") is True
-    assert check_url("file://www.met.no/") is False
-    assert check_url("imap://www.met.no/") is False
-    assert check_url("stuff://www.met.no/") is False
+    ok, err = chkMMD.check_url("https://www.met.no/")
+    assert ok is True
+    assert err == []
+
+    ok, err = chkMMD.check_url("http://www.met.no/")
+    assert ok is True
+    assert err == []
+
+    ok, err = chkMMD.check_url("file://www.met.no/")
+    assert ok is False
+    assert err == ["URL scheme 'file' not allowed."]
+
+    ok, err = chkMMD.check_url("imap://www.met.no/")
+    assert ok is False
+    assert err == ["URL scheme 'imap' not allowed."]
+
+    ok, err = chkMMD.check_url("stuff://www.met.no/")
+    assert ok is False
+    assert err == ["URL scheme 'stuff' not allowed."]
 
     # Domains
-    assert check_url("https://www.met.no/") is True
-    assert check_url("https://met.no/") is True
-    assert check_url("https:/www.met.no/") is False
-    assert check_url("https://metno/") is False
+    ok, err = chkMMD.check_url("https://www.met.no/")
+    assert ok is True
+    assert err == []
+
+    ok, err = chkMMD.check_url("https://met.no/")
+    assert ok is True
+    assert err == []
+
+    ok, err = chkMMD.check_url("https:/www.met.no/")
+    assert ok is False
+    assert err == ["Domain '' is not valid."]
+
+    ok, err = chkMMD.check_url("https://metno/")
+    assert ok is False
+    assert err == ["Domain 'metno' is not valid."]
 
     # Path
-    assert check_url("https://www.met.no", allow_no_path=True) is True
-    assert check_url("https://www.met.no") is False
-    assert check_url("https://www.met.no/") is True
-    assert check_url("https://www.met.no/location") is True
+    ok, err = chkMMD.check_url("https://www.met.no", allow_no_path=True)
+    assert ok is True
+    assert err == []
+
+    ok, err = chkMMD.check_url("https://www.met.no")
+    assert ok is False
+    assert err == ["URL contains no path. At least '/' is required."]
+
+    ok, err = chkMMD.check_url("https://www.met.no/")
+    assert ok is True
+    assert err == []
+
+    ok, err = chkMMD.check_url("https://www.met.no/location")
+    assert ok is True
+    assert err == []
 
     # Non-ASCII characters
-    assert check_url("https://www.mæt.no/") is False
+    ok, err = chkMMD.check_url("https://www.mæt.no/")
+    assert ok is False
+    assert err == ["URL contains non-ASCII characters."]
 
     # Unparsable
-    assert check_url(12345) is False
+    ok, err = chkMMD.check_url(12345)
+    assert ok is False
+    assert err == ["URL contains non-ASCII characters.", "URL cannot be parsed by urllib."]
 
 # END Test testMMDTools_CheckURLs
 
-@pytest.mark.mmd_tools
-def off_testMMDTools_CheckCF():
+@pytest.mark.tools
+def testMMDTools_CheckCF():
     """Test the check_cf function.
     """
-    assert check_cf(["sea_surface_temperature"]) is True
-    assert check_cf(["sea_surace_temperature"]) is False
+    chkMMD = CheckMMD()
+
+    ok, err, n = chkMMD.check_cf(etree.ElementTree(etree.XML(
+        "<root>"
+        "  <keywords vocabulary='Climate and Forecast Standard Names'>"
+        "    <keyword>sea_surface_temperature</keyword>"
+        "  </keywords>"
+        "</root>"
+    )))
+    assert ok is True
+    assert err == []
+    assert n == 1
+
+    ok, err, n = chkMMD.check_cf(etree.ElementTree(etree.XML(
+        "<root>"
+        "  <keywords vocabulary='Climate and Forecast Standard Names'>"
+        "    <keyword>sea_surface_temperature</keyword>"
+        "    <keyword>sea_surface_temperature</keyword>"
+        "  </keywords>"
+        "</root>"
+    )))
+    assert ok is False
+    assert err == ["Only one CF name should be provided, got 2."]
+    assert n == 1
+
+    ok, err, n = chkMMD.check_cf(etree.ElementTree(etree.XML(
+        "<root>"
+        "  <keywords vocabulary='Climate and Forecast Standard Names'>"
+        "    <keyword>sea_surace_temperature</keyword>"
+        "  </keywords>"
+        "</root>"
+    )))
+    assert ok is False
+    assert err == ["Keyword 'sea_surace_temperature' is not a CF standard name."]
+    assert n == 1
+
+    ok, err, n = chkMMD.check_cf(etree.ElementTree(etree.XML(
+        "<root>"
+        "  <keywords vocabulary='Climate and Forecast Standard Names'>"
+        "    <keyword>sea_surface_temperature</keyword>"
+        "  </keywords>"
+        "  <keywords vocabulary='Climate and Forecast Standard Names'>"
+        "    <keyword>sea_surface_temperature</keyword>"
+        "  </keywords>"
+        "</root>"
+    )))
+    assert ok is False
+    assert err == ["More than one CF entry found. Only one is allowed."]
+    assert n == 2
 
 # END Test testMMDTools_CheckCF
 
-@pytest.mark.mmd_tools
-def off_testMMDTools_CheckVocabulary():
+@pytest.mark.tools
+def testMMDTools_CheckVocabulary():
     """Test the check_vocabulary function.
     """
-    assert check_vocabulary(etree.ElementTree(etree.XML(
+    chkMMD = CheckMMD()
+    ok, err = chkMMD.check_vocabulary(etree.ElementTree(etree.XML(
         "<root><operational_status>Operational</operational_status></root>"
-    ))) is True
+    )))
+    assert ok is True
+    assert err == []
 
-    assert check_vocabulary(etree.ElementTree(etree.XML(
+    ok, err = chkMMD.check_vocabulary(etree.ElementTree(etree.XML(
         "<root><operational_status>OOperational</operational_status></root>"
-    ))) is False
+    )))
+    assert ok is False
+    assert err == ["Incorrect vocabulary 'OOperational' for element 'operational_status'."]
 
 # END Test testMMDTools_CheckVocabulary
 
-@pytest.mark.mmd_tools
-def testMMDTools_FullCheck(filesDir, caplog):
+@pytest.mark.tools
+def testMMDTools_FullCheck(filesDir):
     """Test the full_check function.
     """
-    caplog.set_level(logging.DEBUG, logger="dmci")
+    chkMMD = CheckMMD()
     passFile = os.path.join(filesDir, "api", "passing.xml")
     passTree = etree.parse(passFile, parser=etree.XMLParser(remove_blank_text=True))
 
     # Full check
-    caplog.clear()
-    assert full_check(passTree) is True
-    assert "OK: 9 URLs" in caplog.text
-    assert "OK: geographic_extent/rectangle" in caplog.text
+    assert chkMMD.full_check(passTree) is True
+    ok, passed, failed = chkMMD.status()
+    assert ok is True
+    assert failed == []
+    assert "\n".join(passed) == (
+        "Passed: URL Check on 'https://gcmdservices.gsfc.nasa.gov/static/kms/'\n"
+        "Passed: URL Check on 'http://inspire.ec.europa.eu/theme'\n"
+        "Passed: URL Check on 'https://register.geonorge.no/subregister/metadata-kodelister/kartve"
+        "rket/nasjonal-temainndeling'\n"
+        "Passed: URL Check on 'http://spdx.org/licenses/CC-BY-4.0'\n"
+        "Passed: URL Check on 'https://thredds.met.no/thredds/dodsC/remotesensingsatellite/polar-s"
+        "wath/2021/04/29/aqua-modis-1km-20210429002844-20210429003955.nc'\n"
+        "Passed: URL Check on 'https://thredds.met.no/thredds/wms/remotesensingsatellite/polar-swa"
+        "th/2021/04/29/aqua-modis-1km-20210429002844-20210429003955.nc?service=WMS&version=1.3.0&r"
+        "equest=GetCapabilities'\n"
+        "Passed: URL Check on 'https://thredds.met.no/thredds/fileServer/remotesensingsatellite/po"
+        "lar-swath/2021/04/29/aqua-modis-1km-20210429002844-20210429003955.nc'\n"
+        "Passed: URL Check on 'https://www.wmo-sat.info/oscar/satellites/view/aqua'\n"
+        "Passed: URL Check on 'https://www.wmo-sat.info/oscar/instruments/view/modis'\n"
+        "Passed: Rectangle Check\n"
+        "Passed: Controlled Vocabularies Check\n"
+    ).rstrip()
 
     # Full check with no elements to check
-    caplog.clear()
-    assert full_check(etree.ElementTree(etree.XML("<xml />"))) is True
-    assert "Found no elements contained an URL" in caplog.text
-    assert "Found no geographic_extent/rectangle element" in caplog.text
+    assert chkMMD.full_check(etree.ElementTree(etree.XML("<xml />"))) is True
+    ok, passed, failed = chkMMD.status()
+    assert ok is True
+    assert passed == []
+    assert failed == []
 
     # Full check with invalid elements
     etreeUrlRectNok = etree.ElementTree(etree.XML(
@@ -186,30 +380,20 @@ def testMMDTools_FullCheck(filesDir, caplog):
         "  <operational_status>NotOpen</operational_status>"
         "</root>"
     ))
-    caplog.clear()
-    assert full_check(etreeUrlRectNok) is False
-    assert "NOK: URLs" in caplog.text
-    assert "NOK: geographic_extent/rectangle" in caplog.text
-
-    # Twice the element keywords for the same vocabulary
-    # root = etree.Element("toto")
-    # key1 = etree.SubElement(root, "keywords", vocabulary="Climate and Forecast Standard Names")
-    # etree.SubElement(key1, "keyword").text = "air_temperature"
-    # key2 = etree.SubElement(root, "keywords", vocabulary="Climate and Forecast Standard Names")
-    # etree.SubElement(key2, "keyword").text = "air_temperature"
-    # assert full_check(root) is False
-
-    # Correct case
-    # root = etree.Element("toto")
-    # root1 = etree.SubElement(root, "keywords", vocabulary="Climate and Forecast Standard Names")
-    # etree.SubElement(root1, "keyword").text = "sea_surface_temperature"
-    # assert full_check(root) is True
-
-    # Two standard names provided
-    # root = etree.Element("toto")
-    # root1 = etree.SubElement(root, "keywords", vocabulary="Climate and Forecast Standard Names")
-    # etree.SubElement(root1, "keyword").text = "air_temperature"
-    # etree.SubElement(root1, "keyword").text = "sea_surface_temperature"
-    # assert full_check(root) is False
+    assert chkMMD.full_check(etreeUrlRectNok) is False
+    ok, passed, failed = chkMMD.status()
+    assert ok is False
+    assert passed == []
+    assert "\n".join(failed) == (
+        "Failed: URL Check on 'https://www.mæt.no/'\n"
+        " - URL contains non-ASCII characters.\n"
+        "Failed: Rectangle Check\n"
+        " - Missing rectangle element 'east'.\n"
+        "Failed: Climate and Forecast Standard Names Check\n"
+        " - Only one CF name should be provided, got 2.\n"
+        " - Keyword 'air_surface_temperature' is not a CF standard name.\n"
+        "Failed: Controlled Vocabularies Check\n"
+        " - Incorrect vocabulary 'NotOpen' for element 'operational_status'.\n"
+    ).rstrip()
 
 # END Test testMMDTools_FullCheck

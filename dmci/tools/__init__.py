@@ -21,8 +21,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from dmci.mmd_tools.check_mmd import full_check
+from dmci.tools.check_mmd import CheckMMD
 
 __all__ = [
-    "full_check",
+    "CheckMMD",
 ]

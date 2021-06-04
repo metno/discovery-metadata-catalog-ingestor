@@ -26,6 +26,7 @@ from tools import readFile
 
 from dmci.api.worker import Worker
 from dmci.distributors import FileDist, PyCSWDist
+from dmci.tools import CheckMMD
 
 @pytest.mark.api
 def testApiWorker_Init():
@@ -58,15 +59,34 @@ def testApiWorker_Distributor(tmpDir, tmpConf, mockXml, monkeypatch):
         assert failed == []
         assert skipped == ["blabla"]
 
+    # Same as above, but jobs fail
+    with monkeypatch.context() as mp:
+        mp.setattr(FileDist, "run", lambda *a: False)
+        mp.setattr(PyCSWDist, "run", lambda *a: False)
+
+        tstWorker = Worker(None, None)
+        tstWorker._conf = tmpConf
+        tstWorker._dist_xml_file = mockXml
+
+        status, valid, called, failed, skipped = tstWorker.distribute()
+        assert status is False
+        assert valid is True
+        assert called == []
+        assert failed == ["file", "pycsw"]
+        assert skipped == ["blabla"]
+
     # Call the distributor function with the wrong parameters
     tstWorker = Worker(None, None)
     tstWorker._conf = tmpConf
     tstWorker._dist_cmd = "blabla"
     tstWorker._dist_xml_file = "/path/to/nowhere"
 
-    status, valid, _, _, _ = tstWorker.distribute()
-    assert status is False
-    assert valid is False
+    status, valid, called, failed, skipped = tstWorker.distribute()
+    assert status is True # No jobs were run since all were skipped
+    assert valid is False # All jobs were invalid due to the command
+    assert called == []
+    assert failed == []
+    assert skipped == ["file", "pycsw", "blabla"]
 
 # END Test testApiWorker_Distributor
 
@@ -119,7 +139,7 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
 
     # Valid data format
     with monkeypatch.context() as mp:
-        mp.setattr("dmci.mmd_tools.check_mmd.check_url", lambda *a, **k: True)
+        mp.setattr(CheckMMD, "check_url", lambda *a, **k: (True, []))
         passData = bytes(readFile(passFile), "utf-8")
         assert tstWorker._check_information_content(passData) == (
             True, "Input MMD XML file is ok"
@@ -127,7 +147,7 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
 
     # Valid data format, invalid content
     with monkeypatch.context() as mp:
-        mp.setattr("dmci.mmd_tools.check_mmd.check_url", lambda *a, **k: False)
+        mp.setattr(CheckMMD, "check_url", lambda *a, **k: (False, []))
         passData = bytes(readFile(passFile), "utf-8")
         assert tstWorker._check_information_content(passData) == (
             False, "Input MMD XML file contains errors, please check your file"
@@ -138,6 +158,32 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
     failData = bytes(readFile(failFile), "utf-8")
     assert tstWorker._check_information_content(failData) == (
         False, "Input MMD XML file has no valid UUID metadata_identifier"
+    )
+
+    # Check Error report
+    failFile = os.path.join(filesDir, "api", "failing.xml")
+    failData = (
+        b"<root>"
+        b"  <metadata_identifier>00000000-0000-0000-0000-000000000000</metadata_identifier>"
+        b"  <resource>imap://met.no</resource>"
+        b"  <geographic_extent>"
+        b"    <rectangle>"
+        b"      <north>76.199661</north>"
+        b"      <south>71.63427</south>"
+        b"      <west>-28.114723</west>"
+        b"    </rectangle>"
+        b"  </geographic_extent>"
+        b"</root>"
+    )
+    assert tstWorker._check_information_content(failData) == (
+        False, (
+            "Input MMD XML file contains errors, please check your file\n"
+            "Failed: URL Check on 'imap://met.no'\n"
+            " - URL scheme 'imap' not allowed.\n"
+            " - URL contains no path. At least '/' is required.\n"
+            "Failed: Rectangle Check\n"
+            " - Missing rectangle element 'east'.\n"
+        ).rstrip()
     )
 
 # END Test testApiWorker_CheckInfoContent
