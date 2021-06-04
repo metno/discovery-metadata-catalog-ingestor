@@ -42,8 +42,8 @@ def testDistPyCSW_Init():
 @pytest.mark.dist
 def testDistPyCSW_Run():
     # WRONG command test
-    assert PyCSWDist("blabla", metadata_id="some_id").run() is False
-    assert PyCSWDist("insert", metadata_id="some_id").run() is False
+    assert PyCSWDist("blabla", metadata_id="some_id").run() == (False, "The run job is invalid")
+    assert PyCSWDist("insert", metadata_id="some_id").run() == (False, "The run job is invalid")
 
 # END Test testDistPyCSW_Run
 
@@ -51,27 +51,31 @@ def testDistPyCSW_Run():
 def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
     """Test insert commands via run()
     """
+    class mockResp:
+        text = "Mock response"
+        status_code = 200
+
     # insert returns True
     with monkeypatch.context() as mp:
         mp.setattr(PyCSWDist, "_translate", lambda *a: b"<xml />")
         mp.setattr(
-            "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: "a response object"
+            "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: mockResp
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: True)
         tstPyCSW = PyCSWDist("insert", xml_file=mockXml)
         tstPyCSW._conf.mmd_xslt_path = mockXslt
-        assert tstPyCSW.run() is True
+        assert tstPyCSW.run() == (True, "Mock response")
 
     # insert returns false
     with monkeypatch.context() as mp:
         mp.setattr(PyCSWDist, "_translate", lambda *a: b"<xml />")
         mp.setattr(
-            "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: "a response object"
+            "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: mockResp
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: False)
         tstPyCSW = PyCSWDist("insert", xml_file=mockXml)
         tstPyCSW._conf.mmd_xslt_path = mockXslt
-        assert tstPyCSW.run() is False
+        assert tstPyCSW.run() == (False, "Mock response")
 
 # END Test testDistPyCSW_Insert
 
@@ -79,8 +83,8 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
 def testDistPyCSW_Update(mockXml):
     """Test update commands via run()
     """
-    assert PyCSWDist("update", xml_file=mockXml).run() is False
-    assert PyCSWDist("update", metadata_id="some_id").run() is False
+    assert PyCSWDist("update", xml_file=mockXml).run() == (False, "Not yet implemented")
+    assert PyCSWDist("update", metadata_id="some_id").run() == (False, "The run job is invalid")
 
 # END Test testDistPyCSW_Update
 
@@ -88,24 +92,28 @@ def testDistPyCSW_Update(mockXml):
 def testDistPyCSW_Delete(monkeypatch, mockXml):
     """Test delete commands via run()
     """
-    assert PyCSWDist("delete").run() is False
-    assert PyCSWDist("delete", xml_file=mockXml).run() is False
+    class mockResp:
+        text = "Mock response"
+        status_code = 200
+
+    assert PyCSWDist("delete").run() == (False, "The run job is invalid")
+    assert PyCSWDist("delete", xml_file=mockXml).run() == (False, "The run job is invalid")
 
     # delete returns True
     with monkeypatch.context() as mp:
         mp.setattr(
-            "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: "a response object"
+            "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: mockResp
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: True)
-        assert PyCSWDist("delete", metadata_id="some_id").run() is True
+        assert PyCSWDist("delete", metadata_id="some_id").run() == (True, "Mock response")
 
     # delete returns false
     with monkeypatch.context() as mp:
         mp.setattr(
-            "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: "a response object"
+            "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: mockResp
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: False)
-        assert PyCSWDist("delete", metadata_id="some_id").run() is False
+        assert PyCSWDist("delete", metadata_id="some_id").run() == (False, "Mock response")
 
 # END Test testDistPyCSW_Delete
 
