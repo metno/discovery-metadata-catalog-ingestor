@@ -23,7 +23,7 @@ import pytest
 from dmci.distributors.distributor import Distributor
 
 @pytest.mark.dist
-def testDistDistributor_Init(tmpDir, mockXml):
+def testDistDistributor_Init(mockXml):
     """Test the Distributor super class init.
     """
     # Check Insert Command

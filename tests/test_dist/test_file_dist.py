@@ -49,22 +49,22 @@ def testDistFile_Run(tmpDir, mockXml):
     assert tstDist.is_valid()
 
     tstDist._valid = False
-    assert tstDist.run() is False
+    assert tstDist.run() == (False, "The run job is invalid")
     tstDist._valid = True
 
-    tstDist._add_to_archive = lambda *a: True
+    tstDist._add_to_archive = lambda *a: (True, "test")
 
     tstDist._cmd = DistCmd.INSERT
-    assert tstDist.run() is True
+    assert tstDist.run() == (True, "test")
 
     tstDist._cmd = DistCmd.UPDATE
-    assert tstDist.run() is True
+    assert tstDist.run() == (True, "test")
 
     tstDist._cmd = DistCmd.DELETE
-    assert tstDist.run() is False
+    assert tstDist.run() == (False, "The `delete' command is not implemented")
 
     tstDist._cmd = 1234
-    assert tstDist.run() is False
+    assert tstDist.run() == (False, "No job was run")
 
 # END Test testDistFile_Run
 
@@ -84,17 +84,19 @@ def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
 
     # No file archive path set
     tstDist = FileDist("insert", xml_file=passFile)
-    assert tstDist._add_to_archive() is False
+    assert tstDist._add_to_archive() == (False, "Internal error")
 
     # No identifier set
     tstDist._conf.file_archive_path = archDir
-    assert tstDist.run() is False
+    assert tstDist.run() == (False, "Internal error")
 
     # Invalid identifier set
     tstDist._worker = tstWorker
     goodUUID = tstWorker._file_metadata_id
     tstWorker._file_metadata_id = "123456789abcdefghijkl"
-    assert tstDist.run() is False
+    assert tstDist.run() == (
+        False, "No valid metadata_identifier provided, cannot archive file"
+    )
 
     # Should have a valid identifier from here on
     tstWorker._file_metadata_id = goodUUID
@@ -102,15 +104,21 @@ def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
     # Fail the making of folders
     with monkeypatch.context() as mp:
         mp.setattr("os.makedirs", causeOSError)
-        assert tstDist.run() is False
+        assert tstDist.run() == (
+            False, "Failed to archive file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+        )
 
     # Fail the copy process
     with monkeypatch.context() as mp:
         mp.setattr("shutil.copy2", causeOSError)
-        assert tstDist.run() is False
+        assert tstDist.run() == (
+            False, "Failed to archive file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+        )
 
     # Finally, test a successful write
-    assert tstDist.run() is True
+    assert tstDist.run() == (
+        True, "Added file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+    )
 
     dirA = os.path.join(archDir, "arch_f")
     assert os.path.isdir(dirA)
@@ -125,10 +133,14 @@ def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
     assert os.path.isfile(archFile)
 
     # Should not be allowed to write the same file twice
-    assert tstDist.run() is False
+    assert tstDist.run() == (
+        False, "Failed to archive file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+    )
 
     # Unless command is to update
     tstDist._cmd = DistCmd.UPDATE
-    assert tstDist.run() is True
+    assert tstDist.run() == (
+        True, "Replaced file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+    )
 
 # END Test testDistFile_InsertUpdate
