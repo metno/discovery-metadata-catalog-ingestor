@@ -59,7 +59,7 @@ def testDistDistributor_Init(mockXml):
 @pytest.mark.dist
 def testDistDistributor_Run():
     """Test the Distributor super class run function.
- 
+
     Calling run() on the superclass should raise an error as this
     function must be implemented in subclasses.
     """
