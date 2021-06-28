@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : MMD Checker Functions
 ============================
@@ -26,6 +25,7 @@ from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
+
 class CheckMMD():
 
     def __init__(self):
@@ -35,16 +35,14 @@ class CheckMMD():
         return
 
     def clear(self):
-        """Clear the status data.
-        """
+        """Clear the status data."""
         self._status_pass = []
         self._status_fail = []
         self._status_ok = True
         return
 
     def status(self):
-        """Return the status of checks run since last clear.
-        """
+        """Return the status of checks run since last clear."""
         return self._status_ok, self._status_pass, self._status_fail
 
     def check_rectangle(self, rectangle):
@@ -53,11 +51,17 @@ class CheckMMD():
             - rectangle has north / south / west / east subelements
             - -180 <= min_lat <= max_lat <= 180
             -    0 <= min_lon <= max_lon <= 360
-        Args:
-            rectangle: list of elements found when requesting node(s)
-            geographic_extent/rectangle
-        Returns:
-            True / False
+
+        Parameters
+        ----------
+            rectangle : list of str
+                list of elements found when requesting node(s)
+                geographic_extent/rectangle
+
+        Returns
+        -------
+        bool
+            True if valid, otherwise Flase
         """
         keys = ["north", "south", "west", "east"]
         directions = dict.fromkeys(keys, None)
@@ -101,6 +105,18 @@ class CheckMMD():
 
     def check_url(self, url, allow_no_path=False):
         """Check that an URL is valid.
+
+        Parameters
+        ----------
+        url : str
+            The url to check
+        allow_no_path : bool, optional
+            If True, a url with no path set is considered valid
+
+        Returns
+        -------
+        bool
+            True if valid, otherwise False
         """
         ok = True
         err = []
@@ -134,10 +150,16 @@ class CheckMMD():
 
     def check_cf(self, xmldoc):
         """Check that names are valid CF standard names
-        Args:
-            cf_names: list of names to test
-        Returns:
-            True / False
+
+        Parameters
+        ----------
+            xmldoc : :obj:`lxml.ElementTree`
+                The XML tree to validate
+
+        Returns
+        -------
+        bool
+            True if valid, otherwise False
         """
         ok = True
         err = []
@@ -176,17 +198,24 @@ class CheckMMD():
             - activity_type
             - operational_status
             - use_constraint
-        Args:
-            xmldoc: ElementTree containing the full XML document
-        Returns:
-            True / False
-            List of errors
 
-        Comments: The following elements have test functions available
+        Note: The following elements have test functions available
         in pythesint but are not used:
         - area -> because it does not correspond to an element in
         currently tested files
         - platform type -> because erroneous thesaurus in mmd repo?
+
+        Parameters
+        ----------
+        xmldoc : :obj:`lxml.ElementTree
+            XML element containing the full XML document
+
+        Returns
+        -------
+        ok : bool
+            True if valid, otherwise False
+        err : list of str
+            List of errors
         """
         vocabularies = {
             "access_constraint":  pti.get_mmd_access_constraints,
@@ -222,16 +251,21 @@ class CheckMMD():
 
     def full_check(self, doc):
         """Main checking scripts for in depth checking of XML file.
-        - checking URLs
-        - checking lat-lon within geographic_extent/rectangle
-        - checking CF names against standard table
-        - checking controlled vocabularies (access_constraint /
-        activity_type / operational_status / use_constraint)
+            - checking URLs
+            - checking lat-lon within geographic_extent/rectangle
+            - checking CF names against standard table
+            - checking controlled vocabularies (access_constraint /
+              activity_type / operational_status / use_constraint)
 
-        Args:
-            doc: ElementTree containing the full XML document
-        Returns:
-            True / False
+        Parameters
+        ----------
+        doc : :obj:`lxml.ElementTree
+            XML element containing the full XML document
+
+        Returns
+        -------
+        bool
+            True if valid, otherwise False
         """
         self.clear()
         valid = True
@@ -266,8 +300,7 @@ class CheckMMD():
     ##
 
     def _log_result(self, check, ok, err):
-        """Write the result of a check to the status variables.
-        """
+        """Write the result of a check to the status variables."""
         if ok:
             self._status_pass.append("Passed: %s" % check)
         else:

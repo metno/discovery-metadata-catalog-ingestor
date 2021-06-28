@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : API App Class
 ====================
@@ -19,10 +18,10 @@ limitations under the License.
 """
 
 import dmci
-import logging
 import os
 import sys
 import uuid
+import logging
 
 from lxml import etree
 from flask import request, Flask
@@ -30,6 +29,7 @@ from flask import request, Flask
 from dmci.api.worker import Worker
 
 logger = logging.getLogger(__name__)
+
 
 class App(Flask):
 
@@ -98,8 +98,7 @@ class App(Flask):
 
     @staticmethod
     def _persist_file(data, full_path):
-        """Write the persistent file
-        """
+        """Write the persistent file."""
         try:
             with open(full_path, "wb") as queuefile:
                 queuefile.write(data)
