@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : MMD Tools Module Tests
 =============================
@@ -25,10 +24,10 @@ from lxml import etree
 
 from dmci.tools import CheckMMD
 
+
 @pytest.mark.tools
 def testMMDTools_CheckRectangle():
-    """Test the check_rectangle function.
-    """
+    """Test the check_rectangle function."""
     chkMMD = CheckMMD()
 
     # Check lat/lon OK from rectangle
@@ -170,10 +169,10 @@ def testMMDTools_CheckRectangle():
 
 # END Test testMMDTools_CheckRectangle
 
+
 @pytest.mark.tools
 def testMMDTools_CheckURLs():
-    """Test the check_url function.
-    """
+    """Test the check_url function."""
     chkMMD = CheckMMD()
 
     # Valid URL
@@ -248,10 +247,10 @@ def testMMDTools_CheckURLs():
 
 # END Test testMMDTools_CheckURLs
 
+
 @pytest.mark.tools
 def testMMDTools_CheckCF():
-    """Test the check_cf function.
-    """
+    """Test the check_cf function."""
     chkMMD = CheckMMD()
 
     ok, err, n = chkMMD.check_cf(etree.ElementTree(etree.XML(
@@ -304,10 +303,10 @@ def testMMDTools_CheckCF():
 
 # END Test testMMDTools_CheckCF
 
+
 @pytest.mark.tools
 def testMMDTools_CheckVocabulary():
-    """Test the check_vocabulary function.
-    """
+    """Test the check_vocabulary function."""
     chkMMD = CheckMMD()
     ok, err = chkMMD.check_vocabulary(etree.ElementTree(etree.XML(
         "<root><operational_status>Operational</operational_status></root>"
@@ -323,10 +322,10 @@ def testMMDTools_CheckVocabulary():
 
 # END Test testMMDTools_CheckVocabulary
 
+
 @pytest.mark.tools
 def testMMDTools_FullCheck(filesDir):
-    """Test the full_check function.
-    """
+    """Test the full_check function."""
     chkMMD = CheckMMD()
     passFile = os.path.join(filesDir, "api", "passing.xml")
     passTree = etree.parse(passFile, parser=etree.XMLParser(remove_blank_text=True))

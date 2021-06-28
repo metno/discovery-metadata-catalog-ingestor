@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : Package Init Test
 ========================
@@ -28,19 +27,19 @@ from tools import readFile
 
 from dmci.config import Config
 
+
 @pytest.mark.core
 def testCoreInit_Init():
-    """Test the package initialisation.
-    """
+    """Test the package initialisation."""
     assert dmci.__version__
     assert isinstance(dmci.CONFIG, dmci.config.Config)
 
 # END Test testCoreInit_Init
 
+
 @pytest.mark.core
 def testCoreInit_Logger(tmpDir):
-    """Test the logger initialisation.
-    """
+    """Test the logger initialisation."""
     os.environ["DMCI_LOGLEVEL"] = "DEBUG"
     logger = logging.getLogger(__name__)
     dmci._init_logging(logger)
@@ -66,10 +65,10 @@ def testCoreInit_Logger(tmpDir):
 
 # END Test testCoreInit_Logger
 
+
 @pytest.mark.core
 def testCoreInit_ApiMain(monkeypatch, rootDir):
-    """Test the API entry point function
-    """
+    """Test the API entry point function."""
     class mockAPI():
         def __init__(self):
             pass

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : Distributor Class Test
 =============================
@@ -22,10 +21,10 @@ import pytest
 
 from dmci.distributors.distributor import Distributor
 
+
 @pytest.mark.dist
-def testDistDistributor_Init(tmpDir, mockXml):
-    """Test the Distributor super class init.
-    """
+def testDistDistributor_Init(mockXml):
+    """Test the Distributor super class init."""
     # Check Insert Command
     assert Distributor("insert", metadata_id="some_id").is_valid() is False
     assert Distributor("insert", xml_file="/path/to/nowhere").is_valid() is False
@@ -56,9 +55,11 @@ def testDistDistributor_Init(tmpDir, mockXml):
 
 # END Test testDistDistributor_Init
 
+
 @pytest.mark.dist
-def testDistDistributor_Run(tmpDir):
+def testDistDistributor_Run():
     """Test the Distributor super class run function.
+ 
     Calling run() on the superclass should raise an error as this
     function must be implemented in subclasses.
     """

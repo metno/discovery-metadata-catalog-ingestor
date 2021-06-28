@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : File Distributor Class Test
 ==================================
@@ -28,10 +27,10 @@ from dmci.api.worker import Worker
 from dmci.distributors import FileDist
 from dmci.distributors.distributor import DistCmd
 
+
 @pytest.mark.dist
 def testDistFile_Init():
-    """Test the FileDist class init.
-    """
+    """Test the FileDist class init."""
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
     assert FileDist("insert", metadata_id="some_id").is_valid() is False
@@ -41,10 +40,10 @@ def testDistFile_Init():
 
 # END Test testDistFile_Init
 
+
 @pytest.mark.dist
-def testDistFile_Run(tmpDir, mockXml):
-    """Test the FileDist class run function.
-    """
+def testDistFile_Run(mockXml):
+    """Test the FileDist class run function."""
     tstDist = FileDist("insert", xml_file=mockXml)
     assert tstDist.is_valid()
 
@@ -68,10 +67,10 @@ def testDistFile_Run(tmpDir, mockXml):
 
 # END Test testDistFile_Run
 
+
 @pytest.mark.dist
 def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
-    """Test the FileDist class insert and update actions.
-    """
+    """Test the FileDist class insert and update actions."""
     fileDir = os.path.join(tmpDir, "file")
     archDir = os.path.join(fileDir, "archive")
     passFile = os.path.join(filesDir, "api", "passing.xml")

@@ -27,10 +27,10 @@ from dmci.api import App
 
 MOCK_XML = b"<xml />"
 
+
 @pytest.fixture(scope="function")
 def client(tmpDir, tmpConf, mockXsd, monkeypatch):
-    """Create an instance of the API.
-    """
+    """Create an instance of the API."""
     workDir = os.path.join(tmpDir, "api")
     if not os.path.isdir(workDir):
         os.mkdir(workDir)
@@ -46,6 +46,7 @@ def client(tmpDir, tmpConf, mockXsd, monkeypatch):
         yield client
 
     return
+
 
 @pytest.mark.api
 def testApiApp_Init(tmpConf, tmpDir, monkeypatch):
@@ -79,10 +80,10 @@ def testApiApp_Init(tmpConf, tmpDir, monkeypatch):
 
 # END Test testApiApp_Init
 
+
 @pytest.mark.api
 def testApiApp_EndPoints(client):
-    """Test requests to endpoints not in use.
-    """
+    """Test requests to endpoints not in use."""
     assert client.get("/").status_code == 404
     assert client.get("/v1/").status_code == 404
 
@@ -98,10 +99,10 @@ def testApiApp_EndPoints(client):
 
 # END Test testApiApp_EndPoints
 
+
 @pytest.mark.api
-def testApiApp_InsertRequests(client, filesDir, monkeypatch):
-    """Test api insert requests.
-    """
+def testApiApp_InsertRequests(client, monkeypatch):
+    """Test api insert requests."""
     assert isinstance(client, flask.testing.FlaskClient)
 
     # Test sending 3MB of data
@@ -138,10 +139,10 @@ def testApiApp_InsertRequests(client, filesDir, monkeypatch):
 
 # END Test testApiApp_InsertRequests
 
+
 @pytest.mark.api
 def testApiApp_PersistFile(tmpDir, monkeypatch):
-    """Test the persistent file writer function.
-    """
+    """Test the persistent file writer function."""
     assert App._persist_file(MOCK_XML, None)[1] == 507
 
     outFile = os.path.join(tmpDir, "app_persist_file.xml")
