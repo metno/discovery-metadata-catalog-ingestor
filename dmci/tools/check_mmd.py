@@ -61,7 +61,7 @@ class CheckMMD():
         Returns
         -------
         bool
-            True if valid, otherwise Flase
+            True if valid, otherwise False
         """
         keys = ["north", "south", "west", "east"]
         directions = dict.fromkeys(keys, None)
