@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : PyCSW Distributor
 ========================
@@ -27,11 +26,12 @@ from dmci.distributors.distributor import Distributor, DistCmd
 
 logger = logging.getLogger(__name__)
 
+
 class PyCSWDist(Distributor):
 
-    TOTAL_DELETED = 'total_deleted'
-    TOTAL_INSERTED = 'total_inserted'
-    TOTAL_UPDATED = 'total_updated'
+    TOTAL_DELETED = "total_deleted"
+    TOTAL_INSERTED = "total_inserted"
+    TOTAL_UPDATED = "total_updated"
     STATUS = [TOTAL_DELETED, TOTAL_INSERTED, TOTAL_UPDATED]
 
     def __init__(self, cmd, xml_file=None, metadata_id=None, **kwargs):
@@ -58,13 +58,12 @@ class PyCSWDist(Distributor):
         elif self._cmd == DistCmd.INSERT:
             status = self._insert()
         else:
-            logger.error('Invalid command: %s' % str(self._cmd)) # pragma: no cover
+            logger.error("Invalid command: %s" % str(self._cmd))  # pragma: no cover
 
         return status
 
     def _translate(self):
-        """Convert from MMD to ISO19139, Norwegian INSPIRE profile
-        """
+        """Convert from MMD to ISO19139, Norwegian INSPIRE profile."""
         result = b""
         try:
             xml_doc = etree.ElementTree(file=self._xml_file)
@@ -78,8 +77,7 @@ class PyCSWDist(Distributor):
         return b"" if result is None else result
 
     def _insert(self):
-        """Insert in pyCSW using a Transaction
-        """
+        """Insert in pyCSW using a Transaction."""
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
@@ -100,17 +98,16 @@ class PyCSWDist(Distributor):
         return status
 
     def _update(self):
-        """Update current entry
+        """Update current entry.
 
-        Need to find out how to do this...
+        Need to find out how to do this ...
         """
         logger.warning("Not yet implemented")
 
         return False
 
     def _delete(self):
-        """
-        """
+        """Delete from PyCSW usinf a Transaction."""
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
@@ -141,18 +138,18 @@ class PyCSWDist(Distributor):
         return status
 
     def _get_transaction_status(self, key, resp):
-        """Check response status, read response text, and get status (boolean)
+        """Check response status, read response text, and get status.
 
-        Input
-        =====
+        Parameters
+        ----------
         key : str
             total_inserted, total_updated or total_deleted
         resp : requests.models.Response
             Response object from transaction
 
-        Return
-        ======
-        status : boolean
+        Returns
+        -------
+        status : bool
             True if the transaction succeeded, otherwise False
         """
         if key not in self.STATUS:
@@ -174,16 +171,17 @@ class PyCSWDist(Distributor):
         return status
 
     def _read_response_text(self, key, text):
-        """Read response xml text and return a dict with results
+        """Read response xml text and return a dict with results.
 
-        Input
-        =====
+        Parameters
+        ----------
         text : str
             xml representation of the pycsw result
 
-        Return
-        ======
-        dict : status of insert, update and delete
+        Returns
+        -------
+        dict
+            status of insert, update and delete
         """
         if key not in self.STATUS:
             logger.error("Input key must be '%s', '%s' or '%s'" % (
@@ -236,3 +234,5 @@ class PyCSWDist(Distributor):
             status = True
 
         return status
+
+# END Class PyCSWDist

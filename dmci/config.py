@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : Main Config
 ==================
@@ -24,6 +23,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class Config():
 
     def __init__(self):
@@ -34,7 +34,7 @@ class Config():
         # Core Values
         self.call_distributors = []
         self.distributor_cache = None
-        self.max_permitted_size = 100000 # Size of files permitted through API
+        self.max_permitted_size = 100000  # Size of files permitted through API
         self.mmd_xslt_path = None
         self.mmd_xsd_path = None
 
@@ -83,8 +83,7 @@ class Config():
     ##
 
     def _read_core(self):
-        """Read config values under 'dmci'.
-        """
+        """Read config values under 'dmci'."""
         conf = self._raw_conf.get("dmci", {})
 
         self.call_distributors = conf.get("distributors", self.call_distributors)
@@ -96,8 +95,7 @@ class Config():
         return
 
     def _read_pycsw(self):
-        """Read config values under 'pycsw'.
-        """
+        """Read config values under 'pycsw'."""
         conf = self._raw_conf.get("pycsw", {})
 
         self.csw_service_url = conf.get("csw_service_url", self.csw_service_url)
@@ -105,8 +103,7 @@ class Config():
         return
 
     def _read_file(self):
-        """Read config values under 'pycsw'.
-        """
+        """Read config values under 'pycsw'."""
         conf = self._raw_conf.get("file", {})
 
         self.file_archive_path = conf.get("file_archive_path", self.file_archive_path)
@@ -114,8 +111,9 @@ class Config():
         return
 
     def _validate_config(self):
-        """Check config variable dependencies. It needs to be called after all
-        the read functions when all settings have been handled.
+        """Check config variable dependencies. It needs to be called
+        after all the read functions when all settings have been
+        handled.
         """
         valid = True
 

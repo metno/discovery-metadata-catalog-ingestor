@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : Distributor Super Class
 ==============================
@@ -27,6 +26,7 @@ from dmci import CONFIG
 
 logger = logging.getLogger(__name__)
 
+
 class DistCmd(Enum):
 
     INSERT = 0
@@ -34,6 +34,7 @@ class DistCmd(Enum):
     DELETE = 2
 
 # END Enum DistCmd
+
 
 class Distributor():
 
@@ -95,12 +96,11 @@ class Distributor():
         return
 
     def run(self):
-        """The main run function to be implemented in each subclass.
-        """
+        """The main run function to be implemented in each subclass."""
         raise NotImplementedError
 
     ##
-    #  Methods
+    #  Getters
     ##
 
     def is_valid(self):

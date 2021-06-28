@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : File Distributor
 =======================
@@ -27,6 +26,7 @@ from dmci.distributors.distributor import Distributor, DistCmd
 
 logger = logging.getLogger(__name__)
 
+
 class FileDist(Distributor):
 
     def __init__(self, cmd, xml_file=None, metadata_id=None, **kwargs):
@@ -35,8 +35,7 @@ class FileDist(Distributor):
         return
 
     def run(self):
-        """Wrapper for the various jobs, depending on command.
-        """
+        """Wrapper for the various jobs, depending on command."""
         if not self.is_valid():
             return False
 
@@ -52,9 +51,12 @@ class FileDist(Distributor):
 
         return False
 
+    ##
+    #  Internal Functions
+    ##
+
     def _add_to_archive(self):
-        """Add the xml file to the archive.
-        """
+        """Add the xml file to the archive."""
         jobsDir = self._conf.file_archive_path
         if jobsDir is None:
             logger.error("No 'file_archive_path' set")

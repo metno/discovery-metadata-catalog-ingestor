@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : Test Config
 ==================
@@ -26,7 +25,8 @@ import pytest
 # Note: This line forces the test suite to import the dmci package in the current source tree
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
-from dmci.config import Config # noqa: E402
+from dmci.config import Config  # noqa: E402
+
 
 ##
 #  Directory Fixtures
@@ -37,6 +37,7 @@ def rootDir():
     """The root folder of the repository.
     """
     return os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+
 
 @pytest.fixture(scope="session")
 def tmpDir():
@@ -53,6 +54,7 @@ def tmpDir():
         os.mkdir(theDir)
     return theDir
 
+
 @pytest.fixture(scope="session")
 def filesDir():
     """A path to the reference files folder.
@@ -60,6 +62,7 @@ def filesDir():
     testDir = os.path.dirname(__file__)
     theDir = os.path.join(testDir, "files")
     return theDir
+
 
 ##
 #  Mock Files
@@ -69,13 +72,16 @@ def filesDir():
 def mockXml(filesDir):
     return os.path.join(filesDir, "mock", "mock.xml")
 
+
 @pytest.fixture(scope="session")
 def mockXslt(filesDir):
     return os.path.join(filesDir, "mock", "mock.xslt")
 
+
 @pytest.fixture(scope="session")
 def mockXsd(filesDir):
     return os.path.join(filesDir, "mock", "mock.xsd")
+
 
 ##
 #  Objects

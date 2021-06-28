@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : API Start Script
 =======================
