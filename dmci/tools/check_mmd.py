@@ -104,7 +104,7 @@ class CheckMMD():
         return ok, err
 
     def check_url(self, url, allow_no_path=False):
-        """Check that an URL is valid.
+        """Check that a URL is valid.
 
         Parameters
         ----------
