@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : Config Class Test
 ========================
@@ -25,10 +24,10 @@ from tools import causeOSError
 
 from dmci.config import Config
 
+
 @pytest.mark.core
 def testCoreConfig_ReadFile(filesDir, monkeypatch):
-    """Test reading config file.
-    """
+    """Test reading config file."""
     theConf = Config()
 
     # Read some values and see that we get them
@@ -61,10 +60,10 @@ def testCoreConfig_ReadFile(filesDir, monkeypatch):
 
 # END Test testCoreConfig_ReadFile
 
+
 @pytest.mark.core
 def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
-    """Test that the class reads all settings and validates them.
-    """
+    """Test that the class reads all settings and validates them."""
     exampleConf = os.path.join(rootDir, "example_config.yaml")
     theConf = Config()
 

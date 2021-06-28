@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : PyCSW Distributor Class Test
 ===================================
@@ -26,10 +25,10 @@ from lxml import etree
 
 from dmci.distributors.pycsw_dist import PyCSWDist
 
+
 @pytest.mark.dist
 def testDistPyCSW_Init():
-    """Test the PyCSWDist class init.
-    """
+    """Test the PyCSWDist class init."""
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
     assert PyCSWDist("insert", metadata_id="some_id").is_valid() is False
@@ -39,18 +38,20 @@ def testDistPyCSW_Init():
 
 # END Test testDistPyCSW_Init
 
+
 @pytest.mark.dist
 def testDistPyCSW_Run():
+    """Test the run command with invalid parameters."""
     # WRONG command test
     assert PyCSWDist("blabla", metadata_id="some_id").run() == (False, "The run job is invalid")
     assert PyCSWDist("insert", metadata_id="some_id").run() == (False, "The run job is invalid")
 
 # END Test testDistPyCSW_Run
 
+
 @pytest.mark.dist
 def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
-    """Test insert commands via run()
-    """
+    """Test insert commands via run()."""
     class mockResp:
         text = "Mock response"
         status_code = 200
@@ -79,19 +80,19 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
 
 # END Test testDistPyCSW_Insert
 
+
 @pytest.mark.dist
 def testDistPyCSW_Update(mockXml):
-    """Test update commands via run()
-    """
+    """Test update commands via run()."""
     assert PyCSWDist("update", xml_file=mockXml).run() == (False, "Not yet implemented")
     assert PyCSWDist("update", metadata_id="some_id").run() == (False, "The run job is invalid")
 
 # END Test testDistPyCSW_Update
 
+
 @pytest.mark.dist
 def testDistPyCSW_Delete(monkeypatch, mockXml):
-    """Test delete commands via run()
-    """
+    """Test delete commands via run()."""
     class mockResp:
         text = "Mock response"
         status_code = 200
@@ -117,10 +118,10 @@ def testDistPyCSW_Delete(monkeypatch, mockXml):
 
 # END Test testDistPyCSW_Delete
 
+
 @pytest.mark.dist
 def testDistPyCSW_Translate(filesDir, caplog):
-    """_translate tests
-    """
+    """_translate tests"""
     passFile = os.path.join(filesDir, "api", "passing.xml")
     failFile = os.path.join(filesDir, "not_an_xml_file.xml")
     xsltFile = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
@@ -143,10 +144,10 @@ def testDistPyCSW_Translate(filesDir, caplog):
 
 # END Test testDistPyCSW_Translate
 
+
 @pytest.mark.dist
 def testDistPyCSW_GetTransactionStatus(monkeypatch, mockXml):
-    """_get_transaction_status tests
-    """
+    """_get_transaction_status tests"""
     # wrong key
     resp = requests.models.Response()
     assert PyCSWDist("insert", xml_file=mockXml)._get_transaction_status("tull", resp) is False
@@ -193,10 +194,10 @@ def testDistPyCSW_GetTransactionStatus(monkeypatch, mockXml):
 
 # END Test testDistPyCSW_GetTransactionStatus
 
+
 @pytest.mark.dist
 def testDistPyCSW_ReadResponse(mockXml, caplog):
-    """_read_response_text tests
-    """
+    """_read_response_text tests"""
     # text wrongkey
     assert PyCSWDist("insert", xml_file=mockXml)._read_response_text("tull", "some text") is False
 

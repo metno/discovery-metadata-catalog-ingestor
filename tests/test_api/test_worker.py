@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : Worker Class Test
 ========================
@@ -28,19 +27,19 @@ from dmci.api.worker import Worker
 from dmci.distributors import FileDist, PyCSWDist
 from dmci.tools import CheckMMD
 
+
 @pytest.mark.api
 def testApiWorker_Init():
-    """Test the Worker class init.
-    """
+    """Test the Worker class init."""
     assert Worker(None, None)._dist_cmd == "insert"
     assert Worker(None, None, a=1)._kwargs == {"a": 1}
 
 # END Test testApiWorker_Init
 
+
 @pytest.mark.api
-def testApiWorker_Distributor(tmpDir, tmpConf, mockXml, monkeypatch):
-    """Test the Worker class distributor.
-    """
+def testApiWorker_Distributor(tmpConf, mockXml, monkeypatch):
+    """Test the Worker class distributor."""
     tmpConf.call_distributors = ["file", "pycsw", "blabla"]
 
     # Call the distributor function with the distributors from the config
@@ -82,18 +81,18 @@ def testApiWorker_Distributor(tmpDir, tmpConf, mockXml, monkeypatch):
     tstWorker._dist_xml_file = "/path/to/nowhere"
 
     status, valid, called, failed, skipped = tstWorker.distribute()
-    assert status is True # No jobs were run since all were skipped
-    assert valid is False # All jobs were invalid due to the command
+    assert status is True  # No jobs were run since all were skipped
+    assert valid is False  # All jobs were invalid due to the command
     assert called == []
     assert failed == []
     assert skipped == ["file", "pycsw", "blabla"]
 
 # END Test testApiWorker_Distributor
 
+
 @pytest.mark.api
 def testApiWorker_Validator(monkeypatch, filesDir):
-    """Test the Worker class validator.
-    """
+    """Test the Worker class validator."""
     xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
     passFile = os.path.join(filesDir, "api", "passing.xml")
     failFile = os.path.join(filesDir, "api", "failing.xml")
@@ -126,10 +125,10 @@ def testApiWorker_Validator(monkeypatch, filesDir):
 
 # END Test testApiWorker_Validator
 
+
 @pytest.mark.api
 def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
-    """Test _check_information_content
-    """
+    """Test _check_information_content."""
     passFile = os.path.join(filesDir, "api", "passing.xml")
     tstWorker = Worker(passFile, None)
 
@@ -188,10 +187,10 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
 
 # END Test testApiWorker_CheckInfoContent
 
+
 @pytest.mark.api
 def testApiWorker_ExtractMetaDataID(filesDir, mockXml):
-    """Test _check_information_content
-    """
+    """Test _check_information_content."""
     passFile = os.path.join(filesDir, "api", "passing.xml")
     failFile = os.path.join(filesDir, "api", "failing.xml")
 

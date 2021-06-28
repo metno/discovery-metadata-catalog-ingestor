@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : Test Tools
 =================
@@ -18,19 +17,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+
 # File I/O
 
 def readFile(fileName):
-    """Returns the content of a file as a string.
-    """
+    """Returns the content of a file as a string."""
     with open(fileName, mode="r", encoding="utf8") as inFile:
         return inFile.read()
 
+
 def writeFile(fileName, fileData):
-    """Write the contents of a string to a file.
-    """
+    """Write the contents of a string to a file."""
     with open(fileName, mode="w", encoding="utf8") as outFile:
         outFile.write(fileData)
+
 
 # Exceptions
 

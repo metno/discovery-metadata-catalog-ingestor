@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : Main Package Init
 ========================
@@ -18,14 +17,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+__package__ = "dmci"
+__version__ = "0.0.1"
+
 import os
 import sys
 import logging
 
 from dmci.config import Config
 
-__package__ = "dmci"
-__version__ = "0.0.1"
 
 def _init_logging(log_obj):
     """Call to initialise logging
@@ -63,6 +63,7 @@ def _init_logging(log_obj):
 
     return
 
+
 # Logging Setup
 # Must be called before the CONFIG object is created
 logger = logging.getLogger(__name__)
@@ -70,6 +71,7 @@ _init_logging(logger)
 
 # Create config object
 CONFIG = Config()
+
 
 def api_main():
     """This is the main entry point for the api process.

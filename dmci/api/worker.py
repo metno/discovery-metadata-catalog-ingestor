@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DMCI : Worker Class
 ===================
@@ -28,6 +27,7 @@ from dmci.tools import CheckMMD
 from dmci.distributors import FileDist, PyCSWDist
 
 logger = logging.getLogger(__name__)
+
 
 class Worker():
 
@@ -62,14 +62,14 @@ class Worker():
         """Validate the xml file against the XML style definition,
         then check the information content.
 
-        Input
-        =====
+        Parameters
+        ----------
         data : bytes
             bytes representation of the xml data
 
         Returns
-        =======
-        valid : boolean
+        -------
+        valid : bool
             True if xsd and information content checks are passing
         msg : str
             Validation message
@@ -91,6 +91,19 @@ class Worker():
     def distribute(self):
         """Loop through all distributors listed in the config and call
         them in the same order.
+
+        Returns
+        -------
+        status : bool
+            True if all distributors ran ok
+        valid : bool
+            True if all distributors are valid
+        called : list of str
+            The names of all distributors that were called (status True)
+        failed : list of str
+            The names of all distributors that failed (status False)
+        skipped : list of str
+            The names of all distributors that were skipped (invalid)
         """
         status = True
         valid  = True
@@ -128,8 +141,7 @@ class Worker():
     ##
 
     def _check_information_content(self, data):
-        """Check the information content in the submitted file
-        """
+        """Check the information content in the submitted file."""
         if not isinstance(data, bytes):
             return False, "input must be bytes type"
 
