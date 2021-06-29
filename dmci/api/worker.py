@@ -104,12 +104,15 @@ class Worker():
             The names of all distributors that failed (status False)
         skipped : list of str
             The names of all distributors that were skipped (invalid)
+        failed_msg : list of str
+            The messages returned by the failed jobs
         """
         status = True
         valid  = True
         called = []
         failed = []
         skipped = []
+        failed_msg = []
 
         for dist in self._conf.call_distributors:
             if dist not in self.CALL_MAP:
@@ -125,16 +128,17 @@ class Worker():
             )
             valid &= obj.is_valid()
             if obj.is_valid():
-                obj_status = obj.run()
+                obj_status, obj_msg = obj.run()
                 status &= obj_status
                 if obj_status:
                     called.append(dist)
                 else:
                     failed.append(dist)
+                    failed_msg.append(obj_msg)
             else:
                 skipped.append(dist)
 
-        return status, valid, called, failed, skipped
+        return status, valid, called, failed, skipped, failed_msg
 
     ##
     #  Internal Functions

@@ -47,20 +47,19 @@ class PyCSWDist(Distributor):
             True if successful insert, update or delete
             False if not
         """
-        if not self.is_valid():
-            return False
-
         status = False
-        if self._cmd == DistCmd.UPDATE:
-            status = self._update()
-        elif self._cmd == DistCmd.DELETE:
-            status = self._delete()
-        elif self._cmd == DistCmd.INSERT:
-            status = self._insert()
-        else:
-            logger.error("Invalid command: %s" % str(self._cmd))  # pragma: no cover
+        msg = "No job was run"
+        if not self.is_valid():
+            return False, "The run job is invalid"
 
-        return status
+        if self._cmd == DistCmd.UPDATE:
+            status, msg = self._update()
+        elif self._cmd == DistCmd.DELETE:
+            status, msg = self._delete()
+        elif self._cmd == DistCmd.INSERT:
+            status, msg = self._insert()
+
+        return status, msg
 
     def _translate(self):
         """Convert from MMD to ISO19139, Norwegian INSPIRE profile."""
@@ -95,7 +94,7 @@ class PyCSWDist(Distributor):
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
         status = self._get_transaction_status(self.TOTAL_INSERTED, resp)
 
-        return status
+        return status, resp.text
 
     def _update(self):
         """Update current entry.
@@ -104,10 +103,10 @@ class PyCSWDist(Distributor):
         """
         logger.warning("Not yet implemented")
 
-        return False
+        return False, "Not yet implemented"
 
     def _delete(self):
-        """Delete from PyCSW usinf a Transaction."""
+        """Delete entry with a specified metadata_id."""
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
@@ -135,7 +134,7 @@ class PyCSWDist(Distributor):
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
         status = self._get_transaction_status(self.TOTAL_DELETED, resp)
 
-        return status
+        return status, resp.text
 
     def _get_transaction_status(self, key, resp):
         """Check response status, read response text, and get status.

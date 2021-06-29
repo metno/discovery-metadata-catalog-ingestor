@@ -79,9 +79,12 @@ class App(Flask):
 
             # Run the distributors
             err = []
-            status, valid, _, failed, skipped = worker.distribute()
+            status, valid, _, failed, skipped, failed_msg = worker.distribute()
             if not status:
                 err.append("The following distributors failed: %s" % ", ".join(failed))
+                for name, reason in zip(failed, failed_msg):
+                    err.append(" - %s: %s" % (name, reason))
+
             if not valid:
                 err.append("The following jobs were skipped: %s" % ", ".join(skipped))
 

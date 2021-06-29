@@ -36,20 +36,20 @@ class FileDist(Distributor):
 
     def run(self):
         """Wrapper for the various jobs, depending on command."""
+        status = False
+        msg = "No job was run"
         if not self.is_valid():
-            return False
+            return False, "The run job is invalid"
 
         if self._cmd == DistCmd.INSERT:
-            return self._add_to_archive()
+            status, msg = self._add_to_archive()
         elif self._cmd == DistCmd.UPDATE:
-            return self._add_to_archive()
+            status, msg = self._add_to_archive()
         elif self._cmd == DistCmd.DELETE:
-            logger.error("The `delete' command is not implemented")
-            return False
+            status = False
+            msg = "The `delete' command is not implemented"
 
-        logger.error("Invalid command: %s" % str(self._cmd))
-
-        return False
+        return status, msg
 
     ##
     #  Internal Functions
@@ -60,23 +60,25 @@ class FileDist(Distributor):
         jobsDir = self._conf.file_archive_path
         if jobsDir is None:
             logger.error("No 'file_archive_path' set")
-            return False
+            return False, "Internal error"
 
         if self._worker is None:
             logger.error("No worker object sent to file_dist")
-            return False
+            return False, "Internal error"
 
         fileUUID = self._worker._file_metadata_id
         if not isinstance(fileUUID, uuid.UUID):
-            logger.error("No valid metadata_identifier provided, cannot archive file")
-            return False
+            msg = "No valid metadata_identifier provided, cannot archive file"
+            logger.error(msg)
+            return False, msg
 
         lvlA = "arch_%s" % fileUUID.hex[7]
         lvlB = "arch_%s" % fileUUID.hex[6]
         lvlC = "arch_%s" % fileUUID.hex[5]
 
+        fileName = str(fileUUID)+".xml"
         archPath = os.path.join(self._conf.file_archive_path, lvlA, lvlB, lvlC)
-        archFile = os.path.join(archPath, str(fileUUID)+".xml")
+        archFile = os.path.join(archPath, fileName)
 
         status = "added"
         if os.path.isfile(archFile):
@@ -84,7 +86,7 @@ class FileDist(Distributor):
                 status = "replaced"
             else:
                 logger.error("File already exists: %s" % archFile)
-                return False
+                return False, "Failed to archive file: %s" % fileName
 
         try:
             os.makedirs(archPath, exist_ok=True)
@@ -92,7 +94,7 @@ class FileDist(Distributor):
         except Exception as e:
             logger.error("Could not make folder(s): %s" % archPath)
             logger.error(str(e))
-            return False
+            return False, "Failed to archive file: %s" % fileName
 
         try:
             shutil.copy2(self._xml_file, archFile)
@@ -100,10 +102,11 @@ class FileDist(Distributor):
             logger.error("Failed to archive file src: %s" % self._xml_file)
             logger.error("Failed to archive file dst: %s" % archFile)
             logger.error(str(e))
-            return False
+            return False, "Failed to archive file: %s" % fileName
 
-        logger.info("%s file: %s" % (status.title(), archFile))
+        msg = "%s file: %s" % (status.title(), fileName)
+        logger.info(msg)
 
-        return True
+        return True, msg
 
 # END Class FileDist

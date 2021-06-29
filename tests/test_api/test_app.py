@@ -126,14 +126,17 @@ def testApiApp_InsertRequests(client, monkeypatch):
 
     # Data is valid, distribute fails
     with monkeypatch.context() as mp:
-        fail = ["A", "B"]
-        skip = ["C"]
+        f = ["A", "B"]
+        s = ["C"]
+        e = ["Reason A", "Reason B"]
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
-        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (False, False, [], fail, skip))
+        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e))
         response = client.post("/v1/insert", data=MOCK_XML)
         assert response.status_code == 500
         assert response.data == (
             b"The following distributors failed: A, B\n"
+            b" - A: Reason A\n"
+            b" - B: Reason B\n"
             b"The following jobs were skipped: C"
         )
 
