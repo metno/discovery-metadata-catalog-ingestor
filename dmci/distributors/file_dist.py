@@ -80,27 +80,32 @@ class FileDist(Distributor):
         archPath = os.path.join(self._conf.file_archive_path, lvlA, lvlB, lvlC)
         archFile = os.path.join(archPath, fileName)
 
-        status = "added"
         if os.path.isfile(archFile):
             if self._cmd == DistCmd.UPDATE:
                 status = "replaced"
-            else:
-                logger.error("File already exists: %s" % archFile)
-                return False, "Failed to archive file: %s" % fileName
+            else:  # INSERT
+                logger.error("File already exists: %s", archFile)
+                return False, "File already exists: %s" % fileName
+        else:
+            if self._cmd == DistCmd.INSERT:
+                status = "added"
+            else:  # UPDATE
+                logger.error("Cannot update non-existing file: %s", archFile)
+                return False, "Cannot update non-existing file: %s" % fileName
 
         try:
             os.makedirs(archPath, exist_ok=True)
-            logger.info("Created folder: %s" % archPath)
+            logger.info("Created folder: %s", archPath)
         except Exception as e:
-            logger.error("Could not make folder(s): %s" % archPath)
+            logger.error("Could not make folder(s): %s", archPath)
             logger.error(str(e))
             return False, "Failed to archive file: %s" % fileName
 
         try:
             shutil.copy2(self._xml_file, archFile)
         except Exception as e:
-            logger.error("Failed to archive file src: %s" % self._xml_file)
-            logger.error("Failed to archive file dst: %s" % archFile)
+            logger.error("Failed to archive file src: %s", self._xml_file)
+            logger.error("Failed to archive file dst: %s", archFile)
             logger.error(str(e))
             return False, "Failed to archive file: %s" % fileName
 

@@ -114,7 +114,14 @@ def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
             False, "Failed to archive file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
         )
 
-    # Finally, test a successful write
+    # Update a new file is not allowed
+    tstDist._cmd = DistCmd.UPDATE
+    assert tstDist.run() == (
+        False, "Cannot update non-existing file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+    )
+
+    # Insert a new file is allowed
+    tstDist._cmd = DistCmd.INSERT
     assert tstDist.run() == (
         True, "Added file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
     )
@@ -131,12 +138,12 @@ def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
     archFile = os.path.join(dirC, "a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml")
     assert os.path.isfile(archFile)
 
-    # Should not be allowed to write the same file twice
+    # Insert and existing file is not allowed
     assert tstDist.run() == (
-        False, "Failed to archive file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+        False, "File already exists: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
     )
 
-    # Unless command is to update
+    # Update an existing file is allowed
     tstDist._cmd = DistCmd.UPDATE
     assert tstDist.run() == (
         True, "Replaced file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
