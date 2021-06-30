@@ -46,8 +46,7 @@ class FileDist(Distributor):
         elif self._cmd == DistCmd.UPDATE:
             status, msg = self._add_to_archive()
         elif self._cmd == DistCmd.DELETE:
-            status = False
-            msg = "The `delete' command is not implemented"
+            status, msg = self._delete_from_archive()
 
         return status, msg
 
@@ -72,12 +71,7 @@ class FileDist(Distributor):
             logger.error(msg)
             return False, msg
 
-        lvlA = "arch_%s" % fileUUID.hex[7]
-        lvlB = "arch_%s" % fileUUID.hex[6]
-        lvlC = "arch_%s" % fileUUID.hex[5]
-
-        fileName = str(fileUUID)+".xml"
-        archPath = os.path.join(self._conf.file_archive_path, lvlA, lvlB, lvlC)
+        fileName, archPath = self._make_full_path(fileUUID)
         archFile = os.path.join(archPath, fileName)
 
         if os.path.isfile(archFile):
@@ -113,5 +107,40 @@ class FileDist(Distributor):
         logger.info(msg)
 
         return True, msg
+
+    def _delete_from_archive(self):
+        """Delete a file from the archive."""
+        fileUUID = self._worker._file_metadata_id
+        if not isinstance(fileUUID, uuid.UUID):
+            msg = "No valid metadata_identifier provided, cannot delete file"
+            logger.error(msg)
+            return False, msg
+
+        fileName, archPath = self._make_full_path(fileUUID)
+        archFile = os.path.join(archPath, fileName)
+
+        if os.path.isfile(archFile):
+            try:
+                os.unlink(archFile)
+            except Exception as e:
+                logger.error("Failed to delete file: %s", archFile)
+                logger.error(str(e))
+                return False, "Failed to delete file: %s" % fileName
+        else:
+            logger.error("File not found: %s", archFile)
+            return False, "File not found: %s" % fileName
+
+        return True, "Deleted file: %s" % fileName
+
+    def _make_full_path(self, fileUUID):
+        """Make the file name and path for a file with a given uuid."""
+        lvlA = "arch_%s" % fileUUID.hex[7]
+        lvlB = "arch_%s" % fileUUID.hex[6]
+        lvlC = "arch_%s" % fileUUID.hex[5]
+
+        fileName = str(fileUUID)+".xml"
+        archPath = os.path.join(self._conf.file_archive_path, lvlA, lvlB, lvlC)
+
+        return fileName, archPath
 
 # END Class FileDist
