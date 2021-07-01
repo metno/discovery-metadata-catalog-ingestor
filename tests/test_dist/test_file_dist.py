@@ -52,6 +52,7 @@ def testDistFile_Run(mockXml):
     tstDist._valid = True
 
     tstDist._add_to_archive = lambda *a: (True, "test")
+    tstDist._delete_from_archive = lambda *a: (True, "test")
 
     tstDist._cmd = DistCmd.INSERT
     assert tstDist.run() == (True, "test")
@@ -60,7 +61,7 @@ def testDistFile_Run(mockXml):
     assert tstDist.run() == (True, "test")
 
     tstDist._cmd = DistCmd.DELETE
-    assert tstDist.run() == (False, "The `delete' command is not implemented")
+    assert tstDist.run() == (True, "test")
 
     tstDist._cmd = 1234
     assert tstDist.run() == (False, "No job was run")
@@ -71,7 +72,7 @@ def testDistFile_Run(mockXml):
 @pytest.mark.dist
 def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
     """Test the FileDist class insert and update actions."""
-    fileDir = os.path.join(tmpDir, "file")
+    fileDir = os.path.join(tmpDir, "file_insupd")
     archDir = os.path.join(fileDir, "archive")
     passFile = os.path.join(filesDir, "api", "passing.xml")
 
@@ -114,7 +115,14 @@ def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
             False, "Failed to archive file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
         )
 
-    # Finally, test a successful write
+    # Update a new file is not allowed
+    tstDist._cmd = DistCmd.UPDATE
+    assert tstDist.run() == (
+        False, "Cannot update non-existing file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+    )
+
+    # Insert a new file is allowed
+    tstDist._cmd = DistCmd.INSERT
     assert tstDist.run() == (
         True, "Added file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
     )
@@ -131,15 +139,67 @@ def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
     archFile = os.path.join(dirC, "a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml")
     assert os.path.isfile(archFile)
 
-    # Should not be allowed to write the same file twice
+    # Insert an existing file is not allowed
     assert tstDist.run() == (
-        False, "Failed to archive file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+        False, "File already exists: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
     )
 
-    # Unless command is to update
+    # Update an existing file is allowed
     tstDist._cmd = DistCmd.UPDATE
     assert tstDist.run() == (
         True, "Replaced file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
     )
 
 # END Test testDistFile_InsertUpdate
+
+
+@pytest.mark.dist
+def testDistFile_Delete(tmpDir, filesDir, monkeypatch):
+    """Test the FileDist class insert and update actions."""
+    fileDir = os.path.join(tmpDir, "file_delete")
+    archDir = os.path.join(fileDir, "archive")
+    passFile = os.path.join(filesDir, "api", "passing.xml")
+
+    # Set up a Worker object
+    passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
+    tstWorker = Worker(passFile, None)
+    assert tstWorker._extract_metadata_id(passXML) is True
+    assert tstWorker._file_metadata_id is not None
+
+    tstDist = FileDist("insert", xml_file=passFile)
+    tstDist._conf.file_archive_path = archDir
+    tstDist._worker = tstWorker
+
+    # Insert a new file to delete
+    tstDist._cmd = DistCmd.INSERT
+    assert tstDist.run() == (
+        True, "Added file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+    )
+
+    # Try to delete with no identifier set
+    tstDist._cmd = DistCmd.DELETE
+    goodUUID = tstWorker._file_metadata_id
+    tstWorker._file_metadata_id = "123456789abcdefghijkl"
+    assert tstDist.run() == (
+        False, "No valid metadata_identifier provided, cannot delete file"
+    )
+
+    # Set the identifier and try to delete again, but fail on unlink
+    tstWorker._file_metadata_id = goodUUID
+    with monkeypatch.context() as mp:
+        mp.setattr("os.unlink", causeOSError)
+        assert tstDist.run() == (
+            False, "Failed to delete file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+        )
+
+    # Delete properly
+    assert tstDist.run() == (
+        True, "Deleted file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+    )
+
+    # Delete again should fail as the file no longer exists
+    assert tstDist.run() == (
+        False, "File not found: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+    )
+
+# END Test testDistFile_Delete
