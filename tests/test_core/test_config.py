@@ -70,6 +70,7 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     # Set wrong values
     theConf.call_distributors = []
     theConf.distributor_cache = "path"
+    theConf.rejected_jobs_path = "path"
     theConf.max_permitted_size = 0
     theConf.mmd_xslt_path = "path"
     theConf.mmd_xsd_path = "path"
@@ -80,6 +81,7 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
 
     assert theConf.call_distributors == ["file", "pycsw"]
     assert theConf.distributor_cache is None
+    assert theConf.rejected_jobs_path is None
     assert theConf.max_permitted_size == 100000
     assert theConf.mmd_xslt_path is None
     assert theConf.mmd_xsd_path is None
@@ -90,6 +92,8 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     # Set valid values
     theConf.mmd_xsd_path = os.path.join(filesDir, "mmd", "mmd.xsd")
     theConf.mmd_xslt_path = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
+    theConf.distributor_cache = tmpDir
+    theConf.rejected_jobs_path = tmpDir
     theConf.file_archive_path = tmpDir
     assert theConf._validate_config() is True
 
@@ -118,6 +122,24 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     theConf.file_archive_path = "path/to/nowhere"
     assert theConf._validate_config() is False
     theConf.file_archive_path = correctVal
+    assert theConf._validate_config() is True
+
+    # Validate Distributor Cache
+    correctVal = theConf.distributor_cache
+    theConf.distributor_cache = None
+    assert theConf._validate_config() is False
+    theConf.distributor_cache = "path/to/nowhere"
+    assert theConf._validate_config() is False
+    theConf.distributor_cache = correctVal
+    assert theConf._validate_config() is True
+
+    # Validate Rejected Folder
+    correctVal = theConf.rejected_jobs_path
+    theConf.rejected_jobs_path = None
+    assert theConf._validate_config() is False
+    theConf.rejected_jobs_path = "path/to/nowhere"
+    assert theConf._validate_config() is False
+    theConf.rejected_jobs_path = correctVal
     assert theConf._validate_config() is True
 
 # END Test testCoreConfig_Validate

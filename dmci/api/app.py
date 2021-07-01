@@ -65,8 +65,8 @@ class App(Flask):
 
             # Cache the job file
             file_uuid = uuid.uuid4()
-            path = self._conf.distributor_cache
-            full_path = os.path.join(path, f"{file_uuid}.Q")
+            full_path = os.path.join(self._conf.distributor_cache, f"{file_uuid}.xml")
+            reject_path = os.path.join(self._conf.rejected_jobs_path, f"{file_uuid}.xml")
             msg, code = self._persist_file(data, full_path)
             if code != 200:
                 return msg, code
@@ -75,6 +75,7 @@ class App(Flask):
             worker = Worker(full_path, self._xsd_obj)
             valid, msg = worker.validate(data)
             if not valid:
+                self._handle_persist_file(False, full_path, reject_path, msg)
                 return msg, 400
 
             # Run the distributors
@@ -89,8 +90,11 @@ class App(Flask):
                 err.append("The following jobs were skipped: %s" % ", ".join(skipped))
 
             if err:
-                return "\n".join(err), 500
+                msg = "\n".join(err)
+                self._handle_persist_file(False, full_path, reject_path, msg)
+                return msg, 500
             else:
+                self._handle_persist_file(True, full_path)
                 return "Everything is OK", 200
 
         return
@@ -98,6 +102,40 @@ class App(Flask):
     ##
     #  Internal Functions
     ##
+
+    @staticmethod
+    def _handle_persist_file(status, full_path, reject_path=None, reject_reason=""):
+        """Handle the persistent file after it has been processed based
+        on the status of the process. If successful, the file is just
+        deleted. If not, the file is saved in a rejected folder for
+        later manual inspection.
+        """
+        if status:
+            try:
+                os.unlink(full_path)
+            except Exception as e:
+                logger.error("Failed to unlink processed file: %s", full_path)
+                logger.error(str(e))
+                return False
+
+        else:
+            try:
+                os.rename(full_path, reject_path)
+            except Exception as e:
+                logger.error("Failed to move persist file to rejected folder: %s", reject_path)
+                logger.error(str(e))
+                return False
+
+            try:
+                reason_path = reject_path[:-3]+"txt"
+                with open(reason_path, mode="w", encoding="utf-8") as ofile:
+                    ofile.write(reject_reason)
+            except Exception as e:
+                logger.error("Failed to write rejected reason to file: %s", reason_path)
+                logger.error(str(e))
+                return False
+
+        return True
 
     @staticmethod
     def _persist_file(data, full_path):
