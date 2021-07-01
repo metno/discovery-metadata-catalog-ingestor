@@ -34,6 +34,7 @@ class Config():
         # Core Values
         self.call_distributors = []
         self.distributor_cache = None
+        self.rejected_jobs_path = None
         self.max_permitted_size = 100000  # Size of files permitted through API
         self.mmd_xslt_path = None
         self.mmd_xsd_path = None
@@ -88,6 +89,7 @@ class Config():
 
         self.call_distributors = conf.get("distributors", self.call_distributors)
         self.distributor_cache = conf.get("distributor_cache", self.distributor_cache)
+        self.rejected_jobs_path = conf.get("rejected_jobs_path", self.rejected_jobs_path)
         self.max_permitted_size = conf.get("max_permitted_size", self.max_permitted_size)
         self.mmd_xslt_path = conf.get("mmd_xslt_path", self.mmd_xslt_path)
         self.mmd_xsd_path = conf.get("mmd_xsd_path", self.mmd_xsd_path)
@@ -117,36 +119,36 @@ class Config():
         """
         valid = True
 
-        if "pycsw" in self.call_distributors:
-            if self.mmd_xslt_path is None:
-                logger.error("Config value 'mmd_xslt_path' must be set for the pycsw distributor")
-                valid = False
-            else:
-                if not os.path.isfile(self.mmd_xslt_path):
-                    logger.error("Config value 'mmd_xslt_path' must point to an existing file")
-                    valid = False
+        valid &= self._check_file_exists(self.mmd_xsd_path, "mmd_xsd_path")
+        valid &= self._check_folder_exists(self.distributor_cache, "distributor_cache")
+        valid &= self._check_folder_exists(self.rejected_jobs_path, "rejected_jobs_path")
 
-        if self.mmd_xsd_path is None:
-            logger.error("Config value 'mmd_xsd_path' must be set")
-            valid = False
-        else:
-            if not os.path.isfile(self.mmd_xsd_path):
-                logger.error("Config value 'mmd_xsd_path' must point to an existing file")
-                valid = False
+        if "pycsw" in self.call_distributors:
+            valid &= self._check_file_exists(self.mmd_xslt_path, "mmd_xslt_path")
 
         if "file" in self.call_distributors:
-            if self.file_archive_path is None:
-                logger.error(
-                    "Config value 'file_archive_path' must be set for the file distributor"
-                )
-                valid = False
-            else:
-                if not os.path.isdir(self.file_archive_path):
-                    logger.error(
-                        "Config value 'file_archive_path' must point to an existing folder"
-                    )
-                    valid = False
+            valid &= self._check_folder_exists(self.file_archive_path, "file_archive_path")
 
         return valid
+
+    def _check_file_exists(self, path, setting):
+        """Check if a file exists, and if not report error."""
+        if not isinstance(path, str):
+            logger.error("Config value '%s' must be set", setting)
+            return False
+        if not os.path.isfile(path):
+            logger.error("Config value '%s' must point to an existing file", setting)
+            return False
+        return True
+
+    def _check_folder_exists(self, path, setting):
+        """Check if a folder exists, and if not report error."""
+        if not isinstance(path, str):
+            logger.error("Config value '%s' must be set", setting)
+            return False
+        if not os.path.isdir(path):
+            logger.error("Config value '%s' must point to an existing folder", setting)
+            return False
+        return True
 
 # END Class Config
