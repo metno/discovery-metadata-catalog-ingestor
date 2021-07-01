@@ -34,15 +34,15 @@ class PyCSWDist(Distributor):
     TOTAL_UPDATED = "total_updated"
     STATUS = [TOTAL_DELETED, TOTAL_INSERTED, TOTAL_UPDATED]
 
-    def __init__(self, cmd, xml_file=None, metadata_id=None, **kwargs):
-        super().__init__(cmd, xml_file, metadata_id, **kwargs)
+    def __init__(self, cmd, xml_file=None, metadata_id=None, worker=None, **kwargs):
+        super().__init__(cmd, xml_file, metadata_id, worker, **kwargs)
         return
 
     def run(self):
         """Run function to handle insert, update or delete
 
         Returns
-        =======
+        -------
         status : bool
             True if successful insert, update or delete
             False if not
@@ -99,11 +99,39 @@ class PyCSWDist(Distributor):
     def _update(self):
         """Update current entry.
 
-        Need to find out how to do this ...
+        Update: updates can be made as full record updates or record
+        properties against a csw:Constraint, to update: Define
+        overwriting property, search for places to overwrite.
         """
-        logger.warning("Not yet implemented")
+        headers = requests.structures.CaseInsensitiveDict()
+        headers["Content-Type"] = "application/xml"
+        headers["Accept"] = "application/xml"
+        xml = (
+            b'<?xml version="1.0" encoding="UTF-8"?>'
+            b'<csw:Transaction xmlns:ogc="http://www.opengis.net/ogc" '
+            b'xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
+            b'xmlns:ows="http://www.opengis.net/ows" '
+            b'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+            b'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
+            b'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd" '
+            b'service="CSW" version="2.0.2">'
+            b'  <csw:Update>'
+            b'    <csw:RecordProperty>%s</csw:RecordProperty>'
+            b'    <csw:Constraint version="1.1.0">'
+            b'      <ogc:Filter>'
+            b'        <ogc:PropertyIsEqualTo>'
+            b'          <ogc:PropertyName>apiso:Identifier</ogc:PropertyName>'
+            b'          <ogc:Literal>%s</ogc:Literal>'
+            b'        </ogc:PropertyIsEqualTo>'
+            b'      </ogc:Filter>'
+            b'    </csw:Constraint>'
+            b'  </csw:Update>'
+            b'</csw:Transaction>'
+        ) % (self._translate(), self.worker._file_metadata_id)
+        resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
+        status = self._get_transaction_status(self.TOTAL_UPDATED, resp)
 
-        return False, "Not yet implemented"
+        return status, resp.text
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
