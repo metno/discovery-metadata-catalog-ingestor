@@ -58,15 +58,15 @@ class Config():
             configFile = os.path.join(self.pkg_root, "config.yaml")
 
         if not os.path.isfile(configFile):
-            logger.error("Config file not found: %s" % configFile)
+            logger.error("Config file not found: %s", configFile)
             return False
 
         try:
             with open(configFile, mode="r", encoding="utf8") as inFile:
                 self._raw_conf = yaml.safe_load(inFile)
-            logger.debug("Read config from: %s" % configFile)
+            logger.debug("Read config from: %s", configFile)
         except Exception as e:
-            logger.error("Could not read file: %s" % configFile)
+            logger.error("Could not read file: %s", configFile)
             logger.error(str(e))
             return False
 
