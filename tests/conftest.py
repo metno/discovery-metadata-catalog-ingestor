@@ -62,6 +62,17 @@ def filesDir():
     return theDir
 
 
+@pytest.fixture(scope="function")
+def fncDir(tmpDir):
+    """A temporary folder for a single test function."""
+    fncDir = os.path.join(tmpDir, "f_temp")
+    if os.path.isdir(fncDir):
+        shutil.rmtree(fncDir)
+    if not os.path.isdir(fncDir):
+        os.mkdir(fncDir)
+    return fncDir
+
+
 ##
 #  Mock Files
 ##

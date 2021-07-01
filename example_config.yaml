@@ -3,6 +3,7 @@ dmci:
     - file
     - pycsw
   distributor_cache: null
+  rejected_jobs_path: null
   max_permitted_size: 100000
   mmd_xslt_path: null
   mmd_xsd_path: null
