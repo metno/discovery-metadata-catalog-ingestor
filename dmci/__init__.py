@@ -18,7 +18,7 @@ limitations under the License.
 """
 
 __package__ = "dmci"
-__version__ = "0.0.1"
+__version__ = "0.1"
 
 import os
 import sys
