@@ -127,7 +127,7 @@ class PyCSWDist(Distributor):
             b'    </csw:Constraint>'
             b'  </csw:Update>'
             b'</csw:Transaction>'
-        ) % (self._translate(), self.worker._file_metadata_id)
+        ) % (self._translate(), self._worker._file_metadata_id)
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
         status = self._get_transaction_status(self.TOTAL_UPDATED, resp)
 
