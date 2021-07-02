@@ -40,19 +40,17 @@ class Worker():
 
         self._conf = CONFIG
 
-        # These should be populated with proper values to send to the
-        # distributors
-
         self._dist_cmd = None
         self._dist_xml_file = xml_file
-        self._dist_metadata_id = None
-        self._kwargs = kwargs
-        self._file_metadata_id = None
-
         if cmd in ("insert", "update", "delete"):
             self._dist_cmd = cmd
 
-        # XML
+        self._kwargs = kwargs
+        self._dist_metadata_id = kwargs.get("metadata_id", None)
+        self._file_metadata_id = None
+
+        # XML Validator
+        # Created by the app object as it is potentially slow to set up
         self._xsd_obj = xsd_validator
 
         return

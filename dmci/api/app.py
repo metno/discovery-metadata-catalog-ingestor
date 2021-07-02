@@ -62,6 +62,16 @@ class App(Flask):
         def post_update():
             return self._insert_update_method_post("update", request)
 
+        @self.route("/v1/delete/<uuid:metadata_id>", methods=["POST"])
+        def post_delete(metadata_id=None):
+            """Process delete command."""
+            worker = Worker("delete", None, self._xsd_obj, metadata_id=metadata_id)
+            err = self._distributor_wrapper(worker)
+            if err:
+                return "\n".join(err), 500
+            else:
+                return "Everything is OK", 200
+
         return
 
     ##
@@ -91,6 +101,20 @@ class App(Flask):
             return msg, 400
 
         # Run the distributors
+        err = self._distributor_wrapper(worker)
+
+        if err:
+            msg = "\n".join(err)
+            self._handle_persist_file(False, full_path, reject_path, msg)
+            return msg, 500
+        else:
+            self._handle_persist_file(True, full_path)
+            return "Everything is OK", 200
+
+    def _distributor_wrapper(self, worker):
+        """Run the distributors and handle and parse the results and
+        parse and combine any error messages.
+        """
         err = []
         status, valid, _, failed, skipped, failed_msg = worker.distribute()
         if not status:
@@ -101,13 +125,7 @@ class App(Flask):
         if not valid:
             err.append("The following jobs were skipped: %s" % ", ".join(skipped))
 
-        if err:
-            msg = "\n".join(err)
-            self._handle_persist_file(False, full_path, reject_path, msg)
-            return msg, 500
-        else:
-            self._handle_persist_file(True, full_path)
-            return "Everything is OK", 200
+        return err
 
     @staticmethod
     def _handle_persist_file(status, full_path, reject_path=None, reject_reason=""):

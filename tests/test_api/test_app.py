@@ -92,12 +92,8 @@ def testApiApp_EndPoints(client):
     assert client.get("/v1/insert").status_code == 405
     assert client.get("/v1/update").status_code == 405
 
-    # should return 405 when implemented
+    # Bare delete command is not allowed
     assert client.get("/v1/delete").status_code == 404
-
-    # When implemented should be tested in own functions with
-    # assert client.post("/v1/update").status_code == 404
-    assert client.post("/v1/delete").status_code == 404
 
 # END Test testApiApp_EndPoints
 
@@ -157,6 +153,42 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
         )
 
 # END Test testApiApp_InsertRequests
+
+
+@pytest.mark.api
+def testApiApp_DeleteRequests(client, monkeypatch):
+    """Test api delete request."""
+    assert isinstance(client, flask.testing.FlaskClient)
+    testUUID = "7278888a-96a5-4ee5-845a-2051bb8994c8"
+
+    # Invalid UUID
+    assert client.post("/v1/delete/blabla").status_code == 404
+    assert client.post("/v1/delete/7278888a96a54ee5845a2051bb8994c8").status_code == 404
+
+    # Distribute fails
+    with monkeypatch.context() as mp:
+        f = ["A", "B"]
+        s = ["C"]
+        e = ["Reason A", "Reason B"]
+        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e))
+
+        response = client.post("/v1/delete/%s" % testUUID, data=MOCK_XML)
+        assert response.status_code == 500
+        assert response.data == (
+            b"The following distributors failed: A, B\n"
+            b" - A: Reason A\n"
+            b" - B: Reason B\n"
+            b"The following jobs were skipped: C"
+        )
+
+    # Distribute ok
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (True, True, [], [], [], []))
+        response = client.post("/v1/delete/%s" % testUUID, data=MOCK_XML)
+        assert response.status_code == 200
+        assert response.data == b"Everything is OK"
+
+# END Test testApiApp_DeleteRequests
 
 
 @pytest.mark.api
