@@ -127,7 +127,7 @@ class PyCSWDist(Distributor):
             b'    </csw:Constraint>'
             b'  </csw:Update>'
             b'</csw:Transaction>'
-        ) % (self._translate(), self._worker._file_metadata_id)
+        ) % (self._translate(), self._worker._file_metadata_id.encode())
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
         status = self._get_transaction_status(self.TOTAL_UPDATED, resp)
 
@@ -147,16 +147,16 @@ class PyCSWDist(Distributor):
             'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
             'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd" '
             'service="CSW" version="2.0.2">'
-            '   <csw:Delete>'
-            '       <csw:Constraint version="1.1.0">'
-            '           <ogc:Filter>'
-            '               <ogc:PropertyIsEqualTo>'
-            '                   <ogc:PropertyName>apiso:Identifier</ogc:PropertyName>'
-            '                   <ogc:Literal>%s</ogc:Literal>'
-            '               </ogc:PropertyIsEqualTo>'
-            '           </ogc:Filter>'
-            '       </csw:Constraint>'
-            '   </csw:Delete>'
+            '  <csw:Delete>'
+            '    <csw:Constraint version="1.1.0">'
+            '      <ogc:Filter>'
+            '        <ogc:PropertyIsEqualTo>'
+            '          <ogc:PropertyName>apiso:Identifier</ogc:PropertyName>'
+            '          <ogc:Literal>%s</ogc:Literal>'
+            '        </ogc:PropertyIsEqualTo>'
+            '      </ogc:Filter>'
+            '    </csw:Constraint>'
+            '  </csw:Delete>'
             '</csw:Transaction>'
         ) % self._metadata_id
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
@@ -176,13 +176,11 @@ class PyCSWDist(Distributor):
 
         Returns
         -------
-        status : bool
+        bool
             True if the transaction succeeded, otherwise False
         """
         if key not in self.STATUS:
-            logger.error("Input key must be '%s', '%s' or '%s'" % (
-                self.TOTAL_INSERTED, self.TOTAL_UPDATED, self.TOTAL_DELETED)
-            )
+            logger.error("Input key must be one of: %s", ", ".join(self.STATUS))
             return False
 
         if not isinstance(resp, requests.models.Response):
@@ -202,6 +200,8 @@ class PyCSWDist(Distributor):
 
         Parameters
         ----------
+        key : str
+            total_inserted, total_updated or total_deleted
         text : str
             xml representation of the pycsw result
 
@@ -211,9 +211,7 @@ class PyCSWDist(Distributor):
             status of insert, update and delete
         """
         if key not in self.STATUS:
-            logger.error("Input key must be '%s', '%s' or '%s'" % (
-                self.TOTAL_INSERTED, self.TOTAL_UPDATED, self.TOTAL_DELETED)
-            )
+            logger.error("Input key must be one of: %s", ", ".join(self.STATUS))
             return False
 
         status = False
