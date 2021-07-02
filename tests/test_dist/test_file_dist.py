@@ -78,7 +78,7 @@ def testDistFile_InsertUpdate(tmpDir, filesDir, monkeypatch):
 
     # Set up a Worker object
     passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
-    tstWorker = Worker(passFile, None)
+    tstWorker = Worker("insert", passFile, None)
     assert tstWorker._extract_metadata_id(passXML) is True
     assert tstWorker._file_metadata_id is not None
 
@@ -162,7 +162,7 @@ def testDistFile_Delete(tmpDir, filesDir, monkeypatch):
 
     # Set up a Worker object
     passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
-    tstWorker = Worker(passFile, None)
+    tstWorker = Worker("insert", passFile, None)
     assert tstWorker._extract_metadata_id(passXML) is True
     assert tstWorker._file_metadata_id is not None
 

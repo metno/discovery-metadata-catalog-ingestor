@@ -72,7 +72,7 @@ class App(Flask):
                 return msg, code
 
             # Run the validator
-            worker = Worker(full_path, self._xsd_obj)
+            worker = Worker("insert", full_path, self._xsd_obj)
             valid, msg = worker.validate(data)
             if not valid:
                 self._handle_persist_file(False, full_path, reject_path, msg)

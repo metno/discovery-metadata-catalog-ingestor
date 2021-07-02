@@ -89,8 +89,8 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt):
         text = "Mock response"
         status_code = 200
 
-    tstWorker = Worker(None, None)
-    tstWorker._file_metadata_id = ""
+    tstWorker = Worker("update", None, None)
+    tstWorker._file_metadata_id = "something"
 
     # Update returns True
     with monkeypatch.context() as mp:
