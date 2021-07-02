@@ -90,41 +90,45 @@ def testApiApp_EndPoints(client):
     assert client.get("/v1/").status_code == 404
 
     assert client.get("/v1/insert").status_code == 405
+    assert client.get("/v1/update").status_code == 405
 
     # should return 405 when implemented
-    assert client.get("/v1/update").status_code == 404
     assert client.get("/v1/delete").status_code == 404
 
     # When implemented should be tested in own functions with
-    assert client.post("/v1/update").status_code == 404
+    # assert client.post("/v1/update").status_code == 404
     assert client.post("/v1/delete").status_code == 404
 
 # END Test testApiApp_EndPoints
 
 
 @pytest.mark.api
-def testApiApp_InsertRequests(client, monkeypatch):
-    """Test api insert requests."""
+def testApiApp_InsertUpdateRequests(client, monkeypatch):
+    """Test api insert and update requests."""
     assert isinstance(client, flask.testing.FlaskClient)
 
     # Test sending 3MB of data
     tooLargeFile = bytes(3000000)
     assert client.post("/v1/insert", data=tooLargeFile).status_code == 413
+    assert client.post("/v1/update", data=tooLargeFile).status_code == 413
 
     # Fail cahcing the file
     with monkeypatch.context() as mp:
         mp.setattr("builtins.open", causeOSError)
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 507
+        assert client.post("/v1/update", data=MOCK_XML).status_code == 507
 
     # Data is valid
     with monkeypatch.context() as mp:
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 200
+        assert client.post("/v1/update", data=MOCK_XML).status_code == 200
 
     # Data is not valid
     with monkeypatch.context() as mp:
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (False, ""))
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 400
+        assert client.post("/v1/update", data=MOCK_XML).status_code == 400
 
     # Data is valid, distribute fails
     with monkeypatch.context() as mp:
@@ -133,7 +137,17 @@ def testApiApp_InsertRequests(client, monkeypatch):
         e = ["Reason A", "Reason B"]
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
         mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e))
+
         response = client.post("/v1/insert", data=MOCK_XML)
+        assert response.status_code == 500
+        assert response.data == (
+            b"The following distributors failed: A, B\n"
+            b" - A: Reason A\n"
+            b" - B: Reason B\n"
+            b"The following jobs were skipped: C"
+        )
+
+        response = client.post("/v1/update", data=MOCK_XML)
         assert response.status_code == 500
         assert response.data == (
             b"The following distributors failed: A, B\n"

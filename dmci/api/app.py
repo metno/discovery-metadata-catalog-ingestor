@@ -56,52 +56,58 @@ class App(Flask):
         # Set up api entry points
         @self.route("/v1/insert", methods=["POST"])
         def post_insert():
-            max_permitted_size = self._conf.max_permitted_size
+            return self._insert_update_method_post("insert", request)
 
-            if request.content_length > max_permitted_size:
-                return f"File bigger than permitted size: {max_permitted_size}", 413
-
-            data = request.get_data()
-
-            # Cache the job file
-            file_uuid = uuid.uuid4()
-            full_path = os.path.join(self._conf.distributor_cache, f"{file_uuid}.xml")
-            reject_path = os.path.join(self._conf.rejected_jobs_path, f"{file_uuid}.xml")
-            msg, code = self._persist_file(data, full_path)
-            if code != 200:
-                return msg, code
-
-            # Run the validator
-            worker = Worker("insert", full_path, self._xsd_obj)
-            valid, msg = worker.validate(data)
-            if not valid:
-                self._handle_persist_file(False, full_path, reject_path, msg)
-                return msg, 400
-
-            # Run the distributors
-            err = []
-            status, valid, _, failed, skipped, failed_msg = worker.distribute()
-            if not status:
-                err.append("The following distributors failed: %s" % ", ".join(failed))
-                for name, reason in zip(failed, failed_msg):
-                    err.append(" - %s: %s" % (name, reason))
-
-            if not valid:
-                err.append("The following jobs were skipped: %s" % ", ".join(skipped))
-
-            if err:
-                msg = "\n".join(err)
-                self._handle_persist_file(False, full_path, reject_path, msg)
-                return msg, 500
-            else:
-                self._handle_persist_file(True, full_path)
-                return "Everything is OK", 200
+        @self.route("/v1/update", methods=["POST"])
+        def post_update():
+            return self._insert_update_method_post("update", request)
 
         return
 
     ##
     #  Internal Functions
     ##
+
+    def _insert_update_method_post(self, cmd, request):
+        """Process insert or update command requests."""
+        if request.content_length > self._conf.max_permitted_size:
+            return f"File bigger than permitted size: {self._conf.max_permitted_size}", 413
+
+        data = request.get_data()
+
+        # Cache the job file
+        file_uuid = uuid.uuid4()
+        full_path = os.path.join(self._conf.distributor_cache, f"{file_uuid}.xml")
+        reject_path = os.path.join(self._conf.rejected_jobs_path, f"{file_uuid}.xml")
+        msg, code = self._persist_file(data, full_path)
+        if code != 200:
+            return msg, code
+
+        # Run the validator
+        worker = Worker(cmd, full_path, self._xsd_obj)
+        valid, msg = worker.validate(data)
+        if not valid:
+            self._handle_persist_file(False, full_path, reject_path, msg)
+            return msg, 400
+
+        # Run the distributors
+        err = []
+        status, valid, _, failed, skipped, failed_msg = worker.distribute()
+        if not status:
+            err.append("The following distributors failed: %s" % ", ".join(failed))
+            for name, reason in zip(failed, failed_msg):
+                err.append(" - %s: %s" % (name, reason))
+
+        if not valid:
+            err.append("The following jobs were skipped: %s" % ", ".join(skipped))
+
+        if err:
+            msg = "\n".join(err)
+            self._handle_persist_file(False, full_path, reject_path, msg)
+            return msg, 500
+        else:
+            self._handle_persist_file(True, full_path)
+            return "Everything is OK", 200
 
     @staticmethod
     def _handle_persist_file(status, full_path, reject_path=None, reject_reason=""):
