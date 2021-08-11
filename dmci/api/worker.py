@@ -36,20 +36,21 @@ class Worker():
         "pycsw": PyCSWDist,
     }
 
-    def __init__(self, xml_file, xsd_validator, **kwargs):
+    def __init__(self, cmd, xml_file, xsd_validator, **kwargs):
 
         self._conf = CONFIG
 
-        # These should be populated with proper values to send to the
-        # distributors
-
-        self._dist_cmd = "insert"
+        self._dist_cmd = None
         self._dist_xml_file = xml_file
-        self._dist_metadata_id = None
+        if cmd in ("insert", "update", "delete"):
+            self._dist_cmd = cmd
+
         self._kwargs = kwargs
+        self._dist_metadata_id = kwargs.get("metadata_id", None)
         self._file_metadata_id = None
 
-        # XML
+        # XML Validator
+        # Created by the app object as it is potentially slow to set up
         self._xsd_obj = xsd_validator
 
         return

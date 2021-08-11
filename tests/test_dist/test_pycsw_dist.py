@@ -23,6 +23,7 @@ import requests
 
 from lxml import etree
 
+from dmci.api.worker import Worker
 from dmci.distributors.pycsw_dist import PyCSWDist
 
 
@@ -56,7 +57,7 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
         text = "Mock response"
         status_code = 200
 
-    # insert returns True
+    # Insert returns True
     with monkeypatch.context() as mp:
         mp.setattr(PyCSWDist, "_translate", lambda *a: b"<xml />")
         mp.setattr(
@@ -67,7 +68,7 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
         tstPyCSW._conf.mmd_xslt_path = mockXslt
         assert tstPyCSW.run() == (True, "Mock response")
 
-    # insert returns false
+    # Insert returns False
     with monkeypatch.context() as mp:
         mp.setattr(PyCSWDist, "_translate", lambda *a: b"<xml />")
         mp.setattr(
@@ -82,10 +83,38 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
 
 
 @pytest.mark.dist
-def testDistPyCSW_Update(mockXml):
+def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt):
     """Test update commands via run()."""
-    assert PyCSWDist("update", xml_file=mockXml).run() == (False, "Not yet implemented")
-    assert PyCSWDist("update", metadata_id="some_id").run() == (False, "The run job is invalid")
+    class mockResp:
+        text = "Mock response"
+        status_code = 200
+
+    tstWorker = Worker("update", None, None)
+    tstWorker._file_metadata_id = "something"
+
+    # Update returns True
+    with monkeypatch.context() as mp:
+        mp.setattr(PyCSWDist, "_translate", lambda *a: b"<xml />")
+        mp.setattr(
+            "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: mockResp
+        )
+        mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: True)
+        tstPyCSW = PyCSWDist("update", xml_file=mockXml)
+        tstPyCSW._worker = tstWorker
+        tstPyCSW._conf.mmd_xslt_path = mockXslt
+        assert tstPyCSW.run() == (True, "Mock response")
+
+    # Update returns False
+    with monkeypatch.context() as mp:
+        mp.setattr(PyCSWDist, "_translate", lambda *a: b"<xml />")
+        mp.setattr(
+            "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: mockResp
+        )
+        mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: False)
+        tstPyCSW = PyCSWDist("update", xml_file=mockXml)
+        tstPyCSW._worker = tstWorker
+        tstPyCSW._conf.mmd_xslt_path = mockXslt
+        assert tstPyCSW.run() == (False, "Mock response")
 
 # END Test testDistPyCSW_Update
 
@@ -146,11 +175,13 @@ def testDistPyCSW_Translate(filesDir, caplog):
 
 
 @pytest.mark.dist
-def testDistPyCSW_GetTransactionStatus(monkeypatch, mockXml):
+def testDistPyCSW_GetTransactionStatus(monkeypatch, mockXml, caplog):
     """_get_transaction_status tests"""
     # wrong key
     resp = requests.models.Response()
+    caplog.clear()
     assert PyCSWDist("insert", xml_file=mockXml)._get_transaction_status("tull", resp) is False
+    assert "Input key must be one of: total_deleted, total_inserted, total_updated" in caplog.text
 
     # invalud response object
     resp = "hei"
@@ -159,8 +190,8 @@ def testDistPyCSW_GetTransactionStatus(monkeypatch, mockXml):
     )._get_transaction_status(
         "total_inserted", resp
     ) is False
-    # Returns true/false
 
+    # Returns true/false
     requests.models.Response.text = property(lambda x: "kjkjh")
     resp = requests.models.Response()
     monkeypatch.setattr(resp, "status_code", 200)

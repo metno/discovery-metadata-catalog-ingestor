@@ -28,8 +28,7 @@ from dmci.config import Config
 
 
 def _init_logging(log_obj):
-    """Call to initialise logging
-    """
+    """Call to initialise logging."""
     # Read environment variables
     want_level = os.environ.get("DMCI_LOGLEVEL", "INFO")
     log_file = os.environ.get("DMCI_LOGFILE", None)
@@ -74,8 +73,7 @@ CONFIG = Config()
 
 
 def api_main():
-    """This is the main entry point for the api process.
-    """
+    """This is the main entry point for the api process."""
     from dmci.api import App
 
     if not CONFIG.readConfig(configFile=os.environ.get("DMCI_CONFIG", None)):

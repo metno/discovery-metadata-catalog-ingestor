@@ -31,8 +31,12 @@ from dmci.tools import CheckMMD
 @pytest.mark.api
 def testApiWorker_Init():
     """Test the Worker class init."""
-    assert Worker(None, None)._dist_cmd == "insert"
-    assert Worker(None, None, a=1)._kwargs == {"a": 1}
+    assert Worker(None, None, None)._dist_cmd is None
+    assert Worker("insert", None, None)._dist_cmd == "insert"
+    assert Worker("update", None, None)._dist_cmd == "update"
+    assert Worker("delete", None, None)._dist_cmd == "delete"
+    assert Worker("blabla", None, None)._dist_cmd is None
+    assert Worker(None, None, None, a=1)._kwargs == {"a": 1}
 
 # END Test testApiWorker_Init
 
@@ -47,7 +51,7 @@ def testApiWorker_Distributor(tmpConf, mockXml, monkeypatch):
         mp.setattr(FileDist, "run", lambda *a: (True, "ok"))
         mp.setattr(PyCSWDist, "run", lambda *a: (True, "ok"))
 
-        tstWorker = Worker(None, None)
+        tstWorker = Worker("insert", None, None)
         tstWorker._conf = tmpConf
         tstWorker._dist_xml_file = mockXml
 
@@ -64,7 +68,7 @@ def testApiWorker_Distributor(tmpConf, mockXml, monkeypatch):
         mp.setattr(FileDist, "run", lambda *a: (False, "oops"))
         mp.setattr(PyCSWDist, "run", lambda *a: (False, "oops"))
 
-        tstWorker = Worker(None, None)
+        tstWorker = Worker("insert", None, None)
         tstWorker._conf = tmpConf
         tstWorker._dist_xml_file = mockXml
 
@@ -77,7 +81,7 @@ def testApiWorker_Distributor(tmpConf, mockXml, monkeypatch):
         assert failed_msg == ["oops", "oops"]
 
     # Call the distributor function with the wrong parameters
-    tstWorker = Worker(None, None)
+    tstWorker = Worker("insert", None, None)
     tstWorker._conf = tmpConf
     tstWorker._dist_cmd = "blabla"
     tstWorker._dist_xml_file = "/path/to/nowhere"
@@ -101,8 +105,8 @@ def testApiWorker_Validator(monkeypatch, filesDir):
     failFile = os.path.join(filesDir, "api", "failing.xml")
 
     xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
-    passWorker = Worker(passFile, xsdObj)
-    failWorker = Worker(failFile, xsdObj)
+    passWorker = Worker("insert", passFile, xsdObj)
+    failWorker = Worker("insert", failFile, xsdObj)
 
     # Invalid data format
     passData = readFile(passFile)
@@ -110,7 +114,7 @@ def testApiWorker_Validator(monkeypatch, filesDir):
 
     # Valid data format
     with monkeypatch.context() as mp:
-        mp.setattr(Worker, '_check_information_content', lambda *a: (True, ""))
+        mp.setattr(Worker, "_check_information_content", lambda *a: (True, ""))
 
         # Valid XML
         passData = bytes(readFile(passFile), "utf-8")
@@ -133,7 +137,7 @@ def testApiWorker_Validator(monkeypatch, filesDir):
 def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
     """Test _check_information_content."""
     passFile = os.path.join(filesDir, "api", "passing.xml")
-    tstWorker = Worker(passFile, None)
+    tstWorker = Worker("insert", passFile, None)
 
     # Invalid data format
     passData = readFile(passFile)
@@ -199,19 +203,19 @@ def testApiWorker_ExtractMetaDataID(filesDir, mockXml):
 
     # Valid File
     passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
-    tstWorker = Worker(passFile, None)
+    tstWorker = Worker("insert", passFile, None)
     assert tstWorker._extract_metadata_id(passXML) is True
     assert tstWorker._file_metadata_id is not None
 
     # Invalid File
     mockData = lxml.etree.fromstring(bytes(readFile(mockXml), "utf-8"))
-    tstWorker = Worker(mockXml, None)
+    tstWorker = Worker("insert", mockXml, None)
     assert tstWorker._extract_metadata_id(mockData) is False
     assert tstWorker._file_metadata_id is None
 
     # Invalid UUID
     failXML = lxml.etree.fromstring(bytes(readFile(failFile), "utf-8"))
-    tstWorker = Worker(failFile, None)
+    tstWorker = Worker("insert", failFile, None)
     assert tstWorker._extract_metadata_id(failXML) is False
     assert tstWorker._file_metadata_id is None
 
