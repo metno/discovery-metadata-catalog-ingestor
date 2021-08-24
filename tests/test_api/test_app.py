@@ -186,7 +186,7 @@ def testApiApp_DeleteRequests(client, monkeypatch):
         mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (True, True, [], [], [], []))
         response = client.post("/v1/delete/%s" % testUUID, data=MOCK_XML)
         assert response.status_code == 200
-        assert response.data == b"Everything is OK"
+        assert response.data == b"Everything is OK\n"
 
 # END Test testApiApp_DeleteRequests
 

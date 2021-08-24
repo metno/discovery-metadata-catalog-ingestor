@@ -70,13 +70,16 @@ class App(Flask):
             if err:
                 return "\n".join(err), 500
             else:
-                return "Everything is OK", 200
+                return self._everything_is_ok()
 
         return
 
     ##
     #  Internal Functions
     ##
+
+    def _everything_is_ok(self):
+        return "Everything is OK\n", 200
 
     def _insert_update_method_post(self, cmd, request):
         """Process insert or update command requests."""
@@ -109,7 +112,7 @@ class App(Flask):
             return msg, 500
         else:
             self._handle_persist_file(True, full_path)
-            return "Everything is OK", 200
+            return self._everything_is_ok()
 
     def _distributor_wrapper(self, worker):
         """Run the distributors and handle and parse the results and
