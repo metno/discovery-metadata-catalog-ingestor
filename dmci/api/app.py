@@ -30,6 +30,8 @@ from dmci.api.worker import Worker
 
 logger = logging.getLogger(__name__)
 
+OK_RETURN = "Everything is OK"
+
 
 class App(Flask):
 
@@ -56,11 +58,13 @@ class App(Flask):
         # Set up api entry points
         @self.route("/v1/insert", methods=["POST"])
         def post_insert():
-            return self._insert_update_method_post("insert", request)
+            msg, code = self._insert_update_method_post("insert", request)
+            return self._formatMsgReturn(msg), code
 
         @self.route("/v1/update", methods=["POST"])
         def post_update():
-            return self._insert_update_method_post("update", request)
+            msg, code = self._insert_update_method_post("update", request)
+            return self._formatMsgReturn(msg), code
 
         @self.route("/v1/delete/<uuid:metadata_id>", methods=["POST"])
         def post_delete(metadata_id=None):
@@ -68,15 +72,26 @@ class App(Flask):
             worker = Worker("delete", None, self._xsd_obj, metadata_id=metadata_id)
             err = self._distributor_wrapper(worker)
             if err:
-                return "\n".join(err), 500
+                return self._formatMsgReturn(err), 500
             else:
-                return "Everything is OK", 200
+                return self._formatMsgReturn(OK_RETURN), 200
 
         return
 
     ##
     #  Internal Functions
     ##
+
+    def _formatMsgReturn(self, msg):
+        """Formats the return message depending on its type and ensures
+        that it has proper line breaks for usage with curl.
+        """
+        fmtMsg = ""
+        if isinstance(msg, list):
+            fmtMsg = "\n".join(msg)
+        else:
+            fmtMsg = str(msg)
+        return fmtMsg.rstrip() + "\n"
 
     def _insert_update_method_post(self, cmd, request):
         """Process insert or update command requests."""
@@ -109,7 +124,7 @@ class App(Flask):
             return msg, 500
         else:
             self._handle_persist_file(True, full_path)
-            return "Everything is OK", 200
+            return OK_RETURN, 200
 
     def _distributor_wrapper(self, worker):
         """Run the distributors and handle and parse the results and
@@ -172,6 +187,6 @@ class App(Flask):
             logger.error(str(e))
             return "Cannot write xml data to cache file", 507
 
-        return "", 200
+        return OK_RETURN, 200
 
 # END Class App
