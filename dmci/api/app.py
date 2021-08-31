@@ -143,13 +143,13 @@ class App(Flask):
         full_path = os.path.join(self._conf.distributor_cache, f"{file_uuid}.xml")
         msg, code = self._persist_file(data, full_path)
         if code != 200:
-            os.unlink(full_path)
+            self._handle_persist_file(True, full_path)
             return msg, code
 
         # Run the validator
         worker = Worker("none", full_path, self._xsd_obj)
         valid, msg = worker.validate(data)
-        os.unlink(full_path)
+        self._handle_persist_file(True, full_path)
         if valid:
             return OK_RETURN, 200
         else:

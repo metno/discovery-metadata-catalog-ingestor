@@ -89,11 +89,13 @@ def testApiApp_EndPoints(client):
     assert client.get("/").status_code == 404
     assert client.get("/v1/").status_code == 404
 
+    # Get method is not allowed
     assert client.get("/v1/insert").status_code == 405
     assert client.get("/v1/update").status_code == 405
+    assert client.get("/v1/validate").status_code == 405
 
     # Bare delete command is not allowed
-    assert client.get("/v1/delete").status_code == 404
+    assert client.post("/v1/delete").status_code == 404
 
 # END Test testApiApp_EndPoints
 
@@ -189,6 +191,33 @@ def testApiApp_DeleteRequests(client, monkeypatch):
         assert response.data == b"Everything is OK\n"
 
 # END Test testApiApp_DeleteRequests
+
+
+@pytest.mark.api
+def testApiApp_ValidateRequests(client, monkeypatch):
+    """Test api validate request."""
+    assert isinstance(client, flask.testing.FlaskClient)
+
+    # Test sending 3MB of data
+    tooLargeFile = bytes(3000000)
+    assert client.post("/v1/validate", data=tooLargeFile).status_code == 413
+
+    # Fail cahcing the file
+    with monkeypatch.context() as mp:
+        mp.setattr("builtins.open", causeOSError)
+        assert client.post("/v1/validate", data=MOCK_XML).status_code == 507
+
+    # Data is valid
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
+        assert client.post("/v1/validate", data=MOCK_XML).status_code == 200
+
+    # Data is not valid
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (False, ""))
+        assert client.post("/v1/validate", data=MOCK_XML).status_code == 400
+
+# END Test testApiApp_ValidateRequests
 
 
 @pytest.mark.api
