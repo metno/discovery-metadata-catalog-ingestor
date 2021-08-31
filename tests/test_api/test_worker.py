@@ -110,7 +110,7 @@ def testApiWorker_Validator(monkeypatch, filesDir):
 
     # Invalid data format
     passData = readFile(passFile)
-    assert passWorker.validate(passData) == (False, "input must be bytes type")
+    assert passWorker.validate(passData) == (False, "Input must be bytes type")
 
     # Valid data format
     with monkeypatch.context() as mp:
@@ -141,7 +141,7 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
 
     # Invalid data format
     passData = readFile(passFile)
-    assert tstWorker._check_information_content(passData) == (False, "input must be bytes type")
+    assert tstWorker._check_information_content(passData) == (False, "Input must be bytes type")
 
     # Valid data format
     with monkeypatch.context() as mp:

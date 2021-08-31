@@ -78,7 +78,7 @@ class Worker():
         # Takes in bytes-object data
         # Gives msg when both validating and not validating
         if not isinstance(data, bytes):
-            return False, "input must be bytes type"
+            return False, "Input must be bytes type"
 
         # Check xml file against XML schema definition
         valid = self._xsd_obj.validate(etree.fromstring(data))
@@ -148,7 +148,7 @@ class Worker():
     def _check_information_content(self, data):
         """Check the information content in the submitted file."""
         if not isinstance(data, bytes):
-            return False, "input must be bytes type"
+            return False, "Input must be bytes type"
 
         # Read XML file
         xml_doc = etree.fromstring(data)
