@@ -78,6 +78,7 @@ class App(Flask):
 
         @self.route("/v1/validate", methods=["POST"])
         def post_validate():
+            """Process validate command."""
             msg, code = self._validate_method_post(request)
             return self._formatMsgReturn(msg), code
 
