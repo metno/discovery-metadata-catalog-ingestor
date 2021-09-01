@@ -105,12 +105,12 @@ def testApiWorker_Validator(monkeypatch, filesDir):
     failFile = os.path.join(filesDir, "api", "failing.xml")
 
     xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
-    passWorker = Worker("insert", passFile, xsdObj)
-    failWorker = Worker("insert", failFile, xsdObj)
+    passWorker = Worker("none", passFile, xsdObj)
+    failWorker = Worker("none", failFile, xsdObj)
 
     # Invalid data format
     passData = readFile(passFile)
-    assert passWorker.validate(passData) == (False, "input must be bytes type")
+    assert passWorker.validate(passData) == (False, "Input must be bytes type")
 
     # Valid data format
     with monkeypatch.context() as mp:
@@ -137,11 +137,11 @@ def testApiWorker_Validator(monkeypatch, filesDir):
 def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
     """Test _check_information_content."""
     passFile = os.path.join(filesDir, "api", "passing.xml")
-    tstWorker = Worker("insert", passFile, None)
+    tstWorker = Worker("none", passFile, None)
 
     # Invalid data format
     passData = readFile(passFile)
-    assert tstWorker._check_information_content(passData) == (False, "input must be bytes type")
+    assert tstWorker._check_information_content(passData) == (False, "Input must be bytes type")
 
     # Valid data format
     with monkeypatch.context() as mp:

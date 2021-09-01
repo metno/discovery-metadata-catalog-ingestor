@@ -76,6 +76,12 @@ class App(Flask):
             else:
                 return self._formatMsgReturn(OK_RETURN), 200
 
+        @self.route("/v1/validate", methods=["POST"])
+        def post_validate():
+            """Process validate command."""
+            msg, code = self._validate_method_post(request)
+            return self._formatMsgReturn(msg), code
+
         return
 
     ##
@@ -96,7 +102,7 @@ class App(Flask):
     def _insert_update_method_post(self, cmd, request):
         """Process insert or update command requests."""
         if request.content_length > self._conf.max_permitted_size:
-            return f"File bigger than permitted size: {self._conf.max_permitted_size}", 413
+            return f"The file is larger than maximum size: {self._conf.max_permitted_size}", 413
 
         data = request.get_data()
 
@@ -125,6 +131,30 @@ class App(Flask):
         else:
             self._handle_persist_file(True, full_path)
             return OK_RETURN, 200
+
+    def _validate_method_post(self, request):
+        """Only run the validator for submitted file."""
+        if request.content_length > self._conf.max_permitted_size:
+            return f"The file is larger than maximum size: {self._conf.max_permitted_size}", 413
+
+        data = request.get_data()
+
+        # Cache the job file
+        file_uuid = uuid.uuid4()
+        full_path = os.path.join(self._conf.distributor_cache, f"{file_uuid}.xml")
+        msg, code = self._persist_file(data, full_path)
+        if code != 200:
+            self._handle_persist_file(True, full_path)
+            return msg, code
+
+        # Run the validator
+        worker = Worker("none", full_path, self._xsd_obj)
+        valid, msg = worker.validate(data)
+        self._handle_persist_file(True, full_path)
+        if valid:
+            return OK_RETURN, 200
+        else:
+            return msg, 400
 
     def _distributor_wrapper(self, worker):
         """Run the distributors and handle and parse the results and
