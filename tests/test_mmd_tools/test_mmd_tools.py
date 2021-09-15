@@ -21,6 +21,9 @@ import os
 import pytest
 
 from lxml import etree
+from metvocab import CFStandard, MMDVocab
+
+from tools import causeOSError
 
 from dmci.tools import CheckMMD
 
@@ -249,7 +252,7 @@ def testMMDTools_CheckURLs():
 
 
 @pytest.mark.tools
-def testMMDTools_CheckCF():
+def testMMDTools_CheckCF(monkeypatch):
     """Test the check_cf function."""
     chkMMD = CheckMMD()
 
@@ -301,11 +304,25 @@ def testMMDTools_CheckCF():
     assert err == ["More than one CF entry found. Only one is allowed."]
     assert n == 2
 
+    # Check Exception
+    with monkeypatch.context() as mp:
+        mp.setattr(CFStandard, "check_standard_name", causeOSError)
+        ok, err, n = chkMMD.check_cf(etree.ElementTree(etree.XML(
+            "<root>"
+            "  <keywords vocabulary='Climate and Forecast Standard Names'>"
+            "    <keyword>sea_surface_temperature</keyword>"
+            "  </keywords>"
+            "</root>"
+        )))
+        assert ok is False
+        assert err == ["Internal Error: CF standard name lookup failed."]
+        assert n == 1
+
 # END Test testMMDTools_CheckCF
 
 
 @pytest.mark.tools
-def testMMDTools_CheckVocabulary():
+def testMMDTools_CheckVocabulary(monkeypatch):
     """Test the check_vocabulary function."""
     chkMMD = CheckMMD()
     ok, err = chkMMD.check_vocabulary(etree.ElementTree(etree.XML(
@@ -319,6 +336,15 @@ def testMMDTools_CheckVocabulary():
     )))
     assert ok is False
     assert err == ["Incorrect vocabulary 'OOperational' for element 'operational_status'."]
+
+    # Check Exception
+    with monkeypatch.context() as mp:
+        mp.setattr(MMDVocab, "check_concept_value", causeOSError)
+        ok, err = chkMMD.check_vocabulary(etree.ElementTree(etree.XML(
+            "<root><operational_status>Operational</operational_status></root>"
+        )))
+        assert ok is False
+        assert err == ["Internal Error: 'operational_status' vocabulary lookup failed."]
 
 # END Test testMMDTools_CheckVocabulary
 
