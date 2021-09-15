@@ -18,9 +18,8 @@ limitations under the License.
 """
 
 import logging
-import pythesint as pti
 
-from metvocab import CFStandard
+from metvocab import CFStandard, MMDVocab
 
 from lxml import etree
 from urllib.parse import urlparse
@@ -39,6 +38,22 @@ class CheckMMD():
         self._cf_standard = CFStandard()
         self._cf_standard.init_vocab()
         self._status_ok &= self._cf_standard.is_initialised
+
+        self._access_constraing = MMDVocab("mmd", "https://vocab.met.no/mmd/Access_Constraint")
+        self._access_constraing.init_vocab()
+        self._status_ok &= self._access_constraing.is_initialised
+
+        self._activity_type = MMDVocab("mmd", "https://vocab.met.no/mmd/Activity_Type")
+        self._activity_type.init_vocab()
+        self._status_ok &= self._activity_type.is_initialised
+
+        self._operational_status = MMDVocab("mmd", "https://vocab.met.no/mmd/Operational_Status")
+        self._operational_status.init_vocab()
+        self._status_ok &= self._operational_status.is_initialised
+
+        self._use_constraint = MMDVocab("mmd", "https://vocab.met.no/mmd/Use_Constraint")
+        self._use_constraint.init_vocab()
+        self._status_ok &= self._use_constraint.is_initialised
 
         return
 
@@ -229,10 +244,10 @@ class CheckMMD():
             List of errors
         """
         vocabularies = {
-            "access_constraint":  pti.get_mmd_access_constraints,
-            "activity_type":      pti.get_mmd_activity_type,
-            "operational_status": pti.get_mmd_operstatus,
-            "use_constraint":     pti.get_mmd_use_constraint_type,
+            "access_constraint":  self._access_constraing.check_concept_value,
+            "activity_type":      self._activity_type.check_concept_value,
+            "operational_status": self._operational_status.check_concept_value,
+            "use_constraint":     self._use_constraint.check_concept_value,
         }
         ok = True
         err = []
@@ -248,12 +263,15 @@ class CheckMMD():
                 for rep in elems_found:
                     num += 1
                     try:
-                        f_name(rep.text)
-                    except IndexError:
-                        err.append("Incorrect vocabulary '%s' for element '%s'." % (
-                            rep.text, element_name
-                        ))
-                        ok = False
+                        v_ok = f_name(rep.text)
+                        if not v_ok:
+                            err.append("Incorrect vocabulary '%s' for element '%s'." % (
+                                rep.text, element_name
+                            ))
+                            ok &= False
+                    except Exception:
+                        err.append("Internal Error: '%s' vocabulary lookup failed." % element_name)
+                        ok &= False
 
         if num > 0:
             self._log_result("Controlled Vocabularies Check", ok, err)

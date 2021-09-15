@@ -21,7 +21,7 @@ import os
 import pytest
 
 from lxml import etree
-from metvocab import CFStandard
+from metvocab import CFStandard, MMDVocab
 
 from tools import causeOSError
 
@@ -322,7 +322,7 @@ def testMMDTools_CheckCF(monkeypatch):
 
 
 @pytest.mark.tools
-def testMMDTools_CheckVocabulary():
+def testMMDTools_CheckVocabulary(monkeypatch):
     """Test the check_vocabulary function."""
     chkMMD = CheckMMD()
     ok, err = chkMMD.check_vocabulary(etree.ElementTree(etree.XML(
@@ -336,6 +336,15 @@ def testMMDTools_CheckVocabulary():
     )))
     assert ok is False
     assert err == ["Incorrect vocabulary 'OOperational' for element 'operational_status'."]
+
+    # Check Exception
+    with monkeypatch.context() as mp:
+        mp.setattr(MMDVocab, "check_concept_value", causeOSError)
+        ok, err = chkMMD.check_vocabulary(etree.ElementTree(etree.XML(
+            "<root><operational_status>Operational</operational_status></root>"
+        )))
+        assert ok is False
+        assert err == ["Internal Error: 'operational_status' vocabulary lookup failed."]
 
 # END Test testMMDTools_CheckVocabulary
 
