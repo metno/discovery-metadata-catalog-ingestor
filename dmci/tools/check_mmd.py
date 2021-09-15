@@ -20,6 +20,8 @@ limitations under the License.
 import logging
 import pythesint as pti
 
+from metvocab import CFStandard
+
 from lxml import etree
 from urllib.parse import urlparse
 
@@ -29,9 +31,15 @@ logger = logging.getLogger(__name__)
 class CheckMMD():
 
     def __init__(self):
+
         self._status_pass = []
         self._status_fail = []
         self._status_ok = True
+
+        self._cf_standard = CFStandard()
+        self._cf_standard.init_vocab()
+        self._status_ok &= self._cf_standard.is_initialised
+
         return
 
     def clear(self):
@@ -172,19 +180,22 @@ class CheckMMD():
             cf_list = [elem.text for elem in cf_elements[0]]
             if len(cf_list) > 1:
                 err.append("Only one CF name should be provided, got %d." % len(cf_list))
-                ok = False
+                ok &= False
 
             # Check CF names even if more than one provided
             for cf_name in cf_list:
                 try:
-                    pti.get_cf_standard_name(cf_name)
-                except IndexError:
-                    err.append("Keyword '%s' is not a CF standard name." % cf_name)
-                    ok = False
+                    cf_ok = self._cf_standard.check_standard_name(cf_name)
+                    if not cf_ok:
+                        err.append("Keyword '%s' is not a CF standard name." % cf_name)
+                        ok &= False
+                except Exception:
+                    err.append("Internal Error: CF standard name lookup failed.")
+                    ok &= False
 
         elif n_cf > 1:
             err.append("More than one CF entry found. Only one is allowed.")
-            ok = False
+            ok &= False
 
         if n_cf > 0:
             self._log_result("Climate and Forecast Standard Names Check", ok, err)
