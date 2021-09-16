@@ -15,8 +15,8 @@ For the main packages:
 | flask        | `pip install flask`    | `python3-flask`    | https://github.com/pallets/flask      |
 | lxml         | `pip install lxml`     | `python3-lxml`     | https://github.com/lxml/lxml          |
 
-In addition, the tool `pythesint` must be installed from
-[github.com/metno/py-thesaurus-interface](https://github.com/metno/py-thesaurus-interface).
+In addition, the tool `metvocab` must be installed from
+[github.com/metno/met-vocab-tools](https://github.com/metno/met-vocab-tools).
 
 The requirements can also be installed with:
 ```bash
