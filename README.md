@@ -65,9 +65,9 @@ python dmci_start_api.py
 Then you can post with curl to the api - endpoint:
 
 ```bash
-curl --data-binary "@<PATH_TO_MMD_FILE>" localhost:5000/v1/insert
+curl --data-binary "@<PATH_TO_MMD_FILE>" localhost:5000/v1/validate
 ```
-insert is currently the only implemented command. Other commands will return 404 Not Found until implementation.
+Available commands are: validate, insert or create, update, and delete.
 
 The API uses HTTP return codes, and expected returns are:
 
