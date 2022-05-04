@@ -110,7 +110,7 @@ class FileDist(Distributor):
 
     def _delete_from_archive(self):
         """Delete a file from the archive."""
-        fileUUID = self._worker._file_metadata_id
+        fileUUID = self._metadata_id
         if not isinstance(fileUUID, uuid.UUID):
             msg = "No valid metadata_identifier provided, cannot delete file"
             logger.error(msg)
