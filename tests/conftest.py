@@ -19,6 +19,7 @@ limitations under the License.
 
 import os
 import sys
+import uuid
 import shutil
 import pytest
 
@@ -104,3 +105,8 @@ def tmpConf(monkeypatch):
     theConf.readConfig(confFile)
     monkeypatch.setattr("dmci.CONFIG", theConf)
     return theConf
+
+
+@pytest.fixture(scope="function")
+def tmpUUID():
+    return uuid.uuid4()
