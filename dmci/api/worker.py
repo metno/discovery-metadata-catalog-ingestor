@@ -119,13 +119,11 @@ class Worker():
             if dist not in self.CALL_MAP:
                 skipped.append(dist)
                 continue
-
             obj = self.CALL_MAP[dist](
                 self._dist_cmd,
                 xml_file=self._dist_xml_file,
                 metadata_id=self._dist_metadata_id,
                 worker=self,
-                **self._kwargs
             )
             valid &= obj.is_valid()
             if obj.is_valid():
