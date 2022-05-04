@@ -18,6 +18,7 @@ limitations under the License.
 """
 
 import os
+import uuid
 import logging
 
 from enum import Enum
@@ -69,11 +70,11 @@ class Distributor():
                     return
 
             if metadata_id is not None:
-                if isinstance(metadata_id, str) and metadata_id:
+                if isinstance(metadata_id, uuid.UUID) and metadata_id:
                     self._metadata_id = metadata_id
                     self._valid = True
                 else:
-                    logger.error("Metadata identifier must be a non-empty string")
+                    logger.error("Metadata identifier must be a valid UUID")
                     self._valid = False
                     return
 
