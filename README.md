@@ -71,7 +71,7 @@ curl --data-binary "@<PATH_TO_MMD_FILE>" localhost:5000/v1/validate
 curl -X POST localhost:5000/v1/delete/<UUID_OF_FILE_TO_DELETE>
 
 ```
-Available commands are: validate, insert or create, update, and delete.
+Available commands are: validate, insert or create, update, and delete. Note that insert and create is the same - insert will be removed in the next major version (1.0).
 
 The API uses HTTP return codes, and expected returns are:
 
