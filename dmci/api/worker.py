@@ -123,7 +123,7 @@ class Worker():
                 self._dist_cmd,
                 xml_file=self._dist_xml_file,
                 metadata_id=self._dist_metadata_id,
-                worker=self,
+                worker=self
             )
             valid &= obj.is_valid()
             if obj.is_valid():
