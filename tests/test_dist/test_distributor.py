@@ -23,17 +23,18 @@ from dmci.distributors.distributor import Distributor
 
 
 @pytest.mark.dist
-def testDistDistributor_Init(mockXml):
+def testDistDistributor_Init(mockXml, tmpUUID):
     """Test the Distributor super class init."""
+
     # Check Insert Command
-    assert Distributor("insert", metadata_id="some_id").is_valid() is False
+    assert Distributor("insert", metadata_id=tmpUUID).is_valid() is False
     assert Distributor("insert", xml_file="/path/to/nowhere").is_valid() is False
     assert Distributor("insert", xml_file=mockXml).is_valid() is True
     assert Distributor("inSeRt", xml_file=mockXml).is_valid() is True
     assert Distributor("insert", xml_file=mockXml, metadata_id="stuff").is_valid() is False
 
     # Check Update Command
-    assert Distributor("update", metadata_id="some_id").is_valid() is False
+    assert Distributor("update", metadata_id=tmpUUID).is_valid() is False
     assert Distributor("update", xml_file="/path/to/nowhere").is_valid() is False
     assert Distributor("update", xml_file=mockXml).is_valid() is True
     assert Distributor("uPdatE", xml_file=mockXml).is_valid() is True
@@ -43,27 +44,27 @@ def testDistDistributor_Init(mockXml):
     assert Distributor("delete", xml_file=mockXml).is_valid() is False
     assert Distributor("delete", metadata_id=None).is_valid() is False
     assert Distributor("delete", metadata_id=1234).is_valid() is False
-    assert Distributor("delete", metadata_id="some_id").is_valid() is True
-    assert Distributor("deLEte", metadata_id="some_id").is_valid() is True
-    assert Distributor("delete", xml_file=mockXml, metadata_id="some_id").is_valid() is False
+    assert Distributor("delete", metadata_id=tmpUUID).is_valid() is True
+    assert Distributor("deLEte", metadata_id=tmpUUID).is_valid() is True
+    assert Distributor("delete", xml_file=mockXml, metadata_id=tmpUUID).is_valid() is False
 
     # Check Unsupported Command
-    assert Distributor("blabla", metadata_id="some_id").is_valid() is False
+    assert Distributor("blabla", metadata_id=tmpUUID).is_valid() is False
     assert Distributor("blabla", xml_file=mockXml).is_valid() is False
-    assert Distributor(12345678, metadata_id="some_id").is_valid() is False
+    assert Distributor(12345678, metadata_id=tmpUUID).is_valid() is False
     assert Distributor(12345678, xml_file=mockXml).is_valid() is False
 
 # END Test testDistDistributor_Init
 
 
 @pytest.mark.dist
-def testDistDistributor_Run():
+def testDistDistributor_Run(tmpUUID):
     """Test the Distributor super class run function.
 
     Calling run() on the superclass should raise an error as this
     function must be implemented in subclasses.
     """
     with pytest.raises(NotImplementedError):
-        Distributor("insert", metadata_id="some_id").run()
+        Distributor("insert", metadata_id=tmpUUID).run()
 
 # END Test testDistDistributor_Run
