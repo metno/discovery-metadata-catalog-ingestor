@@ -7,7 +7,7 @@ LABEL issues="https://github.com/metno/container-dmci/issues"
 LABEL description="Discovery Metadata Catalog Ingestor used in the S-ENDA project."
 
 # Make us able to change version and repo when building
-ARG DMCI_VERION=main
+ARG DMCI_VERSION=main
 ARG DMCI_REPO=https://github.com/metno/discovery-metadata-catalog-ingestor
 ARG MMD_REPO=https://github.com/metno/mmd
 ARG MMD_VERSION=v3.3
@@ -35,12 +35,8 @@ RUN pip3 install --upgrade setuptools pip
 # Install our runtime server
 RUN pip3 install "gunicorn~=20.1"
 
-# FIXME: At later stage run installation with pip3 directly from source
-RUN pip3 install "git+${DMCI_REPO}@${DMCI_VERION}#dmci=discovery-metadata-catalog-ingestor"
-
-# Install from Git
-#RUN git clone --depth 1 --branch ${DMCI_VERION} ${DMCI_REPO} /dmci
-#RUN pip3 install -e /dmci
+# Install from git
+RUN pip3 install "git+${DMCI_REPO}@${DMCI_VERSION}#dmci=discovery-metadata-catalog-ingestor"
 
 # Download MMD
 RUN git clone --depth 1 --branch ${MMD_VERSION} ${MMD_REPO} /tmp/mmd; \
