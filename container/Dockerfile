@@ -12,7 +12,6 @@ ARG DMCI_REPO=https://github.com/metno/discovery-metadata-catalog-ingestor
 ARG MMD_REPO=https://github.com/metno/mmd
 ARG MMD_VERSION=v3.3
 
-
 # Set config file for dmci
 ENV DMCI_CONFIG=/config.yaml
 
