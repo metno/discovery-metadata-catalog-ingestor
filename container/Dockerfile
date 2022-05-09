@@ -7,7 +7,7 @@ LABEL issues="https://github.com/metno/container-dmci/issues"
 LABEL description="Discovery Metadata Catalog Ingestor used in the S-ENDA project."
 
 # Make us able to change version and repo when building
-ARG DMCI_VERION=main
+ARG DMCI_VERSION=main
 ARG DMCI_REPO=https://github.com/metno/discovery-metadata-catalog-ingestor
 ARG MMD_REPO=https://github.com/metno/mmd
 ARG MMD_VERSION=v3.2
