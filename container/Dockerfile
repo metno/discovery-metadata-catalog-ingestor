@@ -35,12 +35,8 @@ RUN pip3 install --upgrade setuptools pip
 # Install our runtime server
 RUN pip3 install "gunicorn~=20.1"
 
-# FIXME: At later stage run installation with pip3 directly from source
+# Install from git
 RUN pip3 install "git+${DMCI_REPO}@${DMCI_VERSION}#dmci=discovery-metadata-catalog-ingestor"
-
-# Install from Git
-#RUN git clone --depth 1 --branch ${DMCI_VERION} ${DMCI_REPO} /dmci
-#RUN pip3 install -e /dmci
 
 # Download MMD
 RUN git clone --depth 1 --branch ${MMD_VERSION} ${MMD_REPO} /tmp/mmd; \
