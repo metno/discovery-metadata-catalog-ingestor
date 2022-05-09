@@ -56,6 +56,7 @@ class App(Flask):
             sys.exit(1)
 
         # Set up api entry points
+        @self.route("/v1/create", methods=["POST"])
         @self.route("/v1/insert", methods=["POST"])
         def post_insert():
             msg, code = self._insert_update_method_post("insert", request)
