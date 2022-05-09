@@ -36,7 +36,7 @@ RUN pip3 install --upgrade setuptools pip
 RUN pip3 install "gunicorn~=20.1"
 
 # FIXME: At later stage run installation with pip3 directly from source
-RUN pip3 install "git+${DMCI_REPO}@${DMCI_VERION}#dmci=discovery-metadata-catalog-ingestor"
+RUN pip3 install "git+${DMCI_REPO}@${DMCI_VERSION}#dmci=discovery-metadata-catalog-ingestor"
 
 # Install from Git
 #RUN git clone --depth 1 --branch ${DMCI_VERION} ${DMCI_REPO} /dmci
