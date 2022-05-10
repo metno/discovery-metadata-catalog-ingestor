@@ -21,6 +21,7 @@ import os
 import lxml
 import pytest
 
+from uuid import UUID
 from tools import readFile
 
 from dmci.api.worker import Worker
@@ -142,6 +143,7 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
     # Invalid data format
     passData = readFile(passFile)
     assert tstWorker._check_information_content(passData) == (False, "Input must be bytes type")
+    assert tstWorker._file_metadata_id is None
 
     # Valid data format
     with monkeypatch.context() as mp:
@@ -150,6 +152,7 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
         assert tstWorker._check_information_content(passData) == (
             True, "Input MMD XML file is ok"
         )
+        assert isinstance(tstWorker._file_metadata_id, UUID)
 
     # Valid data format, invalid content
     with monkeypatch.context() as mp:

@@ -83,14 +83,14 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
 
 
 @pytest.mark.dist
-def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt):
+def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID):
     """Test update commands via run()."""
     class mockResp:
         text = "Mock response"
         status_code = 200
 
     tstWorker = Worker("update", None, None)
-    tstWorker._file_metadata_id = "something"
+    tstWorker._file_metadata_id = tmpUUID
 
     # Update returns True
     with monkeypatch.context() as mp:
