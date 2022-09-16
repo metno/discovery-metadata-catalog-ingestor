@@ -93,7 +93,7 @@ class PyCSWDist(Distributor):
         xml += b"</csw:Insert></csw:Transaction>"
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
         status = self._get_transaction_status(self.TOTAL_INSERTED, resp)
-
+        logging.debug("Insert status: " + str(status) + ". With response: " + resp.text)
         return status, resp.text
 
     def _update(self):
