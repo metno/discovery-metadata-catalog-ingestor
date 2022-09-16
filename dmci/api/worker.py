@@ -177,7 +177,8 @@ class Worker():
         for xml_entry in xml_doc:
             local = etree.QName(xml_entry)
             if local.localname == "metadata_identifier":
-                fileUUID = xml_entry.text
+                # If namespace as uri:UUID, get UUID, if no namespace get UUID
+                fileUUID = xml_entry.text.split(":")[-1]
                 logger.info("XML file metadata_identifier: %s" % fileUUID)
                 break
 
