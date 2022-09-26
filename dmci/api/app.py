@@ -67,11 +67,16 @@ class App(Flask):
             msg, code = self._insert_update_method_post("update", request)
             return self._formatMsgReturn(msg), code
 
-        @self.route("/v1/delete/<uuid:metadata_id>", methods=["POST"])
+        @self.route("/v1/delete/<metadata_id>", methods=["POST"])
         def post_delete(metadata_id=None):
             """Process delete command."""
-            worker = Worker("delete", None, self._xsd_obj, metadata_id=metadata_id)
-            err = self._distributor_wrapper(worker)
+            metadata_id, err = self._check_namespace_UUID(metadata_id)
+            if metadata_id is not None:
+                worker = Worker("delete", None, self._xsd_obj, metadata_id=metadata_id)
+                err = self._distributor_wrapper(worker)
+            else:
+                return self._formatMsgReturn(err), 400
+
             if err:
                 return self._formatMsgReturn(err), 500
             else:
@@ -172,6 +177,19 @@ class App(Flask):
             err.append("The following jobs were skipped: %s" % ", ".join(skipped))
 
         return err
+
+    @staticmethod
+    def _check_namespace_UUID(metadata_id):
+        elements = metadata_id.split(":")
+        if len(elements) < 2:
+            return None, "Invalid form of UUID, needs to be namespace:UUID"
+        try:
+            out = uuid.UUID(elements[-1])
+            return out, None
+        except ValueError as e:
+            logger.error("Failed to convert to UUID: %s", elements[-1])
+            logger.error(str(e))
+            return None, f"Failed to convert to UUID: {elements[-1]}"
 
     @staticmethod
     def _handle_persist_file(status, full_path, reject_path=None, reject_reason=""):
