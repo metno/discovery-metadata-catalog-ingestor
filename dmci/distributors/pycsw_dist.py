@@ -103,6 +103,11 @@ class PyCSWDist(Distributor):
         properties against a csw:Constraint, to update: Define
         overwriting property, search for places to overwrite.
         """
+        if self._worker._namespace != "":
+            identifier = self._worker._namespace + ":" + str(self._worker._file_metadata_id)
+        else:
+            identifier = str(self._worker._file_metadata_id)
+
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
@@ -119,22 +124,28 @@ class PyCSWDist(Distributor):
             b'    <csw:RecordProperty>%s</csw:RecordProperty>'
             b'    <csw:Constraint version="1.1.0">'
             b'      <ogc:Filter>'
-            b'        <ogc:PropertyIsIn>'
-            b'          <ogc:Literal>%s</ogc:Literal>'
+            b'        <ogc:PropertyIsEqualTo>'
             b'          <ogc:PropertyName>apiso:Identifier</ogc:PropertyName>'
-            b'        </ogc:PropertyIsIn>'
+            b'          <ogc:Literal>%s</ogc:Literal>'
+            b'        </ogc:PropertyIsEqualTo>'
             b'      </ogc:Filter>'
             b'    </csw:Constraint>'
             b'  </csw:Update>'
             b'</csw:Transaction>'
-        ) % (self._translate(), str(self._worker._file_metadata_id).encode())
+        ) % (self._translate(), identifier.encode(encoding="utf-8"))
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
+        print(resp.text)
         status = self._get_transaction_status(self.TOTAL_UPDATED, resp)
 
         return status, resp.text
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
+        if self._worker._namespace != "":
+            identifier = self._worker._namespace + ":" + str(self._metadata_id)
+        else:
+            identifier = str(self._metadata_id)
+
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
@@ -150,15 +161,15 @@ class PyCSWDist(Distributor):
             '  <csw:Delete>'
             '    <csw:Constraint version="1.1.0">'
             '      <ogc:Filter>'
-            '        <ogc:PropertyIsIn>'
-            '          <ogc:Literal>%s</ogc:Literal>'
+            '        <ogc:PropertyIsEqualTo>'
             '          <ogc:PropertyName>apiso:Identifier</ogc:PropertyName>'
-            '        </ogc:PropertyIsIn>'
+            '          <ogc:Literal>%s</ogc:Literal>'
+            '        </ogc:PropertyIsEqualTo>'
             '      </ogc:Filter>'
             '    </csw:Constraint>'
             '  </csw:Delete>'
             '</csw:Transaction>'
-        ) % self._metadata_id
+        ) % identifier
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
         status = self._get_transaction_status(self.TOTAL_DELETED, resp)
 
