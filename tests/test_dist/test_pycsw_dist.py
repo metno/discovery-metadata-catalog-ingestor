@@ -126,6 +126,9 @@ def testDistPyCSW_Delete(monkeypatch, mockXml, tmpUUID):
         text = "Mock response"
         status_code = 200
 
+    class mockWorker:
+        _namespace = ""
+
     assert PyCSWDist("delete").run() == (False, "The run job is invalid")
     assert PyCSWDist("delete", xml_file=mockXml).run() == (False, "The run job is invalid")
 
@@ -135,7 +138,8 @@ def testDistPyCSW_Delete(monkeypatch, mockXml, tmpUUID):
             "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: mockResp
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: True)
-        assert PyCSWDist("delete", metadata_id=tmpUUID).run() == (True, "Mock response")
+        res = PyCSWDist("delete", metadata_id=tmpUUID, worker=mockWorker).run()
+        assert res == (True, "Mock response")
 
     # delete returns false
     with monkeypatch.context() as mp:
@@ -143,7 +147,8 @@ def testDistPyCSW_Delete(monkeypatch, mockXml, tmpUUID):
             "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: mockResp
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: False)
-        assert PyCSWDist("delete", metadata_id=tmpUUID).run() == (False, "Mock response")
+        res = PyCSWDist("delete", metadata_id=tmpUUID, worker=mockWorker).run()
+        assert res == (False, "Mock response")
 
 # END Test testDistPyCSW_Delete
 

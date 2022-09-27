@@ -166,7 +166,8 @@ def testApiApp_DeleteRequests(client, monkeypatch):
 
     # Invalid UUID
     assert client.post("/v1/delete/blabla").status_code == 400
-    assert client.post("/v1/delete/7278888a96a54ee5845a2051bb8994c8").status_code == 400
+    # Valid UUID, but no namespace
+    assert client.post("/v1/delete/7278888a96a54ee5845a2051bb8994c8").status_code == 200
 
     # Distribute fails
     with monkeypatch.context() as mp:
@@ -241,24 +242,24 @@ def testApiApp_PersistFile(tmpDir, monkeypatch):
 
 @pytest.mark.api
 def testApiApp_CheckNamespaceUUID():
-    testUUID = "test:7278888a-96a5-4ee5-845a-2051bb8994c8"
-    correct_UUID = uuid.UUID("7278888a-96a5-4ee5-845a-2051bb8994c8")
+    testUUID = "7278888a-96a5-4ee5-845a-2051bb8994c8"
+    correct_UUID = uuid.UUID(testUUID)
 
-    assert App._check_namespace_UUID(testUUID) == (correct_UUID, None)
-
-    # Test with no namespace
-    out = App._check_namespace_UUID("blabla")
-    assert out[0] is None
-    assert out[1] == "Invalid form of UUID, needs to be namespace:UUID"
+    # Without namespace
+    assert App._check_namespace_UUID(testUUID) == (correct_UUID, "", None)
+    # With namespace
+    assert App._check_namespace_UUID("test:"+testUUID) == (correct_UUID, "test", None)
 
     # Test with namespace, but malformed UUID
     out = App._check_namespace_UUID("test:blabla")
     assert out[0] is None
-    assert out[1] == "Failed to convert to UUID: blabla"
+    assert out[1] == ""
+    assert out[2] == "Failed to convert to UUID: blabla"
 
-    out = App._check_namespace_UUID("test:7278888a96a54ee5845a2051bb8994c8")
-    assert out[0] == correct_UUID
-    assert out[1] is None
+    out = App._check_namespace_UUID("test:wrong:7278888a96a54ee5845a2051bb8994c8")
+    assert out[0] is None
+    assert out[1] == ""
+    assert out[2] == "UUID badly formed, need to be namespace:UUID"
 
 
 @pytest.mark.api
