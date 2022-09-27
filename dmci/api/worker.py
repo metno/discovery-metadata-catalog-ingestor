@@ -47,6 +47,8 @@ class Worker():
 
         self._kwargs = kwargs
         self._dist_metadata_id = kwargs.get("metadata_id", None)
+        self._namespace = kwargs.get("namespace", "")
+
         self._file_metadata_id = None
 
         # XML Validator
@@ -174,12 +176,23 @@ class Worker():
         """
         self._file_metadata_id = None
         fileUUID = None
+        namespace = ""
         for xml_entry in xml_doc:
             local = etree.QName(xml_entry)
             if local.localname == "metadata_identifier":
-                # If namespace as uri:UUID, get UUID, if no namespace get UUID
-                fileUUID = xml_entry.text.split(":")[-1]
-                logger.info("XML file metadata_identifier: %s" % fileUUID)
+                # If uri:UUID, get UUID and uri, if no 'uri:' get UUID
+
+                words = xml_entry.text.split(":")
+                if len(words) < 2:
+                    fileUUID = words[0]
+                elif len(words) == 2:
+                    namespace, fileUUID = words
+                else:
+                    logger.warning("metadata_identifier not formed as namespace:UUID")
+                    return False
+
+                logger.info("XML file metadata_identifier namespace:%s" % namespace)
+                logger.info("XML file metadata_identifier UUID: %s" % fileUUID)
                 break
 
         if fileUUID is None:
@@ -193,7 +206,7 @@ class Worker():
             logger.error("Could not parse UUID: '%s'" % str(fileUUID))
             logger.error(str(e))
             return False
-
+        self._namespace = namespace
         return True
 
 # END Class Worker
