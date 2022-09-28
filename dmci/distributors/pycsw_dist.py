@@ -103,10 +103,8 @@ class PyCSWDist(Distributor):
         properties against a csw:Constraint, to update: Define
         overwriting property, search for places to overwrite.
         """
-        if self._worker._namespace != "":
-            identifier = self._worker._namespace + ":" + str(self._worker._file_metadata_id)
-        else:
-            identifier = str(self._worker._file_metadata_id)
+        identifier = self._construct_identifier(self._worker._namespace,
+                                                self._worker._file_metadata_id)
 
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
@@ -140,10 +138,7 @@ class PyCSWDist(Distributor):
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
-        if self._worker._namespace != "":
-            identifier = self._worker._namespace + ":" + str(self._metadata_id)
-        else:
-            identifier = str(self._metadata_id)
+        identifier = self._construct_identifier(self._worker._namespace, self._metadata_id)
 
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
@@ -269,5 +264,14 @@ class PyCSWDist(Distributor):
             status = True
 
         return status
+
+    @staticmethod
+    def _construct_identifier(namespace, metadata_id):
+        """Helper function to construct identifier from namespace and UUID"""
+        if namespace != "":
+            identifier = namespace + ":" + str(metadata_id)
+        else:
+            identifier = str(metadata_id)
+        return identifier
 
 # END Class PyCSWDist
