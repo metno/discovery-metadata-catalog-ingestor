@@ -181,7 +181,6 @@ class Worker():
             local = etree.QName(xml_entry)
             if local.localname == "metadata_identifier":
                 # If uri:UUID, get UUID and uri, if no 'uri:' get UUID
-
                 words = xml_entry.text.split(":")
                 if len(words) < 2:
                     fileUUID = words[0]
