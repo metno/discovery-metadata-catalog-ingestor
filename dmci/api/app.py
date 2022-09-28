@@ -191,8 +191,8 @@ class App(Flask):
             elif len(elements) == 2:
                 return out, elements[0], None
             else:
-                logger.error("UUID badly formed, need to be namespace:UUID")
-                return None, "", "UUID badly formed, need to be namespace:UUID"
+                logger.error("Malformed metadata id. Should be <namespace>:<UUID>.")
+                return None, "", "Malformed metadata id. Should be <namespace>:<UUID>."
         except ValueError as e:
             logger.error(f"Failed to convert to UUID: {elements[-1]}")
             logger.error(str(e))

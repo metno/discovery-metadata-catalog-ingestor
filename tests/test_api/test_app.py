@@ -259,7 +259,7 @@ def testApiApp_CheckNamespaceUUID():
     out = App._check_namespace_UUID("test:wrong:7278888a96a54ee5845a2051bb8994c8")
     assert out[0] is None
     assert out[1] == ""
-    assert out[2] == "UUID badly formed, need to be namespace:UUID"
+    assert out[2] == "Malformed metadata id. Should be <namespace>:<UUID>."
 
 
 @pytest.mark.api
