@@ -71,7 +71,7 @@ class App(Flask):
         def post_delete(metadata_id=None):
             """Process delete command."""
             md_uuid, md_namespace, err = self._check_namespace_UUID(metadata_id)
-            if metadata_uuid is not None:
+            if md_uuid is not None:
                 worker = Worker("delete", None, self._xsd_obj,
                                 md_uuid=md_uuid, md_namespace=md_namespace)
                 err = self._distributor_wrapper(worker)
@@ -181,7 +181,8 @@ class App(Flask):
 
     @staticmethod
     def _check_namespace_UUID(metadata_id):
-        """DOCSTRING...
+        """Splits incoming metadata_id to namespace and UUID, assuming
+        structure to be namespace:UUID
         """
         md_uuid, md_namespace, err = None, "", None
         elements = metadata_id.split(":")
@@ -194,13 +195,15 @@ class App(Flask):
             elif len(elements) == 2:
                 md_namespace, err = elements[0], None
             else:
-                logger.error("Malformed metadata id. Should be <namespace>:<UUID>.")
                 err = "Malformed metadata id. Should be <namespace>:<UUID>."
+                logger.error(err)
+                return None, "", err
+
         except ValueError as e:
-            logger.error(f"Failed to convert to UUID: {elements[-1]}")
+            err = f"Can not convert to UUID: {elements[-1]}"
+            logger.error(err)
             logger.error(str(e))
-            err = f"Failed to convert to UUID: {elements[-1]}"
-        
+
         return md_uuid, md_namespace, err
 
     @staticmethod
