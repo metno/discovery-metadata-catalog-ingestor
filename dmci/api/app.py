@@ -70,10 +70,10 @@ class App(Flask):
         @self.route("/v1/delete/<metadata_id>", methods=["POST"])
         def post_delete(metadata_id=None):
             """Process delete command."""
-            metadata_uuid, namespace, err = self._check_namespace_UUID(metadata_id)
+            md_uuid, md_namespace, err = self._check_namespace_UUID(metadata_id)
             if metadata_uuid is not None:
                 worker = Worker("delete", None, self._xsd_obj,
-                                metadata_id=metadata_uuid, namespace=namespace)
+                                md_uuid=md_uuid, md_namespace=md_namespace)
                 err = self._distributor_wrapper(worker)
             else:
                 return self._formatMsgReturn(err), 400
@@ -181,22 +181,27 @@ class App(Flask):
 
     @staticmethod
     def _check_namespace_UUID(metadata_id):
+        """DOCSTRING...
+        """
+        md_uuid, md_namespace, err = None, "", None
         elements = metadata_id.split(":")
         try:
-            out = uuid.UUID(elements[-1])
+            md_uuid = uuid.UUID(elements[-1])
             # Only UUID, no namespace
             if len(elements) < 2:
-                return out, "", None
+                md_namespace, err = "", None
             # namespace and UUID
             elif len(elements) == 2:
-                return out, elements[0], None
+                md_namespace, err = elements[0], None
             else:
                 logger.error("Malformed metadata id. Should be <namespace>:<UUID>.")
-                return None, "", "Malformed metadata id. Should be <namespace>:<UUID>."
+                err = "Malformed metadata id. Should be <namespace>:<UUID>."
         except ValueError as e:
             logger.error(f"Failed to convert to UUID: {elements[-1]}")
             logger.error(str(e))
-            return None, "", f"Failed to convert to UUID: {elements[-1]}"
+            err = f"Failed to convert to UUID: {elements[-1]}"
+        
+        return md_uuid, md_namespace, err
 
     @staticmethod
     def _handle_persist_file(status, full_path, reject_path=None, reject_reason=""):
