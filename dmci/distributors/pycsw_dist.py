@@ -134,7 +134,6 @@ class PyCSWDist(Distributor):
             b'</csw:Transaction>'
         ) % (self._translate(), identifier.encode(encoding="utf-8"))
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
-        print(resp.text)
         status = self._get_transaction_status(self.TOTAL_UPDATED, resp)
 
         return status, resp.text
