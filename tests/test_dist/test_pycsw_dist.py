@@ -103,6 +103,8 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID):
         tstPyCSW._worker = tstWorker
         tstPyCSW._conf.mmd_xslt_path = mockXslt
         assert tstPyCSW.run() == (True, "Mock response")
+        tstPyCSW._worker._namespace = "test.no"
+        assert tstPyCSW.run() == (True, "Mock response")
 
     # Update returns False
     with monkeypatch.context() as mp:
@@ -140,6 +142,11 @@ def testDistPyCSW_Delete(monkeypatch, mockXml, tmpUUID):
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: True)
         res = PyCSWDist("delete", metadata_id=tmpUUID, worker=mockWorker).run()
         assert res == (True, "Mock response")
+        mockWorker._namespace = "test.no"
+        res = PyCSWDist("delete", metadata_id=tmpUUID, worker=mockWorker).run()
+        assert res == (True, "Mock response")
+
+    mockWorker._namespace = ""
 
     # delete returns false
     with monkeypatch.context() as mp:
@@ -149,6 +156,7 @@ def testDistPyCSW_Delete(monkeypatch, mockXml, tmpUUID):
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: False)
         res = PyCSWDist("delete", metadata_id=tmpUUID, worker=mockWorker).run()
         assert res == (False, "Mock response")
+
 
 # END Test testDistPyCSW_Delete
 
