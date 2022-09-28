@@ -46,8 +46,8 @@ class Worker():
             self._dist_cmd = cmd
 
         self._kwargs = kwargs
-        self._dist_metadata_id = kwargs.get("metadata_id", None)
-        self._namespace = kwargs.get("namespace", "")
+        self._dist_metadata_id = kwargs.get("md_uuid", None)
+        self._namespace = kwargs.get("md_namespace", "")
 
         self._file_metadata_id = None
 
