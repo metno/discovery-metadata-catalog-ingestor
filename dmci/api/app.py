@@ -70,10 +70,10 @@ class App(Flask):
         @self.route("/v1/delete/<metadata_id>", methods=["POST"])
         def post_delete(metadata_id=None):
             """Process delete command."""
-            metadata_id, namespace, err = self._check_namespace_UUID(metadata_id)
-            if metadata_id is not None:
+            metadata_uuid, namespace, err = self._check_namespace_UUID(metadata_id)
+            if metadata_uuid is not None:
                 worker = Worker("delete", None, self._xsd_obj,
-                                metadata_id=metadata_id, namespace=namespace)
+                                metadata_id=metadata_uuid, namespace=namespace)
                 err = self._distributor_wrapper(worker)
             else:
                 return self._formatMsgReturn(err), 400
