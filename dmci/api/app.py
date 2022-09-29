@@ -67,11 +67,17 @@ class App(Flask):
             msg, code = self._insert_update_method_post("update", request)
             return self._formatMsgReturn(msg), code
 
-        @self.route("/v1/delete/<uuid:metadata_id>", methods=["POST"])
+        @self.route("/v1/delete/<metadata_id>", methods=["POST"])
         def post_delete(metadata_id=None):
             """Process delete command."""
-            worker = Worker("delete", None, self._xsd_obj, metadata_id=metadata_id)
-            err = self._distributor_wrapper(worker)
+            md_uuid, md_namespace, err = self._check_namespace_UUID(metadata_id)
+            if md_uuid is not None:
+                worker = Worker("delete", None, self._xsd_obj,
+                                md_uuid=md_uuid, md_namespace=md_namespace)
+                err = self._distributor_wrapper(worker)
+            else:
+                return self._formatMsgReturn(err), 400
+
             if err:
                 return self._formatMsgReturn(err), 500
             else:
@@ -172,6 +178,33 @@ class App(Flask):
             err.append("The following jobs were skipped: %s" % ", ".join(skipped))
 
         return err
+
+    @staticmethod
+    def _check_namespace_UUID(metadata_id):
+        """Splits incoming metadata_id to namespace and UUID, assuming
+        structure to be namespace:UUID
+        """
+        md_uuid, md_namespace, err = None, "", None
+        elements = metadata_id.split(":")
+        try:
+            md_uuid = uuid.UUID(elements[-1])
+            # Only UUID, no namespace
+            if len(elements) < 2:
+                md_namespace, err = "", None
+            # namespace and UUID
+            elif len(elements) == 2:
+                md_namespace, err = elements[0], None
+            else:
+                err = "Malformed metadata id. Should be <namespace>:<UUID>."
+                logger.error(err)
+                return None, "", err
+
+        except ValueError as e:
+            err = f"Can not convert to UUID: {elements[-1]}"
+            logger.error(err)
+            logger.error(str(e))
+
+        return md_uuid, md_namespace, err
 
     @staticmethod
     def _handle_persist_file(status, full_path, reject_path=None, reject_reason=""):

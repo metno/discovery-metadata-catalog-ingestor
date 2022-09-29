@@ -18,6 +18,7 @@ limitations under the License.
 """
 
 import os
+import uuid
 import pytest
 import flask
 
@@ -161,11 +162,12 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
 def testApiApp_DeleteRequests(client, monkeypatch):
     """Test api delete request."""
     assert isinstance(client, flask.testing.FlaskClient)
-    testUUID = "7278888a-96a5-4ee5-845a-2051bb8994c8"
+    testUUID = "test:7278888a-96a5-4ee5-845a-2051bb8994c8"
 
     # Invalid UUID
-    assert client.post("/v1/delete/blabla").status_code == 404
-    assert client.post("/v1/delete/7278888a96a54ee5845a2051bb8994c8").status_code == 404
+    assert client.post("/v1/delete/blabla").status_code == 400
+    # Valid UUID, but no namespace
+    assert client.post("/v1/delete/7278888a96a54ee5845a2051bb8994c8").status_code == 200
 
     # Distribute fails
     with monkeypatch.context() as mp:
@@ -236,6 +238,28 @@ def testApiApp_PersistFile(tmpDir, monkeypatch):
     assert os.path.isfile(outFile)
 
 # END Test testApiApp_PersistFile
+
+
+@pytest.mark.api
+def testApiApp_CheckNamespaceUUID():
+    testUUID = "7278888a-96a5-4ee5-845a-2051bb8994c8"
+    correct_UUID = uuid.UUID(testUUID)
+
+    # Without namespace
+    assert App._check_namespace_UUID(testUUID) == (correct_UUID, "", None)
+    # With namespace
+    assert App._check_namespace_UUID("test:"+testUUID) == (correct_UUID, "test", None)
+
+    # Test with namespace, but malformed UUID
+    out = App._check_namespace_UUID("test:blabla")
+    assert out[0] is None
+    assert out[1] == ""
+    assert out[2] == "Can not convert to UUID: blabla"
+
+    out = App._check_namespace_UUID("test:wrong:7278888a96a54ee5845a2051bb8994c8")
+    assert out[0] is None
+    assert out[1] == ""
+    assert out[2] == "Malformed metadata id. Should be <namespace>:<UUID>."
 
 
 @pytest.mark.api

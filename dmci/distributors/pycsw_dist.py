@@ -93,7 +93,7 @@ class PyCSWDist(Distributor):
         xml += b"</csw:Insert></csw:Transaction>"
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
         status = self._get_transaction_status(self.TOTAL_INSERTED, resp)
-
+        logging.debug("Insert status: " + str(status) + ". With response: " + resp.text)
         return status, resp.text
 
     def _update(self):
@@ -103,6 +103,9 @@ class PyCSWDist(Distributor):
         properties against a csw:Constraint, to update: Define
         overwriting property, search for places to overwrite.
         """
+        identifier = self._construct_identifier(self._worker._namespace,
+                                                self._worker._file_metadata_id)
+
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
@@ -127,7 +130,7 @@ class PyCSWDist(Distributor):
             b'    </csw:Constraint>'
             b'  </csw:Update>'
             b'</csw:Transaction>'
-        ) % (self._translate(), self._worker._file_metadata_id.encode())
+        ) % (self._translate(), identifier.encode(encoding="utf-8"))
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
         status = self._get_transaction_status(self.TOTAL_UPDATED, resp)
 
@@ -135,6 +138,8 @@ class PyCSWDist(Distributor):
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
+        identifier = self._construct_identifier(self._worker._namespace, self._metadata_id)
+
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
@@ -158,7 +163,7 @@ class PyCSWDist(Distributor):
             '    </csw:Constraint>'
             '  </csw:Delete>'
             '</csw:Transaction>'
-        ) % self._metadata_id
+        ) % identifier
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
         status = self._get_transaction_status(self.TOTAL_DELETED, resp)
 
@@ -259,5 +264,29 @@ class PyCSWDist(Distributor):
             status = True
 
         return status
+
+    @staticmethod
+    def _construct_identifier(namespace, metadata_id):
+        """Helper function to construct identifier from namespace and
+        UUID. Currently accepts empty namespaces, but later will only
+        accept correctly formed namespaced UUID
+
+        Parameters
+        ----------
+        namespace : str
+            namespace for the UUID
+        metadata_id : UUID or str
+            UUID for the metadata-file we want to Update or Delete
+
+        Returns
+        -------
+        str
+            namespace:UUID or just UUID if namespace is empty.
+        """
+        if namespace != "":
+            identifier = namespace + ":" + str(metadata_id)
+        else:
+            identifier = str(metadata_id)
+        return identifier
 
 # END Class PyCSWDist
