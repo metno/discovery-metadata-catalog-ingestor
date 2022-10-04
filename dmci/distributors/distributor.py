@@ -46,6 +46,7 @@ class Distributor():
 
         self._cmd = None
         self._xml_file = None
+        self._path_to_parent_list = None
         self._metadata_id = None
         self._worker = worker
         self._kwargs = kwargs
@@ -78,6 +79,14 @@ class Distributor():
                     self._valid = False
                     return
 
+        if 'path_to_parent_list' in kwargs and kwargs['path_to_parent_list'] is not None:
+            if os.path.isfile(kwargs['path_to_parent_list']):
+                self._path_to_parent_list = kwargs['path_to_parent_list']
+                self._valid = True
+            else:
+                logger.error("File does not exist: %s" % str(kwargs['path_to_parent_list']))
+                self._valid = False
+                return
         else:
             logger.error("Either xml_file or metadata_id must be specified, but not both")
             self._valid = False
