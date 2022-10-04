@@ -21,6 +21,7 @@ import os
 import lxml
 import pytest
 
+from uuid import UUID
 from tools import readFile
 
 from dmci.api.worker import Worker
@@ -142,6 +143,7 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
     # Invalid data format
     passData = readFile(passFile)
     assert tstWorker._check_information_content(passData) == (False, "Input must be bytes type")
+    assert tstWorker._file_metadata_id is None
 
     # Valid data format
     with monkeypatch.context() as mp:
@@ -150,6 +152,7 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
         assert tstWorker._check_information_content(passData) == (
             True, "Input MMD XML file is ok"
         )
+        assert isinstance(tstWorker._file_metadata_id, UUID)
 
     # Valid data format, invalid content
     with monkeypatch.context() as mp:
@@ -197,26 +200,55 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
 
 @pytest.mark.api
 def testApiWorker_ExtractMetaDataID(filesDir, mockXml):
-    """Test _check_information_content."""
+    """Test _exctract_metadata_id."""
     passFile = os.path.join(filesDir, "api", "passing.xml")
     failFile = os.path.join(filesDir, "api", "failing.xml")
 
-    # Valid File
+    namespaced_UUID = (
+        '<mmd:mmd xmlns:mmd="http://www.met.no/schema/mmd" xmlns:gml="http://www.opengis.net/gml">'
+        '  <mmd:metadata_identifier>%s</mmd:metadata_identifier>'
+        '</mmd:mmd>'
+    )%("test.no:a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b")
+
+    namespaced_UUID_bad = (
+        '<mmd:mmd xmlns:mmd="http://www.met.no/schema/mmd" xmlns:gml="http://www.opengis.net/gml">'
+        '  <mmd:metadata_identifier>%s</mmd:metadata_identifier>'
+        '</mmd:mmd>'
+    )%("test:no:a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b")
+
+    # Valid File with no Namespace
     passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
     tstWorker = Worker("insert", passFile, None)
     assert tstWorker._extract_metadata_id(passXML) is True
     assert tstWorker._file_metadata_id is not None
+    assert tstWorker._namespace == ""
+
+    # Valid mmd with namespace
+    passXML = lxml.etree.fromstring(bytes(namespaced_UUID, "utf-8"))
+    tstWorker = Worker("insert", passFile, None)
+    assert tstWorker._extract_metadata_id(passXML) is True
+    assert tstWorker._file_metadata_id is not None
+    assert tstWorker._namespace == "test.no"
+
+    # MMD with invalid namespace
+    passXML = lxml.etree.fromstring(bytes(namespaced_UUID_bad, "utf-8"))
+    tstWorker = Worker("insert", passFile, None)
+    assert tstWorker._extract_metadata_id(passXML) is False
+    assert tstWorker._file_metadata_id is None
+    assert tstWorker._namespace == ""
 
     # Invalid File
     mockData = lxml.etree.fromstring(bytes(readFile(mockXml), "utf-8"))
     tstWorker = Worker("insert", mockXml, None)
     assert tstWorker._extract_metadata_id(mockData) is False
     assert tstWorker._file_metadata_id is None
+    assert tstWorker._namespace == ""
 
     # Invalid UUID
     failXML = lxml.etree.fromstring(bytes(readFile(failFile), "utf-8"))
     tstWorker = Worker("insert", failFile, None)
     assert tstWorker._extract_metadata_id(failXML) is False
     assert tstWorker._file_metadata_id is None
+    assert tstWorker._namespace == ""
 
 # END Test testApiWorker_ExtractMetaDataID
