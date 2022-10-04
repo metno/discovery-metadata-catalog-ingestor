@@ -100,9 +100,11 @@ def testApiApp_EndPoints(client):
 
 # END Test testApiApp_EndPoints
 
+
 class MockException:
     def __init__(self, *args, **kwargs):
         raise Exception
+
 
 @pytest.mark.api
 def testApiApp_EndPoints_Exception(tmpDir, tmpConf, mockXsd, monkeypatch):
@@ -121,6 +123,7 @@ def testApiApp_EndPoints_Exception(tmpDir, tmpConf, mockXsd, monkeypatch):
     with pytest.raises(SystemExit):
         App()
 
+# END Test testApiApp_EndPoints_Exception
 
 
 @pytest.mark.api
