@@ -75,6 +75,7 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     theConf.mmd_xslt_path = "path"
     theConf.mmd_xsd_path = "path"
     theConf.file_archive_path = "path"
+    theConf.path_to_parent_list = "path"
 
     # Check the values from example_config.yaml are read
     theConf.readConfig(configFile=exampleConf)
@@ -86,6 +87,7 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     assert theConf.mmd_xslt_path is None
     assert theConf.mmd_xsd_path is None
     assert theConf.file_archive_path is None
+    assert theConf.path_to_parent_list is None
 
     assert theConf.csw_service_url == "http://localhost"
 
@@ -95,6 +97,7 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     theConf.distributor_cache = tmpDir
     theConf.rejected_jobs_path = tmpDir
     theConf.file_archive_path = tmpDir
+    theConf.path_to_parent_list = os.path.join(filesDir, "mmd", "parent-uuid-list.xml")
     assert theConf._validate_config() is True
 
     # Validate XSD Path
