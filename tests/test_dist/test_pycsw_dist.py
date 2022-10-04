@@ -193,7 +193,7 @@ def testDistPyCSW_Translate_Parent(filesDir):
     passFile = os.path.join(filesDir, "api", "aqua-modis-parent.xml")
     xsltFile = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
     path_to_parent_list = os.path.join(filesDir, "mmd", "parent-uuid-list.xml")
-    
+
     outFile = os.path.join(filesDir, "reference", "parent_translated.xml")
     outTree = etree.parse(outFile, parser=etree.XMLParser(remove_blank_text=True))
     outData = etree.tostring(outTree, pretty_print=False, encoding="utf-8")

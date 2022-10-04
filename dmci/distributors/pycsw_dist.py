@@ -69,7 +69,11 @@ class PyCSWDist(Distributor):
             transform = etree.XSLT(etree.parse(self._conf.mmd_xslt_path))
             # If the dataset is a parent dataset, the
             # self._xml_file needs to contain the string "parent"
-            new_doc = transform(xml_doc, path_to_parent_list=etree.XSLT.strparam(self._path_to_parent_list))
+            if self._path_to_parent_list:
+                new_doc = transform(xml_doc, path_to_parent_list=etree.XSLT.strparam(
+                    self._path_to_parent_list))
+            else:
+                new_doc = transform(xml_doc)
             result = etree.tostring(new_doc, pretty_print=False, encoding="utf-8")
         except Exception as e:
             logger.error("Failed to translate MMD to ISO19139")
