@@ -78,6 +78,10 @@ class Distributor():
                     logger.error("Metadata identifier must be a valid UUID")
                     self._valid = False
                     return
+        else:
+            logger.error("Either xml_file or metadata_id must be specified, but not both")
+            self._valid = False
+            return
 
         if 'path_to_parent_list' in kwargs and kwargs['path_to_parent_list'] is not None:
             if os.path.isfile(kwargs['path_to_parent_list']):
@@ -87,10 +91,6 @@ class Distributor():
                 logger.error("File does not exist: %s" % str(kwargs['path_to_parent_list']))
                 self._valid = False
                 return
-        else:
-            logger.error("Either xml_file or metadata_id must be specified, but not both")
-            self._valid = False
-            return
 
         # Check consistency between command and data
         if self._cmd in (DistCmd.UPDATE, DistCmd.INSERT) and self._xml_file is None:

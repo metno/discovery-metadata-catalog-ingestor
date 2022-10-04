@@ -167,12 +167,13 @@ def testDistPyCSW_Translate(filesDir, caplog):
     passFile = os.path.join(filesDir, "api", "passing.xml")
     failFile = os.path.join(filesDir, "not_an_xml_file.xml")
     xsltFile = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
+    path_to_parent_list = os.path.join(filesDir, "mmd", "parent-uuid-list.xml")
 
     outFile = os.path.join(filesDir, "reference", "pycsw_dist_translated.xml")
     outTree = etree.parse(outFile, parser=etree.XMLParser(remove_blank_text=True))
     outData = etree.tostring(outTree, pretty_print=False, encoding="utf-8")
 
-    tstPyCSW = PyCSWDist("insert", xml_file=passFile)
+    tstPyCSW = PyCSWDist("insert", xml_file=passFile, path_to_parent_list=path_to_parent_list)
     tstPyCSW._conf.mmd_xslt_path = xsltFile
     result = tstPyCSW._translate()
     assert isinstance(result, bytes)

@@ -94,9 +94,7 @@ class Config():
         self.max_permitted_size = conf.get("max_permitted_size", self.max_permitted_size)
         self.mmd_xslt_path = conf.get("mmd_xslt_path", self.mmd_xslt_path)
         self.mmd_xsd_path = conf.get("mmd_xsd_path", self.mmd_xsd_path)
-        print(self.path_to_parent_list)
         self.path_to_parent_list = conf.get("path_to_parent_list", self.path_to_parent_list)
-        print(self.path_to_parent_list)
 
         return
 
