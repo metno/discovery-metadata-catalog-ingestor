@@ -125,7 +125,8 @@ class Worker():
                 self._dist_cmd,
                 xml_file=self._dist_xml_file,
                 metadata_id=self._dist_metadata_id,
-                worker=self
+                worker=self,
+                path_to_parent_list=self._kwargs.get('path_to_parent_list', None)
             )
             valid &= obj.is_valid()
             if obj.is_valid():

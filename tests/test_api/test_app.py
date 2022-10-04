@@ -41,7 +41,8 @@ def client(tmpDir, tmpConf, mockXsd, monkeypatch):
     tmpConf.distributor_cache = workDir
     tmpConf.rejected_jobs_path = rejectDir
     tmpConf.mmd_xsd_path = mockXsd
-
+    tmpConf.path_to_parent_list = mockXsd
+    
     app = App()
     assert app._conf.distributor_cache == workDir
 

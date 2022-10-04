@@ -43,8 +43,14 @@ class App(Flask):
             logger.error("Parameter distributor_cache in config is not set")
             sys.exit(1)
 
+        print(self._conf.mmd_xsd_path)
         if self._conf.mmd_xsd_path is None:
             logger.error("Parameter mmd_xsd_path in config is not set")
+            sys.exit(1)
+
+        print("PTPL",self._conf.path_to_parent_list)
+        if self._conf.path_to_parent_list is None:
+            logger.error("Parameter path_to_parent_list in config is not set")
             sys.exit(1)
 
         # Create the XML Validator Object
@@ -122,7 +128,8 @@ class App(Flask):
             return msg, code
 
         # Run the validator
-        worker = Worker(cmd, full_path, self._xsd_obj)
+        worker = Worker(cmd, full_path, self._xsd_obj,
+                        path_to_parent_list=self._conf.path_to_parent_list)
         valid, msg = worker.validate(data)
         if not valid:
             self._handle_persist_file(False, full_path, reject_path, msg)
@@ -155,7 +162,8 @@ class App(Flask):
             return msg, code
 
         # Run the validator
-        worker = Worker("none", full_path, self._xsd_obj)
+        worker = Worker("none", full_path, self._xsd_obj,
+                        path_to_parent_list=self._conf.path_to_parent_list)
         valid, msg = worker.validate(data)
         self._handle_persist_file(True, full_path)
         if valid:
