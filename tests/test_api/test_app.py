@@ -41,6 +41,7 @@ def client(tmpDir, tmpConf, mockXsd, monkeypatch):
     tmpConf.distributor_cache = workDir
     tmpConf.rejected_jobs_path = rejectDir
     tmpConf.mmd_xsd_path = mockXsd
+    tmpConf.path_to_parent_list = mockXsd
 
     app = App()
     assert app._conf.distributor_cache == workDir
@@ -70,7 +71,6 @@ def testApiApp_Init(tmpConf, tmpDir, monkeypatch):
     tmpConf.mmd_xsd_path = None
     with pytest.raises(SystemExit) as sysExit:
         App()
-
     assert sysExit.type == SystemExit
     assert sysExit.value.code == 1
 
@@ -99,6 +99,31 @@ def testApiApp_EndPoints(client):
     assert client.post("/v1/delete").status_code == 404
 
 # END Test testApiApp_EndPoints
+
+
+class MockException:
+    def __init__(self, *args, **kwargs):
+        raise Exception
+
+
+@pytest.mark.api
+def testApiApp_EndPoints_Exception(tmpDir, tmpConf, mockXsd, monkeypatch):
+    """Test requests to endpoints Exception."""
+    workDir = os.path.join(tmpDir, "api")
+    rejectDir = os.path.join(tmpDir, "api", "rejected")
+    if not os.path.isdir(workDir):
+        os.mkdir(workDir)
+    monkeypatch.setattr("dmci.CONFIG", tmpConf)
+
+    tmpConf.distributor_cache = workDir
+    tmpConf.rejected_jobs_path = rejectDir
+    tmpConf.mmd_xsd_path = mockXsd
+    tmpConf.path_to_parent_list = mockXsd
+    monkeypatch.setattr("lxml.etree.XMLSchema", MockException)
+    with pytest.raises(SystemExit):
+        App()
+
+# END Test testApiApp_EndPoints_Exception
 
 
 @pytest.mark.api

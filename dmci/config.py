@@ -38,6 +38,7 @@ class Config():
         self.max_permitted_size = 100000  # Size of files permitted through API
         self.mmd_xslt_path = None
         self.mmd_xsd_path = None
+        self.path_to_parent_list = None
 
         # PyCSW Distributor
         self.csw_service_url = None
@@ -93,6 +94,7 @@ class Config():
         self.max_permitted_size = conf.get("max_permitted_size", self.max_permitted_size)
         self.mmd_xslt_path = conf.get("mmd_xslt_path", self.mmd_xslt_path)
         self.mmd_xsd_path = conf.get("mmd_xsd_path", self.mmd_xsd_path)
+        self.path_to_parent_list = conf.get("path_to_parent_list", self.path_to_parent_list)
 
         return
 
@@ -122,6 +124,7 @@ class Config():
         valid &= self._check_file_exists(self.mmd_xsd_path, "mmd_xsd_path")
         valid &= self._check_folder_exists(self.distributor_cache, "distributor_cache")
         valid &= self._check_folder_exists(self.rejected_jobs_path, "rejected_jobs_path")
+        valid &= self._check_file_exists(self.path_to_parent_list, "path_to_parent_list")
 
         if "pycsw" in self.call_distributors:
             valid &= self._check_file_exists(self.mmd_xslt_path, "mmd_xslt_path")

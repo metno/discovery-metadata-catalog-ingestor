@@ -7,6 +7,7 @@ dmci:
   max_permitted_size: 100000
   mmd_xslt_path: null
   mmd_xsd_path: null
+  path_to_parent_list: null
 
 pycsw:
   csw_service_url: http://localhost

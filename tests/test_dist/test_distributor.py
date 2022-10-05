@@ -32,6 +32,8 @@ def testDistDistributor_Init(mockXml, tmpUUID):
     assert Distributor("insert", xml_file=mockXml).is_valid() is True
     assert Distributor("inSeRt", xml_file=mockXml).is_valid() is True
     assert Distributor("insert", xml_file=mockXml, metadata_id="stuff").is_valid() is False
+    assert Distributor("insert", xml_file=mockXml,
+                       path_to_parent_list="/path/to/nowhere").is_valid() is False
 
     # Check Update Command
     assert Distributor("update", metadata_id=tmpUUID).is_valid() is False

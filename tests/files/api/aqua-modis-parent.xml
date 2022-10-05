@@ -1,0 +1,105 @@
+<mmd:mmd xmlns:mmd="http://www.met.no/schema/mmd" xmlns:gml="http://www.opengis.net/gml">
+  <mmd:metadata_identifier>64db6102-14ce-41e9-b93b-61dbb2cb8b4e</mmd:metadata_identifier>
+  <mmd:title xml:lang="en">Direct Broadcast data processed in satellite swath to L1C.</mmd:title>
+  <mmd:title xml:lang="no">Direktesendte satellittdata prosessert i satellittsveip til L1C.</mmd:title>
+  <mmd:abstract xml:lang="en">Direct Broadcast data received at MET NORWAY Oslo. Processed by standard processing software to geolocated and calibrated values in satellite swath in received instrument resolution.</mmd:abstract>
+  <mmd:abstract xml:lang="no">Direktesendte satellittdata mottatt ved Meteorologisk Institutt Oslo. Prosessert med standard prosesseringssoftware til geolokaliserte og kalibrerte verdier i satellitsveip i mottatt instrument oppløsning.</mmd:abstract>
+  <mmd:metadata_status>Active</mmd:metadata_status>
+  <mmd:dataset_production_status>Complete</mmd:dataset_production_status>
+  <mmd:collection>METNCS</mmd:collection>
+  <mmd:last_metadata_update>
+    <mmd:update>
+      <mmd:datetime>2020-05-07T16:18:23Z</mmd:datetime>
+      <mmd:type>Created</mmd:type>
+    </mmd:update>
+  </mmd:last_metadata_update>
+  <mmd:temporal_extent>
+    <mmd:start_date>2020-04-30T00:04:58.268708Z</mmd:start_date>
+  </mmd:temporal_extent>
+  <mmd:iso_topic_category>climatologyMeteorologyAtmosphere</mmd:iso_topic_category>
+  <mmd:iso_topic_category>environment</mmd:iso_topic_category>
+  <mmd:iso_topic_category>oceans</mmd:iso_topic_category>
+  <mmd:keywords vocabulary="GCMDSK">
+    <mmd:keyword>Earth Science &gt; Atmosphere &gt; Atmospheric radiation</mmd:keyword>
+    <mmd:resource>https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords</mmd:resource>
+    <mmd:separator></mmd:separator>
+  </mmd:keywords>
+  <mmd:keywords vocabulary="GCMDPROV">
+    <mmd:keyword> Government Agencies-non-US &gt; Norway &gt; NO/MET &gt; Norwegian Meteorological Institute</mmd:keyword>
+    <mmd:resource>https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/providers</mmd:resource>
+    <mmd:separator></mmd:separator>
+  </mmd:keywords>
+  <mmd:keywords vocabulary="GCMDLOC">
+    <mmd:keyword>Geographic Region &gt; Northern Hemisphere</mmd:keyword>
+    <mmd:resource>https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/locations</mmd:resource>
+    <mmd:separator></mmd:separator>
+  </mmd:keywords>
+  <mmd:keywords vocabulary="GEMET">
+    <mmd:keyword>Meteorological geographical features</mmd:keyword>
+    <mmd:keyword>Atmospheric conditions</mmd:keyword>
+    <mmd:keyword>Oceanographic geographical features</mmd:keyword>
+    <mmd:resource>http://inspire.ec.europa.eu/theme</mmd:resource>
+    <mmd:separator></mmd:separator>
+  </mmd:keywords>
+  <mmd:keywords vocabulary="NORTHEMES">
+    <mmd:keyword>Weather and climate</mmd:keyword>
+    <mmd:resource>https://register.geonorge.no/subregister/metadata-kodelister/kartverket/nasjonal-temainndeling</mmd:resource>
+    <mmd:separator></mmd:separator>
+  </mmd:keywords>
+  <mmd:geographic_extent>
+    <mmd:rectangle srsName="EPSG:4326">
+      <mmd:north>90.0</mmd:north>
+      <mmd:south>25.0</mmd:south>
+      <mmd:east>180.0</mmd:east>
+      <mmd:west>-180.0</mmd:west>
+    </mmd:rectangle>
+  </mmd:geographic_extent>
+  <mmd:dataset_language>en</mmd:dataset_language>
+  <mmd:operational_status>Operational</mmd:operational_status>
+  <mmd:access_constraint>Open</mmd:access_constraint>
+  <mmd:use_constraint>
+    <mmd:identifier>CC-BY-4.0</mmd:identifier>
+    <mmd:resource>https://spdx.org/licenses/CC-BY-4.0</mmd:resource>
+  </mmd:use_constraint>
+  <mmd:personnel>
+    <mmd:role>Investigator</mmd:role>
+    <mmd:name>Norwegian Meteorological Institute</mmd:name>
+    <mmd:email>post@met.no</mmd:email>
+    <mmd:organisation>Norwegian Meteorological Institute</mmd:organisation>
+  </mmd:personnel>
+  <mmd:personnel>
+    <mmd:role>Metadata author</mmd:role>
+    <mmd:name>DIVISION FOR OBSERVATION QUALITY AND DATA PROCESSING</mmd:name>
+    <mmd:email>post@met.no</mmd:email>
+    <mmd:organisation>Norwegian Meteorological Institute</mmd:organisation>
+  </mmd:personnel>
+  <mmd:personnel>
+    <mmd:role>Technical contact</mmd:role>
+    <mmd:name>Norwegian Meteorological Institute</mmd:name>
+    <mmd:email>post@met.no</mmd:email>
+    <mmd:organisation>Norwegian Meteorological Institute</mmd:organisation>
+  </mmd:personnel>
+  <mmd:data_center>
+    <mmd:data_center_name>
+      <mmd:short_name>MET NORWAY</mmd:short_name>
+      <mmd:long_name>MET NORWAY</mmd:long_name>
+    </mmd:data_center_name>
+    <mmd:data_center_url></mmd:data_center_url>
+  </mmd:data_center>
+  <mmd:platform>
+    <mmd:short_name>Aqua</mmd:short_name>
+    <mmd:long_name>Aqua</mmd:long_name>
+    <mmd:resource>https://www.wmo-sat.info/oscar/satellites/view/aqua</mmd:resource>
+    <mmd:instrument>
+      <mmd:short_name>MODIS</mmd:short_name>
+      <mmd:long_name>MODIS</mmd:long_name>
+      <mmd:resource>https://www.wmo-sat.info/oscar/instruments/view/modis</mmd:resource>
+    </mmd:instrument>
+  </mmd:platform>
+  <mmd:spatial_representation>grid</mmd:spatial_representation>
+  <mmd:dataset_citation>
+    <mmd:author>Norwegian Meteorological Institute</mmd:author>
+    <mmd:publication_date>2020-05-07</mmd:publication_date>
+    <mmd:title>Direct Broadcast data processed in satellite swath to L1C.</mmd:title>
+  </mmd:dataset_citation>
+</mmd:mmd>
