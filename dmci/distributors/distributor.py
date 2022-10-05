@@ -83,7 +83,8 @@ class Distributor():
             self._valid = False
             return
 
-        if 'path_to_parent_list' in kwargs and kwargs['path_to_parent_list'] is not None:
+        self._path_to_parent_list = kwargs.get('path_to_parent_list', None)
+        if self._path_to_parent_list is not None:
             if os.path.isfile(kwargs['path_to_parent_list']):
                 self._path_to_parent_list = kwargs['path_to_parent_list']
                 self._valid = True
