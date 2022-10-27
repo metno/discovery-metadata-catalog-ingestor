@@ -65,7 +65,7 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: True)
         tstPyCSW = PyCSWDist("insert", xml_file=mockXml)
-        tstPyCSW._conf.mmd_xslt_path = mockXslt
+        tstPyCSW._conf.mmd_xsl_path = mockXslt
         assert tstPyCSW.run() == (True, "Mock response")
 
     # Insert returns False
@@ -76,7 +76,7 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: False)
         tstPyCSW = PyCSWDist("insert", xml_file=mockXml)
-        tstPyCSW._conf.mmd_xslt_path = mockXslt
+        tstPyCSW._conf.mmd_xsl_path = mockXslt
         assert tstPyCSW.run() == (False, "Mock response")
 
 # END Test testDistPyCSW_Insert
@@ -101,7 +101,7 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID):
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: True)
         tstPyCSW = PyCSWDist("update", xml_file=mockXml)
         tstPyCSW._worker = tstWorker
-        tstPyCSW._conf.mmd_xslt_path = mockXslt
+        tstPyCSW._conf.mmd_xsl_path = mockXslt
         assert tstPyCSW.run() == (True, "Mock response")
         tstPyCSW._worker._namespace = "test.no"
         assert tstPyCSW.run() == (True, "Mock response")
@@ -115,7 +115,7 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID):
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: False)
         tstPyCSW = PyCSWDist("update", xml_file=mockXml)
         tstPyCSW._worker = tstWorker
-        tstPyCSW._conf.mmd_xslt_path = mockXslt
+        tstPyCSW._conf.mmd_xsl_path = mockXslt
         assert tstPyCSW.run() == (False, "Mock response")
 
 # END Test testDistPyCSW_Update
@@ -166,7 +166,7 @@ def testDistPyCSW_Translate(filesDir, caplog):
     """_translate tests"""
     passFile = os.path.join(filesDir, "api", "passing.xml")
     failFile = os.path.join(filesDir, "not_an_xml_file.xml")
-    xsltFile = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
+    xslFile = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xsl")
     path_to_parent_list = os.path.join(filesDir, "mmd", "parent-uuid-list.xml")
 
     outFile = os.path.join(filesDir, "reference", "pycsw_dist_translated.xml")
@@ -174,14 +174,14 @@ def testDistPyCSW_Translate(filesDir, caplog):
     outData = etree.tostring(outTree, pretty_print=False, encoding="utf-8")
 
     tstPyCSW = PyCSWDist("insert", xml_file=passFile, path_to_parent_list=path_to_parent_list)
-    tstPyCSW._conf.mmd_xslt_path = xsltFile
+    tstPyCSW._conf.mmd_xsl_path = xslFile
     result = tstPyCSW._translate()
     assert isinstance(result, bytes)
     assert result == outData
 
     caplog.clear()
     tstPyCSW = PyCSWDist("insert", xml_file=failFile)
-    tstPyCSW._conf.mmd_xslt_path = xsltFile
+    tstPyCSW._conf.mmd_xsl_path = xslFile
     assert tstPyCSW._translate() == b""
     assert "Failed to translate MMD to ISO19139" in caplog.messages
 
@@ -192,7 +192,7 @@ def testDistPyCSW_Translate(filesDir, caplog):
 def testDistPyCSW_Translate_Parent(filesDir):
     """_translate tests"""
     passFile = os.path.join(filesDir, "api", "aqua-modis-parent.xml")
-    xsltFile = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
+    xslFile = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xsl")
     path_to_parent_list = os.path.join(filesDir, "mmd", "parent-uuid-list.xml")
 
     outFile = os.path.join(filesDir, "reference", "parent_translated.xml")
@@ -202,7 +202,7 @@ def testDistPyCSW_Translate_Parent(filesDir):
     # \\xc3\\xb8.
     outData = outData.replace(b'\\xc3\\xb8', b'\xc3\xb8')
     tstPyCSW = PyCSWDist("insert", xml_file=passFile, path_to_parent_list=path_to_parent_list)
-    tstPyCSW._conf.mmd_xslt_path = xsltFile
+    tstPyCSW._conf.mmd_xsl_path = xslFile
     result = tstPyCSW._translate()
 
     assert isinstance(result, bytes)

@@ -72,7 +72,7 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     theConf.distributor_cache = "path"
     theConf.rejected_jobs_path = "path"
     theConf.max_permitted_size = 0
-    theConf.mmd_xslt_path = "path"
+    theConf.mmd_xsl_path = "path"
     theConf.mmd_xsd_path = "path"
     theConf.file_archive_path = "path"
     theConf.path_to_parent_list = "path"
@@ -84,7 +84,7 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     assert theConf.distributor_cache is None
     assert theConf.rejected_jobs_path is None
     assert theConf.max_permitted_size == 100000
-    assert theConf.mmd_xslt_path is None
+    assert theConf.mmd_xsl_path is None
     assert theConf.mmd_xsd_path is None
     assert theConf.file_archive_path is None
     assert theConf.path_to_parent_list is None
@@ -93,7 +93,7 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
 
     # Set valid values
     theConf.mmd_xsd_path = os.path.join(filesDir, "mmd", "mmd.xsd")
-    theConf.mmd_xslt_path = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xslt")
+    theConf.mmd_xsl_path = os.path.join(filesDir, "mmd", "mmd-to-geonorge.xsl")
     theConf.distributor_cache = tmpDir
     theConf.rejected_jobs_path = tmpDir
     theConf.file_archive_path = tmpDir
@@ -110,12 +110,12 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     assert theConf._validate_config() is True
 
     # Validate XSLT Path
-    correctVal = theConf.mmd_xslt_path
-    theConf.mmd_xslt_path = None
+    correctVal = theConf.mmd_xsl_path
+    theConf.mmd_xsl_path = None
     assert theConf._validate_config() is False
-    theConf.mmd_xslt_path = "path/to/nowhere"
+    theConf.mmd_xsl_path = "path/to/nowhere"
     assert theConf._validate_config() is False
-    theConf.mmd_xslt_path = correctVal
+    theConf.mmd_xsl_path = correctVal
     assert theConf._validate_config() is True
 
     # Validate File Archive Path

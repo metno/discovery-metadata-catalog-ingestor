@@ -36,7 +36,7 @@ class Config():
         self.distributor_cache = None
         self.rejected_jobs_path = None
         self.max_permitted_size = 100000  # Size of files permitted through API
-        self.mmd_xslt_path = None
+        self.mmd_xsl_path = None
         self.mmd_xsd_path = None
         self.path_to_parent_list = None
 
@@ -92,7 +92,7 @@ class Config():
         self.distributor_cache = conf.get("distributor_cache", self.distributor_cache)
         self.rejected_jobs_path = conf.get("rejected_jobs_path", self.rejected_jobs_path)
         self.max_permitted_size = conf.get("max_permitted_size", self.max_permitted_size)
-        self.mmd_xslt_path = conf.get("mmd_xslt_path", self.mmd_xslt_path)
+        self.mmd_xsl_path = conf.get("mmd_xsl_path", self.mmd_xsl_path)
         self.mmd_xsd_path = conf.get("mmd_xsd_path", self.mmd_xsd_path)
         self.path_to_parent_list = conf.get("path_to_parent_list", self.path_to_parent_list)
 
@@ -127,7 +127,7 @@ class Config():
         valid &= self._check_file_exists(self.path_to_parent_list, "path_to_parent_list")
 
         if "pycsw" in self.call_distributors:
-            valid &= self._check_file_exists(self.mmd_xslt_path, "mmd_xslt_path")
+            valid &= self._check_file_exists(self.mmd_xsl_path, "mmd_xsl_path")
 
         if "file" in self.call_distributors:
             valid &= self._check_folder_exists(self.file_archive_path, "file_archive_path")
