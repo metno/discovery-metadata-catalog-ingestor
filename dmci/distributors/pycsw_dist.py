@@ -66,7 +66,7 @@ class PyCSWDist(Distributor):
         result = b""
         try:
             xml_doc = etree.ElementTree(file=self._xml_file)
-            transform = etree.XSLT(etree.parse(self._conf.mmd_xslt_path))
+            transform = etree.XSLT(etree.parse(self._conf.mmd_xsl_path))
             # If the dataset is a parent dataset, the
             # self._xml_file needs to contain the string "parent"
             new_doc = transform(xml_doc, path_to_parent_list=etree.XSLT.strparam(
