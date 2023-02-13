@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gmd:MD_Metadata xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gml="http://www.opengis.net/gml" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:gco="http://www.isotc211.org/2005/gco" xsi:schemaLocation="http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20060504/gmd/gmd.xsd http://www.isotc211.org/2005/gmx http://schemas.opengis.net/iso/19139/20060504/gmx/gmx.xsd">
   <gmd:fileIdentifier>
-    <gco:CharacterString>a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b</gco:CharacterString>
+    <gco:CharacterString>test.no:a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b</gco:CharacterString>
   </gmd:fileIdentifier>
   <gmd:language>
     <gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2" codeListValue="eng">English</gmd:LanguageCode>
@@ -10,7 +10,7 @@
     <gmd:MD_CharacterSetCode codeListValue="utf8" codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_CharacterSetCode"/>
   </gmd:characterSet>
   <gmd:parentIdentifier>
-    <gco:CharacterString>64db6102-14ce-41e9-b93b-61dbb2cb8b4e</gco:CharacterString>
+    <gco:CharacterString>test.no:64db6102-14ce-41e9-b93b-61dbb2cb8b4e</gco:CharacterString>
   </gmd:parentIdentifier>
   <gmd:hierarchyLevel>
     <gmd:MD_ScopeCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/ML_gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset"/>
@@ -91,7 +91,7 @@
           <gmd:identifier>
             <gmd:MD_Identifier>
               <gmd:code>
-                <gco:CharacterString>a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b</gco:CharacterString>
+                <gco:CharacterString>test.no:a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b</gco:CharacterString>
               </gmd:code>
             </gmd:MD_Identifier>
           </gmd:identifier>

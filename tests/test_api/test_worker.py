@@ -166,16 +166,14 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
     failFile = os.path.join(filesDir, "api", "failing.xml")
     failData = bytes(readFile(failFile), "utf-8")
     assert tstWorker._check_information_content(failData) == (
-        False, "Input MMD XML file has no valid UUID metadata_identifier"
+        False, "Input MMD XML file has no valid uri:UUID metadata_identifier"
     )
 
     # Check Error report
     failFile = os.path.join(filesDir, "api", "failing.xml")
     failData = (
         b"<root>"
-        b"  <metadata_identifier> \
-                  test.no:00000000-0000-0000-0000-000000000000 \
-            </metadata_identifier>"
+        b"  <metadata_identifier>met.no:00000000-0000-0000-0000-000000000000</metadata_identifier>"
         b"  <resource>imap://met.no</resource>"
         b"  <geographic_extent>"
         b"    <rectangle>"

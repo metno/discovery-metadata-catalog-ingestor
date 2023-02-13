@@ -155,7 +155,7 @@ class Worker():
         xml_doc = etree.fromstring(data)
         valid = self._extract_metadata_id(xml_doc)
         if not valid:
-            return False, "Input MMD XML file has no valid UUID metadata_identifier"
+            return False, "Input MMD XML file has no valid uri:UUID metadata_identifier"
 
         # Check XML file
         logger.info("Performing in depth checking.")
@@ -192,6 +192,13 @@ class Worker():
                 logger.info("XML file metadata_identifier namespace:%s" % namespace)
                 logger.info("XML file metadata_identifier UUID: %s" % fileUUID)
                 break
+
+        if fileUUID is None:
+            logger.warning("No UUID found in XML file")
+            return False
+        if namespace is None:
+            logger.warning("No namespace found in XML file")
+            return False
 
         try:
             self._file_metadata_id = uuid.UUID(fileUUID)
