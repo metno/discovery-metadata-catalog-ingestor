@@ -176,28 +176,22 @@ class Worker():
         the class variable.
         """
         self._file_metadata_id = None
+        self._namespace = None
         fileUUID = None
-        namespace = ""
+        namespace = None
         for xml_entry in xml_doc:
             local = etree.QName(xml_entry)
             if local.localname == "metadata_identifier":
-                # If uri:UUID, get UUID and uri, if no 'uri:' get UUID
+                # only accept if format is uri:UUID, both need to be present 
                 words = xml_entry.text.split(":")
-                if len(words) < 2:
-                    fileUUID = words[0]
-                elif len(words) == 2:
-                    namespace, fileUUID = words
-                else:
+                if len(words) != 2:
                     logger.warning("metadata_identifier not formed as namespace:UUID")
                     return False
+                namespace, fileUUID = words
 
                 logger.info("XML file metadata_identifier namespace:%s" % namespace)
                 logger.info("XML file metadata_identifier UUID: %s" % fileUUID)
                 break
-
-        if fileUUID is None:
-            logger.warning("No metadata_identifier found in XML file")
-            return False
 
         try:
             self._file_metadata_id = uuid.UUID(fileUUID)
