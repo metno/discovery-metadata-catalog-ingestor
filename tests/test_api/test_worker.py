@@ -173,7 +173,9 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
     failFile = os.path.join(filesDir, "api", "failing.xml")
     failData = (
         b"<root>"
-        b"  <metadata_identifier>test.no:00000000-0000-0000-0000-000000000000</metadata_identifier>"
+        b"  <metadata_identifier> \
+                  test.no:00000000-0000-0000-0000-000000000000 \
+            </metadata_identifier>"
         b"  <resource>imap://met.no</resource>"
         b"  <geographic_extent>"
         b"    <rectangle>"

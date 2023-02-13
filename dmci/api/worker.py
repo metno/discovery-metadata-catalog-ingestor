@@ -182,7 +182,7 @@ class Worker():
         for xml_entry in xml_doc:
             local = etree.QName(xml_entry)
             if local.localname == "metadata_identifier":
-                # only accept if format is uri:UUID, both need to be present 
+                # only accept if format is uri:UUID, both need to be present
                 words = xml_entry.text.split(":")
                 if len(words) != 2:
                     logger.warning("metadata_identifier not formed as namespace:UUID")
