@@ -1,5 +1,5 @@
 <mmd:mmd xmlns:mmd="http://www.met.no/schema/mmd" xmlns:gml="http://www.opengis.net/gml">
-  <mmd:metadata_identifier>3facf8ba-bf35-491e-b740-notvaliduuid</mmd:metadata_identifier>
+  <mmd:metadata_identifier>met.no:3facf8ba-bf35-491e-b740-notvaliduuid</mmd:metadata_identifier>
   <mmd:title xml:lang="en">Direct Broadcast data processed in satellite swath to L1C</mmd:title>
   <mmd:title xml:lang="nor">Direktesendte satellittdata prosessert i satellittsveip til L1C.</mmd:title>
   <mmd:abstract xml:lang="en">Direct Broadcast data received at MET NORWAY Oslo. Processed by standard processing software to geolocated and calibrated values in satellite swath in received instrument resolution.</mmd:abstract>

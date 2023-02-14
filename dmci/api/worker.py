@@ -155,7 +155,7 @@ class Worker():
         xml_doc = etree.fromstring(data)
         valid = self._extract_metadata_id(xml_doc)
         if not valid:
-            return False, "Input MMD XML file has no valid UUID metadata_identifier"
+            return False, "Input MMD XML file has no valid uri:UUID metadata_identifier"
 
         # Check XML file
         logger.info("Performing in depth checking.")
@@ -176,27 +176,28 @@ class Worker():
         the class variable.
         """
         self._file_metadata_id = None
+        self._namespace = None
         fileUUID = None
-        namespace = ""
+        namespace = None
         for xml_entry in xml_doc:
             local = etree.QName(xml_entry)
             if local.localname == "metadata_identifier":
-                # If uri:UUID, get UUID and uri, if no 'uri:' get UUID
+                # only accept if format is uri:UUID, both need to be present
                 words = xml_entry.text.split(":")
-                if len(words) < 2:
-                    fileUUID = words[0]
-                elif len(words) == 2:
-                    namespace, fileUUID = words
-                else:
+                if len(words) != 2:
                     logger.warning("metadata_identifier not formed as namespace:UUID")
                     return False
+                namespace, fileUUID = words
 
                 logger.info("XML file metadata_identifier namespace:%s" % namespace)
                 logger.info("XML file metadata_identifier UUID: %s" % fileUUID)
                 break
 
         if fileUUID is None:
-            logger.warning("No metadata_identifier found in XML file")
+            logger.warning("No UUID found in XML file")
+            return False
+        if namespace is None:
+            logger.warning("No namespace found in XML file")
             return False
 
         try:
