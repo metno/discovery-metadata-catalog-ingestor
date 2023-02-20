@@ -189,6 +189,11 @@ class Worker():
                     return False
                 namespace, fileUUID = words
 
+                if len(namespace) == 0 or len(fileUUID) == 0:
+                    logger.warning("metadata_identifier has a ':'-character, but is malformed")
+                    logger.warning("metadata_identifier should be formed as namespace:UUID")
+                    return False
+
                 logger.info("XML file metadata_identifier namespace:%s" % namespace)
                 logger.info("XML file metadata_identifier UUID: %s" % fileUUID)
                 break
