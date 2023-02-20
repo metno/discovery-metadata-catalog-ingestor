@@ -177,8 +177,8 @@ class Worker():
         """
         self._file_metadata_id = None
         self._namespace = None
-        fileUUID = None
-        namespace = None
+        fileUUID = ""
+        namespace = ""
         for xml_entry in xml_doc:
             local = etree.QName(xml_entry)
             if local.localname == "metadata_identifier":
@@ -189,19 +189,14 @@ class Worker():
                     return False
                 namespace, fileUUID = words
 
-                if len(namespace) == 0 or len(fileUUID) == 0:
-                    logger.warning("metadata_identifier has a ':'-character, but is malformed")
-                    logger.warning("metadata_identifier should be formed as namespace:UUID")
-                    return False
-
                 logger.info("XML file metadata_identifier namespace:%s" % namespace)
                 logger.info("XML file metadata_identifier UUID: %s" % fileUUID)
                 break
 
-        if fileUUID is None:
+        if fileUUID == "":
             logger.warning("No UUID found in XML file")
             return False
-        if namespace is None:
+        if namespace == "":
             logger.warning("No namespace found in XML file")
             return False
 
