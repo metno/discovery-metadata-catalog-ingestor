@@ -210,7 +210,17 @@ def testApiWorker_ExtractMetaDataID(filesDir, mockXml):
         '</mmd:mmd>'
     )%("a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b")
 
-    namespaced_UUID_bad = (
+    # ":a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b".split(":") returns two strings:
+    # "" and "a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b"
+    # This test invokes empty return for namespace
+    namespaced_UUID_empty_return = (
+        '<mmd:mmd xmlns:mmd="http://www.met.no/schema/mmd" xmlns:gml="http://www.opengis.net/gml">'
+        '  <mmd:metadata_identifier>%s</mmd:metadata_identifier>'
+        '</mmd:mmd>'
+    )%(":a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b")
+
+    # format "test:no:a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b" is wrong (should be "test.no:UUID")
+    namespaced_UUID_too_many = (
         '<mmd:mmd xmlns:mmd="http://www.met.no/schema/mmd" xmlns:gml="http://www.opengis.net/gml">'
         '  <mmd:metadata_identifier>%s</mmd:metadata_identifier>'
         '</mmd:mmd>'
@@ -230,8 +240,14 @@ def testApiWorker_ExtractMetaDataID(filesDir, mockXml):
     assert tstWorker._file_metadata_id is None
     assert tstWorker._namespace is None
 
+    passXML = lxml.etree.fromstring(bytes(namespaced_UUID_empty_return, "utf-8"))
+    tstWorker = Worker("insert", passFile, None)
+    assert tstWorker._extract_metadata_id(passXML) is False
+    assert tstWorker._file_metadata_id is None
+    assert tstWorker._namespace is None
+
     # MMD with invalid namespace
-    passXML = lxml.etree.fromstring(bytes(namespaced_UUID_bad, "utf-8"))
+    passXML = lxml.etree.fromstring(bytes(namespaced_UUID_too_many, "utf-8"))
     tstWorker = Worker("insert", passFile, None)
     assert tstWorker._extract_metadata_id(passXML) is False
     assert tstWorker._file_metadata_id is None
