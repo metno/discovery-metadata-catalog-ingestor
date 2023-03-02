@@ -173,11 +173,18 @@ class Worker():
 
     def _extract_metadata_id(self, xml_doc):
         """Extract the metadata_identifier from the xml object and set
-        the class variable.
+        the class variables namespace and file_metadata_id.
+
+        Returns
+        -------
+        status : bool
+            True if both namespace and metadata_id is found, False
+            if either is missing, or if metadata_id can not be cast
+            as UUID type
         """
         self._file_metadata_id = None
         self._namespace = None
-        fileUUID = ""
+        file_uuid = ""
         namespace = ""
         for xml_entry in xml_doc:
             local = etree.QName(xml_entry)
@@ -187,13 +194,13 @@ class Worker():
                 if len(words) != 2:
                     logger.warning("metadata_identifier not formed as namespace:UUID")
                     return False
-                namespace, fileUUID = words
+                namespace, file_uuid = words
 
-                logger.info("XML file metadata_identifier namespace:%s" % namespace)
-                logger.info("XML file metadata_identifier UUID: %s" % fileUUID)
+                logger.info("XML file metadata_identifier namespace:%s", namespace)
+                logger.info("XML file metadata_identifier UUID: %s", file_uuid)
                 break
 
-        if fileUUID == "":
+        if file_uuid == "":
             logger.warning("No UUID found in XML file")
             return False
         if namespace == "":
@@ -201,10 +208,10 @@ class Worker():
             return False
 
         try:
-            self._file_metadata_id = uuid.UUID(fileUUID)
-            logger.debug("File UUID: %s" % str(fileUUID))
+            self._file_metadata_id = uuid.UUID(file_uuid)
+            logger.debug("File UUID: %s", str(file_uuid))
         except Exception as e:
-            logger.error("Could not parse UUID: '%s'" % str(fileUUID))
+            logger.error("Could not parse UUID: '%s'", str(file_uuid))
             logger.error(str(e))
             return False
         self._namespace = namespace
