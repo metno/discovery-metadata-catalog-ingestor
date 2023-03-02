@@ -210,7 +210,7 @@ def testApiWorker_ExtractMetaDataID(filesDir, mockXml):
         '</mmd:mmd>'
     )%("a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b")
 
-    # ":a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b".split(":") returns two strings: 
+    # ":a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b".split(":") returns two strings:
     # "" and "a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b"
     # This test invokes empty return for namespace
     namespaced_UUID_empty_return = (
