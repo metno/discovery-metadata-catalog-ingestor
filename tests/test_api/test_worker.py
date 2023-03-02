@@ -219,6 +219,7 @@ def testApiWorker_ExtractMetaDataID(filesDir, mockXml):
         '</mmd:mmd>'
     )%(":a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b")
 
+    # format "test:no:a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b" is wrong (should be "test.no:UUID")
     namespaced_UUID_too_many = (
         '<mmd:mmd xmlns:mmd="http://www.met.no/schema/mmd" xmlns:gml="http://www.opengis.net/gml">'
         '  <mmd:metadata_identifier>%s</mmd:metadata_identifier>'
