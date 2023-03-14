@@ -43,6 +43,9 @@ class Config():
         # PyCSW Distributor
         self.csw_service_url = None
 
+        # Web catalog url
+        self.catalog_url = None
+
         # File Distributor
         self.file_archive_path = None
 
@@ -74,6 +77,7 @@ class Config():
         # Read Values
         self._read_core()
         self._read_pycsw()
+        self._read_web_catalog()
         self._read_file()
 
         valid = self._validate_config()
@@ -103,6 +107,14 @@ class Config():
         conf = self._raw_conf.get("pycsw", {})
 
         self.csw_service_url = conf.get("csw_service_url", self.csw_service_url)
+
+        return
+
+    def _read_web_catalog(self):
+        """Read config values under 'web_catalog'."""
+        conf = self._raw_conf.get("web_catalog", {})
+
+        self.catalog_url = conf.get("catalog_url", self.catalog_url)
 
         return
 

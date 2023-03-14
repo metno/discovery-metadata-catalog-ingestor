@@ -115,7 +115,8 @@ class App(Flask):
         if request.content_length > self._conf.max_permitted_size:
             return f"The file is larger than maximum size: {self._conf.max_permitted_size}", 413
 
-        data = request.get_data()
+        data = request.get_data() 
+        print(data)
 
         # Cache the job file
         file_uuid = uuid.uuid4()
