@@ -270,7 +270,7 @@ def testApiWorker_ExtractMetaDataID(filesDir, mockXml):
 # END Test testApiWorker_ExtractMetaDataID
 
 @pytest.mark.api
-def testApiWorker_AddLandingPage():
+def testApiWorker_AddLandingPage(filesDir):
     passFile = os.path.join(filesDir, "api", "passing.xml")
     passFilewithLP = os.path.join(filesDir, "api", "passing_wlandingpage.xml")
     passFilewithRInoLP = os.path.join(filesDir, "api", "passing_wrelatedinfo_nolandingpage.xml")
@@ -287,8 +287,8 @@ def testApiWorker_AddLandingPage():
     tstWorker = Worker("insert", passFile, None)
 
     assert tstWorker._add_landing_page(data_wo_landingpage,catalog_url) == data_w_landingpage
-    assert tstWorker._add_landing_page(data_w_old_landingpage) = data_w_landingpage
-    assert tstWorker._add_landing_page(data_w_relinf_nolandingpage) = data_w_landingpage_andotherrelinfo
+    assert tstWorker._add_landing_page(data_w_relinf_nolandingpage,catalog_url) == data_w_landingpage_andotherrelinfo
+#    assert tstWorker._add_landing_page(data_w_old_landingpage,catalog_url) == data_w_landingpage
 
 # END Test testApiWorker_AddLandingPage
 

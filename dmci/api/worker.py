@@ -19,6 +19,8 @@ limitations under the License.
 
 import uuid
 import logging
+import re
+import sys
 
 from lxml import etree
 
