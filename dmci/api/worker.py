@@ -200,7 +200,7 @@ class Worker():
         if not bool(re.search(b"related_information",data)):
             if not bool(re.search(b"Dataset landing page",data)):
                 matchstring_end = b"\n</mmd:mmd>\n"
-                end_mod = str.encode(f"  <mmd:related_information>\n    <mmd:type>Dataset landing page</mmd:type>\n    <mmd:resource>{catalog_url}/{uuid}</mmd:resource>\n  </mmd:related_information>\n</mmd:mmd>\n")
+                end_mod = str.encode(f"\n  <mmd:related_information>\n    <mmd:type>Dataset landing page</mmd:type>\n    <mmd:resource>{catalog_url}/{uuid}</mmd:resource>\n  </mmd:related_information>\n</mmd:mmd>\n")
                 data_mod = re.sub(matchstring_end,end_mod,data)
         else: # no idea if this can actually happen given pymmd tools
             if not bool(re.search(b"Dataset landing page",data)): # we just add it 
@@ -210,7 +210,7 @@ class Worker():
             else: # here we need to replace the content
                 match_datasetlandingpage=re.search(b"<mmd:type>Dataset landing page</mmd:type>\n    <mmd:resource>(.+?)</mmd:resource>", data)
                 found_datasetlandingpage = match_datasetlandingpage.group(1)
-                datasetlandingpage_mod = b"{catalog_url}/{uuid}"
+                datasetlandingpage_mod = str.encode(f"{catalog_url}/{uuid}")
                 data_mod = re.sub(found_datasetlandingpage,datasetlandingpage_mod,data)
 
         return data_mod
