@@ -277,7 +277,7 @@ def testApiWorker_AddLandingPage():
     
     catalog_url="https://data.met.no/dataset"
     
-    data_wo_landingpage = bytes(readFile(passFile), "utf-8"))
+    data_wo_landingpage = bytes(readFile(passFile), "utf-8")
     data_w_old_landingpage = bytes(readFile(passFilewithLP), "utf-8"))
     data_w_relinf_nolandingpage = bytes(readFile(passFilewithRInoLP), "utf-8"))
    
