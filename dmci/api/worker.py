@@ -171,6 +171,49 @@ class Worker():
 
         return valid, msg
 
+    def _add_landing_page(self, data, catalog_url):
+        """Inserts the landing page info in the data bytes string and returns the modified string
+        <related_information>
+           <type>Dataset landing page</type>
+           <resource>https://data.met.no/dataset/{uuid}</resource>
+        </related_information>"""
+
+        if not isinstance(data, bytes):
+            #return False, "Input must be bytes type"
+            logger.critical("Input must be bytes type")
+            sys.exit(1)
+
+        #extract uuid
+        uuid=''
+        try: 
+            match_meta_id=re.search(b"metadata_identifier>(.+?)</mmd:metadata_identifier>", data)
+            meta_id = match_meta_id.group(1)
+            uuid = meta_id.split(b":")[1].decode()
+        except Exception as e:
+            logger.critical("The data should have been validated and contain a valid metadata_identifier")
+            logger.critical(str(e))
+            sys.exit(1) 
+
+        # if "Dataset landing page" is not already present we add it at the end
+        if not bool(re.search(b"related_information",data)):
+            if not bool(re.search(b"Dataset landing page",data)):
+                matchstring_end = b"\n</mmd:mmd>\n"
+                end_mod = str.encode(f"  <mmd:related_information>\n    <mmd:type>Dataset landing page</mmd:type>\n    <mmd:resource>{catalog_url}/{uuid}</mmd:resource>\n  </mmd:related_information>\n</mmd:mmd>\n")
+                data_mod = re.sub(matchstring_end,end_mod,data)
+        else: # no idea if this can actually happen given pymmd tools
+            if not bool(re.search(b"Dataset landing page",data)): # we just add it 
+                matchstring_relinfo = b"<mmd:related_information>\n"
+                relinfo_mod = str.encode(f"<mmd:related_information>\n    <mmd:type>Dataset landing page</mmd:type>\n    <mmd:resource>{catalog_url}/{uuid}</mmd:resource>\n")
+                data_mod = re.sub(matchstring_relinfo,relinfo_mod,data)
+            else: # here we need to replace the content
+                match_datasetlandingpage=re.search(b"<mmd:type>Dataset landing page</mmd:type>\n    <mmd:resource>(.+?)</mmd:resource>", data)
+                found_datasetlandingpage = match_datasetlandingpage.group(1)
+                datasetlandingpage_mod = b"{catalog_url}/{uuid}"
+                data_mod = re.sub(found_datasetlandingpage,datasetlandingpage_mod,data)
+
+        return data_mod
+
+
     def _extract_metadata_id(self, xml_doc):
         """Extract the metadata_identifier from the xml object and set
         the class variables namespace and file_metadata_id.
