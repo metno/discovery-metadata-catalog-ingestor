@@ -87,11 +87,13 @@ class Worker():
         # Check xml file against XML schema definition
         valid = self._xsd_obj.validate(etree.fromstring(data))
         msg = repr(self._xsd_obj.error_log)
+        data_mod = data
         if valid:
             # Check information content
             valid, msg = self._check_information_content(data)
+            data_mod = self._add_landing_page(data,self._conf.catalog_url)
 
-        return valid, msg
+        return valid, msg, data_mod
 
     def distribute(self):
         """Loop through all distributors listed in the config and call

@@ -128,14 +128,11 @@ class App(Flask):
         # Run the validator
         worker = Worker(cmd, full_path, self._xsd_obj,
                         path_to_parent_list=self._conf.path_to_parent_list)
-        valid, msg = worker.validate(data)
+        valid, msg, data = worker.validate(data)
         if not valid:
             self._handle_persist_file(False, full_path, reject_path, msg)
             return msg, 400
         
-        # add Dataset Landing Page
-        #data = _add_landing_page(data,self._conf.catalog_url)
-
         # Run the distributors
         err = self._distributor_wrapper(worker)
 
@@ -165,7 +162,7 @@ class App(Flask):
         # Run the validator
         worker = Worker("none", full_path, self._xsd_obj,
                         path_to_parent_list=self._conf.path_to_parent_list)
-        valid, msg = worker.validate(data)
+        valid, msg, data = worker.validate(data)
         self._handle_persist_file(True, full_path)
         if valid:
             return OK_RETURN, 200
