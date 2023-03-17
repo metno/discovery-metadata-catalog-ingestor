@@ -154,8 +154,13 @@
     <mmd:title>Direct Broadcast data processed in satellite swath to L1C</mmd:title>
   </mmd:dataset_citation>
   <mmd:related_information>
-    <mmd:type>Dataset landing page</mmd:type>
+    <mmd:type>Project home page</mmd:type>
     <mmd:description/>
+    <mmd:resource>https://thisfieldislegit.com</mmd:resource>
+  </mmd:related_information>
+  <mmd:related_information>
+    <mmd:type>Dataset landing page</mmd:type>
+    <mmd:description>bla bla bla</mmd:description>
     <mmd:resource>https://oldlandingpagetobereplaced.com</mmd:resource>
   </mmd:related_information>
 </mmd:mmd>

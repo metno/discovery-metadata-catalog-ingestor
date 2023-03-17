@@ -155,6 +155,7 @@
   </mmd:dataset_citation>
   <mmd:related_information>
     <mmd:type>Project home page</mmd:type>
+    <mmd:description/>
     <mmd:resource>https://thisfieldislegit.com</mmd:resource>
   </mmd:related_information>
 </mmd:mmd>

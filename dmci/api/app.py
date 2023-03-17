@@ -132,6 +132,9 @@ class App(Flask):
         if not valid:
             self._handle_persist_file(False, full_path, reject_path, msg)
             return msg, 400
+        
+        # add Dataset Landing Page
+        #data = _add_landing_page(data,self._conf.catalog_url)
 
         # Run the distributors
         err = self._distributor_wrapper(worker)

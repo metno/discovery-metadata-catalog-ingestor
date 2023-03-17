@@ -194,24 +194,18 @@ class Worker():
         except Exception as e:
             logger.critical("The data should have been validated and contain a valid metadata_identifier")
             logger.critical(str(e))
-            sys.exit(1) 
+            sys.exit(1)
 
-        # if "Dataset landing page" is not already present we add it at the end
-        if not bool(re.search(b"related_information",data)):
-            if not bool(re.search(b"Dataset landing page",data)):
-                matchstring_end = b"\n</mmd:mmd>\n"
-                end_mod = str.encode(f"\n  <mmd:related_information>\n    <mmd:type>Dataset landing page</mmd:type>\n    <mmd:resource>{catalog_url}/{uuid}</mmd:resource>\n  </mmd:related_information>\n</mmd:mmd>\n")
-                data_mod = re.sub(matchstring_end,end_mod,data)
-        else: # no idea if this can actually happen given pymmd tools
-            if not bool(re.search(b"Dataset landing page",data)): # we just add it 
-                matchstring_relinfo = b"<mmd:related_information>\n"
-                relinfo_mod = str.encode(f"<mmd:related_information>\n    <mmd:type>Dataset landing page</mmd:type>\n    <mmd:resource>{catalog_url}/{uuid}</mmd:resource>\n")
-                data_mod = re.sub(matchstring_relinfo,relinfo_mod,data)
-            else: # here we need to replace the content
-                match_datasetlandingpage=re.search(b"<mmd:type>Dataset landing page</mmd:type>\n    <mmd:resource>(.+?)</mmd:resource>", data)
-                found_datasetlandingpage = match_datasetlandingpage.group(1)
-                datasetlandingpage_mod = str.encode(f"{catalog_url}/{uuid}")
-                data_mod = re.sub(found_datasetlandingpage,datasetlandingpage_mod,data)
+        # each of the related_information types has its own block so we do not eed to worry about there being other <mmd:related_information> </mmd:related_information> blocks already, unless it's a Dataset Landing Page block
+        if not bool(re.search(b"Dataset landing page",data)):
+            matchstring_end = b"\n</mmd:mmd>\n"
+            end_mod = str.encode(f"\n  <mmd:related_information>\n    <mmd:type>Dataset landing page</mmd:type>\n    <mmd:description/>\n    <mmd:resource>{catalog_url}/{uuid}</mmd:resource>\n  </mmd:related_information>\n</mmd:mmd>\n")
+            data_mod = re.sub(matchstring_end,end_mod,data)
+        else: # there is already a block of related information with Dataset landing page, we replace the content
+            match_datasetlandingpage=re.search(b"<mmd:type>Dataset landing page</mmd:type>(.+?)</mmd:related_information>",data,re.DOTALL)
+            found_datasetlandingpage = match_datasetlandingpage.group(1)
+            datasetlandingpage_mod = str.encode(f"\n    <mmd:description/>\n    <mmd:resource>{catalog_url}/{uuid}</mmd:resource>\n  ")
+            data_mod = re.sub(found_datasetlandingpage,datasetlandingpage_mod,data)
 
         return data_mod
 
