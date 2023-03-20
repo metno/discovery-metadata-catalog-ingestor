@@ -302,7 +302,7 @@ def testApiWorker_AddLandingPage(filesDir):
     )
     data_w_relinf_nolandingpage = bytes(readFile(passFilewithRInoLP), "utf-8")
 
-    data_w_landingpage=(
+    data_w_landingpage = (
         b'<mmd:mmd xmlns:mmd="http://www.met.no/schema/mmd" xmlns:gm'
         b'l="http://www.opengis.net/gml">\n  <mmd:metadata_identifier>test.no:a1ddaf0f-cae'
         b'0-4a15-9b37-3468e9cb1a2b</mmd:metadata_identifier>\n  <mmd:title xml:lang="en">D'
@@ -543,21 +543,16 @@ def testApiWorker_AddLandingPage(filesDir):
         b'md:related_information>\n    <mmd:type>Dataset landing page</mmd:type>\n    <mmd'
         b':description/>\n    <mmd:resource>https://data.met.no/dataset/a1ddaf0f-cae0-4a15'
         b'-9b37-3468e9cb1a2b</mmd:resource>\n  </mmd:related_information>\n</mmd:mmd>\n')
-    
+
     tstWorker = Worker("insert", passFile, None)
 
-    assert (
-        tstWorker._add_landing_page(data_wo_landingpage, catalog_url) == data_w_landingpage
-    )
-    assert (
-        tstWorker._add_landing_page(data_w_relinf_nolandingpage, catalog_url) == data_w_landingpage_andotherrelinfo
-    )
-    assert (
-        tstWorker._add_landing_page(data_w_old_landingpage, catalog_url) == data_w_landingpage
-    )
-    assert (
-        tstWorker._add_landing_page(data_w_old_landingpage_wotherrelinfo, catalog_url) == data_w_landingpage_andotherrelinfo
-    )
-
+    result = tstWorker._add_landing_page(data_wo_landingpage, catalog_url)
+    assert result == data_w_landingpage
+    result = tstWorker._add_landing_page(data_w_relinf_nolandingpage, catalog_url)
+    assert result == data_w_landingpage_andotherrelinfo
+    result = tstWorker._add_landing_page(data_w_old_landingpage, catalog_url)
+    assert result == data_w_landingpage
+    result = tstWorker._add_landing_page(data_w_old_landingpage_wotherrelinfo, catalog_url)
+    assert result == data_w_landingpage_andotherrelinfo
 
 # END Test testApiWorker_AddLandingPage
