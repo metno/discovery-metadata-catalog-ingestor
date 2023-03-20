@@ -115,7 +115,7 @@ class App(Flask):
         if request.content_length > self._conf.max_permitted_size:
             return f"The file is larger than maximum size: {self._conf.max_permitted_size}", 413
 
-        data = request.get_data() 
+        data = request.get_data()
 
         # Cache the job file
         file_uuid = uuid.uuid4()
@@ -132,7 +132,7 @@ class App(Flask):
         if not valid:
             self._handle_persist_file(False, full_path, reject_path, msg)
             return msg, 400
-        
+ 
         # Run the distributors
         err = self._distributor_wrapper(worker)
 
