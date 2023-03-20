@@ -294,6 +294,7 @@ def testApiWorker_AddLandingPage(filesDir):
     )
 
     catalog_url = "https://data.met.no/dataset"
+    uuid = "a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b"
 
     data_wo_landingpage = bytes(readFile(passFile), "utf-8")
     data_w_old_landingpage = bytes(readFile(passFilewithLP), "utf-8")
@@ -546,13 +547,13 @@ def testApiWorker_AddLandingPage(filesDir):
 
     tstWorker = Worker("insert", passFile, None)
 
-    result = tstWorker._add_landing_page(data_wo_landingpage, catalog_url)
+    result = tstWorker._add_landing_page(data_wo_landingpage, catalog_url, uuid)
     assert result == data_w_landingpage
-    result = tstWorker._add_landing_page(data_w_relinf_nolandingpage, catalog_url)
+    result = tstWorker._add_landing_page(data_w_relinf_nolandingpage, catalog_url, uuid)
     assert result == data_w_landingpage_andotherrelinfo
-    result = tstWorker._add_landing_page(data_w_old_landingpage, catalog_url)
+    result = tstWorker._add_landing_page(data_w_old_landingpage, catalog_url, uuid)
     assert result == data_w_landingpage
-    result = tstWorker._add_landing_page(data_w_old_landingpage_wotherrelinfo, catalog_url)
+    result = tstWorker._add_landing_page(data_w_old_landingpage_wotherrelinfo, catalog_url, uuid)
     assert result == data_w_landingpage_andotherrelinfo
 
 # END Test testApiWorker_AddLandingPage

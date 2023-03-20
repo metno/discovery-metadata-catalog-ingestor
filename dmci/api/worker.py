@@ -19,7 +19,6 @@ limitations under the License.
 
 import logging
 import re
-import sys
 import uuid
 
 from lxml import etree
@@ -91,7 +90,7 @@ class Worker:
         if valid:
             # Check information content
             valid, msg = self._check_information_content(data)
-            data_mod = self._add_landing_page(data, self._conf.catalog_url)
+            data_mod = self._add_landing_page(data, self._conf.catalog_url, self._file_metadata_id)
 
         return valid, msg, data_mod
 
@@ -175,32 +174,12 @@ class Worker:
 
         return valid, msg
 
-    def _add_landing_page(self, data, catalog_url):
+    def _add_landing_page(self, data, catalog_url, uuid):
         """Inserts the landing page info in the data bytes string and returns the modified string
         <related_information>
            <type>Dataset landing page</type>
            <resource>https://data.met.no/dataset/{uuid}</resource>
         </related_information>"""
-
-        if not isinstance(data, bytes):
-            # return False, "Input must be bytes type"
-            logger.critical("Input must be bytes type")
-            sys.exit(1)
-
-        # extract uuid
-        uuid = ""
-        try:
-            match_meta_id = re.search(
-                b"metadata_identifier>(.+?)</mmd:metadata_identifier>", data
-            )
-            meta_id = match_meta_id.group(1)
-            uuid = meta_id.split(b":")[1].decode()
-        except Exception as e:
-            logger.critical(
-                "The data should have been validated and contain a valid metadata_identifier"
-            )
-            logger.critical(str(e))
-            sys.exit(1)
 
         # each of the related_information types has its own block so we do not eed to worry
         # about there being other <mmd:related_information> </mmd:related_information> blocks
