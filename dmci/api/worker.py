@@ -31,7 +31,7 @@ from dmci.distributors import FileDist, PyCSWDist
 logger = logging.getLogger(__name__)
 
 
-class Worker():
+class Worker:
 
     CALL_MAP = {
         "file": FileDist,
@@ -91,7 +91,7 @@ class Worker():
         if valid:
             # Check information content
             valid, msg = self._check_information_content(data)
-            data_mod = self._add_landing_page(data,self._conf.catalog_url)
+            data_mod = self._add_landing_page(data, self._conf.catalog_url)
 
         return valid, msg, data_mod
 
@@ -115,7 +115,7 @@ class Worker():
             The messages returned by the failed jobs
         """
         status = True
-        valid  = True
+        valid = True
         called = []
         failed = []
         skipped = []
@@ -130,7 +130,7 @@ class Worker():
                 xml_file=self._dist_xml_file,
                 metadata_id=self._dist_metadata_id,
                 worker=self,
-                path_to_parent_list=self._kwargs.get('path_to_parent_list', None)
+                path_to_parent_list=self._kwargs.get("path_to_parent_list", None),
             )
             valid &= obj.is_valid()
             if obj.is_valid():
@@ -183,34 +183,52 @@ class Worker():
         </related_information>"""
 
         if not isinstance(data, bytes):
-            #return False, "Input must be bytes type"
+            # return False, "Input must be bytes type"
             logger.critical("Input must be bytes type")
             sys.exit(1)
 
-        #extract uuid
-        uuid=''
-        try: 
-            match_meta_id=re.search(b"metadata_identifier>(.+?)</mmd:metadata_identifier>", data)
+        # extract uuid
+        uuid = ""
+        try:
+            match_meta_id = re.search(
+                b"metadata_identifier>(.+?)</mmd:metadata_identifier>", data
+            )
             meta_id = match_meta_id.group(1)
             uuid = meta_id.split(b":")[1].decode()
         except Exception as e:
-            logger.critical("The data should have been validated and contain a valid metadata_identifier")
+            logger.critical(
+                "The data should have been validated and contain a valid metadata_identifier"
+            )
             logger.critical(str(e))
             sys.exit(1)
 
-        # each of the related_information types has its own block so we do not eed to worry about there being other <mmd:related_information> </mmd:related_information> blocks already, unless it's a Dataset Landing Page block
-        if not bool(re.search(b"Dataset landing page",data)):
+        # each of the related_information types has its own block so we do not eed to worry
+        # about there being other <mmd:related_information> </mmd:related_information> blocks
+        # already, unless it's a Dataset Landing Page block
+        if not bool(re.search(b"Dataset landing page", data)):
             matchstring_end = b"\n</mmd:mmd>\n"
-            end_mod = str.encode(f"\n  <mmd:related_information>\n    <mmd:type>Dataset landing page</mmd:type>\n    <mmd:description/>\n    <mmd:resource>{catalog_url}/{uuid}</mmd:resource>\n  </mmd:related_information>\n</mmd:mmd>\n")
-            data_mod = re.sub(matchstring_end,end_mod,data)
-        else: # there is already a block of related information with Dataset landing page, we replace the content
-            match_datasetlandingpage=re.search(b"<mmd:type>Dataset landing page</mmd:type>(.+?)</mmd:related_information>",data,re.DOTALL)
+            end_mod = str.encode(
+                f"\n  <mmd:related_information>\n    <mmd:type>Dataset landing page</mmd:type>"
+                f"\n    <mmd:description/>\n    <mmd:resource>{catalog_url}/{uuid}</mmd:resource>"
+                f"\n  </mmd:related_information>\n</mmd:mmd>\n"
+            )
+            data_mod = re.sub(matchstring_end, end_mod, data)
+        else:
+            # there is already a block of related_information with Dataset landing page,
+            # we replace whatever the content inside it
+            match_datasetlandingpage = re.search(
+                b"<mmd:type>Dataset landing page</mmd:type>(.+?)</mmd:related_information>",
+                data,
+                re.DOTALL,
+            )
             found_datasetlandingpage = match_datasetlandingpage.group(1)
-            datasetlandingpage_mod = str.encode(f"\n    <mmd:description/>\n    <mmd:resource>{catalog_url}/{uuid}</mmd:resource>\n  ")
-            data_mod = re.sub(found_datasetlandingpage,datasetlandingpage_mod,data)
+            datasetlandingpage_mod = str.encode(
+                f"\n    <mmd:description/>\n    "
+                f"<mmd:resource>{catalog_url}/{uuid}</mmd:resource>\n  "
+            )
+            data_mod = re.sub(found_datasetlandingpage, datasetlandingpage_mod, data)
 
         return data_mod
-
 
     def _extract_metadata_id(self, xml_doc):
         """Extract the metadata_identifier from the xml object and set
@@ -257,5 +275,6 @@ class Worker():
             return False
         self._namespace = namespace
         return True
+
 
 # END Class Worker
