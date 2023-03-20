@@ -17,15 +17,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import dmci
+import logging
 import os
 import sys
 import uuid
-import logging
 
+from flask import Flask, request
 from lxml import etree
-from flask import request, Flask
 
+import dmci
 from dmci.api.worker import Worker
 
 logger = logging.getLogger(__name__)

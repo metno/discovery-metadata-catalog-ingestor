@@ -18,15 +18,15 @@ limitations under the License.
 """
 
 import os
+from uuid import UUID
+
 import lxml
 import pytest
-
-from uuid import UUID
-from tools import readFile
 
 from dmci.api.worker import Worker
 from dmci.distributors import FileDist, PyCSWDist
 from dmci.tools import CheckMMD
+from tools import readFile
 
 
 @pytest.mark.api

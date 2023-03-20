@@ -17,16 +17,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import uuid
 import logging
 import re
 import sys
+import uuid
 
 from lxml import etree
 
 from dmci import CONFIG
-from dmci.tools import CheckMMD
 from dmci.distributors import FileDist, PyCSWDist
+from dmci.tools import CheckMMD
 
 logger = logging.getLogger(__name__)
 
