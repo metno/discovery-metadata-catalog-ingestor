@@ -132,7 +132,7 @@ class App(Flask):
         if not valid:
             self._handle_persist_file(False, full_path, reject_path, msg)
             return msg, 400
- 
+
         # Run the distributors
         err = self._distributor_wrapper(worker)
 
