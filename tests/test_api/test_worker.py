@@ -105,6 +105,13 @@ def testApiWorker_Validator(monkeypatch, filesDir):
     """Test the Worker class validator."""
     xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
     passFile = os.path.join(filesDir, "api", "passing.xml")
+    passFilewLP = os.path.join(filesDir, "api", "passing_wlandingpage.xml")
+    passFilewLPandotherRI = os.path.join(
+        filesDir, "api", "passing_wlandingpage_wotherrelatedinfo.xml"
+    )
+    passFilewRInoLP = os.path.join(
+        filesDir, "api", "passing_wrelatedinfo_nolandingpage.xml"
+    )
     failFile = os.path.join(filesDir, "api", "failing.xml")
 
     xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
@@ -122,6 +129,24 @@ def testApiWorker_Validator(monkeypatch, filesDir):
         # Valid XML
         passData = bytes(readFile(passFile), "utf-8")
         valid, msg, passData = passWorker.validate(passData)
+        assert valid is True
+        assert isinstance(msg, str)
+        assert not msg
+
+        passDatawLP = bytes(readFile(passFilewLP), "utf-8")
+        valid, msg, passDatawLP = passWorker.validate(passDatawLP)
+        assert valid is True
+        assert isinstance(msg, str)
+        assert not msg
+
+        passDatawLPandotherRI = bytes(readFile(passFilewLPandotherRI), "utf-8")
+        valid, msg, passDatawLPandotherRI = passWorker.validate(passDatawLPandotherRI)
+        assert valid is True
+        assert isinstance(msg, str)
+        assert not msg
+
+        passDatawRInoLP = bytes(readFile(passFilewRInoLP), "utf-8")
+        valid, msg, passDatawRInoLP = passWorker.validate(passDatawRInoLP)
         assert valid is True
         assert isinstance(msg, str)
         assert not msg
