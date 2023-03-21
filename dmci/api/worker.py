@@ -50,6 +50,7 @@ class Worker():
         self._namespace = kwargs.get("md_namespace", "")
 
         self._file_metadata_id = None
+        self._file_title_en = None
 
         # XML Validator
         # Created by the app object as it is potentially slow to set up
@@ -153,9 +154,11 @@ class Worker():
 
         # Read XML file
         xml_doc = etree.fromstring(data)
+        self._extract_title(xml_doc)
         valid = self._extract_metadata_id(xml_doc)
         if not valid:
-            return False, "Input MMD XML file has no valid uri:UUID metadata_identifier"
+            return False, f"Input MMD XML file has no valid uri:UUID metadata_identifier \n"\
+                          f" Title: {self._file_title_en} "
 
         # Check XML file
         logger.info("Performing in depth checking.")
@@ -165,7 +168,8 @@ class Worker():
             msg = "Input MMD XML file is ok"
         else:
             _, _, err = checker.status()
-            msg = "Input MMD XML file contains errors, please check your file"
+            msg = f"Input MMD XML file contains errors, please check your file.\n"\
+                  f" Title: {self._file_title_en}"
             if err:
                 msg += "\n" + "\n".join(err)
 
@@ -216,5 +220,17 @@ class Worker():
             return False
         self._namespace = namespace
         return True
+
+    def _extract_title(self, xml_doc):
+        title = ""
+        for xml_entry in xml_doc:
+            local = etree.QName(xml_entry)
+            if local.localname == "title":
+                title = xml_entry.text
+                logger.info("XML file title:%s", title)
+                break
+        if title == "":
+            logger.warning("No title found in XML file")
+        self._file_title_en = title
 
 # END Class Worker
