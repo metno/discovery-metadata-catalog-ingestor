@@ -191,16 +191,20 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
         mp.setattr(CheckMMD, "check_url", lambda *a, **k: (False, []))
         passData = bytes(readFile(passFile), "utf-8")
         assert tstWorker._check_information_content(passData) == (
-            False,
-            "Input MMD XML file contains errors, please check your file",
+            False, (
+                "Input MMD XML file contains errors, please check your file.\n"
+                " Title: Direct Broadcast data processed in satellite swath to L1C"
+            )
         )
 
     # Invalid XML file
     failFile = os.path.join(filesDir, "api", "failing.xml")
     failData = bytes(readFile(failFile), "utf-8")
     assert tstWorker._check_information_content(failData) == (
-        False,
-        "Input MMD XML file has no valid uri:UUID metadata_identifier",
+        False, (
+            "Input MMD XML file has no valid uri:UUID metadata_identifier \n"
+            " Title: Direct Broadcast data processed in satellite swath to L1C "
+        )
     )
 
     # Check Error report
@@ -219,9 +223,9 @@ def testApiWorker_CheckInfoContent(monkeypatch, filesDir):
         b"</root>"
     )
     assert tstWorker._check_information_content(failData) == (
-        False,
-        (
-            "Input MMD XML file contains errors, please check your file\n"
+        False, (
+            "Input MMD XML file contains errors, please check your file.\n"
+            " Title: \n"
             "Failed: URL Check on 'imap://met.no'\n"
             " - URL scheme 'imap' not allowed.\n"
             " - URL contains no path. At least '/' is required.\n"

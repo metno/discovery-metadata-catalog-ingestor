@@ -130,6 +130,7 @@ class App(Flask):
                         path_to_parent_list=self._conf.path_to_parent_list)
         valid, msg, data = worker.validate(data)
         if not valid:
+            msg += f"\n UUID : {file_uuid} \n "
             self._handle_persist_file(False, full_path, reject_path, msg)
             return msg, 400
 
