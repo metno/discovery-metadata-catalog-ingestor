@@ -144,13 +144,13 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
 
     # Data is valid
     with monkeypatch.context() as mp:
-        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 200
         assert client.post("/v1/update", data=MOCK_XML).status_code == 200
 
     # Data is not valid
     with monkeypatch.context() as mp:
-        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (False, ""))
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (False, "", MOCK_XML))
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 400
         assert client.post("/v1/update", data=MOCK_XML).status_code == 400
 
@@ -159,7 +159,7 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
         f = ["A", "B"]
         s = ["C"]
         e = ["Reason A", "Reason B"]
-        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
         mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e))
 
         response = client.post("/v1/insert", data=MOCK_XML)
@@ -236,12 +236,12 @@ def testApiApp_ValidateRequests(client, monkeypatch):
 
     # Data is valid
     with monkeypatch.context() as mp:
-        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, ""))
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
         assert client.post("/v1/validate", data=MOCK_XML).status_code == 200
 
     # Data is not valid
     with monkeypatch.context() as mp:
-        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (False, ""))
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (False, "", MOCK_XML))
         assert client.post("/v1/validate", data=MOCK_XML).status_code == 400
 
 # END Test testApiApp_ValidateRequests

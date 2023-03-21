@@ -18,6 +18,9 @@ dmci:
 pycsw:
   csw_service_url: http://localhost
 
+overrides:
+  catalog_url: http://localhost
+
 file:
   file_archive_path: /workdir
 ```
