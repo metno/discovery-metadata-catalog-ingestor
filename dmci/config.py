@@ -77,7 +77,7 @@ class Config():
         # Read Values
         self._read_core()
         self._read_pycsw()
-        self._read_web_catalog()
+        self._read_overrides()
         self._read_file()
 
         valid = self._validate_config()
@@ -110,9 +110,9 @@ class Config():
 
         return
 
-    def _read_web_catalog(self):
-        """Read config values under 'web_catalog'."""
-        conf = self._raw_conf.get("web_catalog", {})
+    def _read_overrides(self):
+        """Read config values under 'overrides'."""
+        conf = self._raw_conf.get("overrides", {})
 
         self.catalog_url = conf.get("catalog_url", self.catalog_url)
 

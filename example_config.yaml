@@ -12,7 +12,7 @@ dmci:
 pycsw:
   csw_service_url: http://localhost
 
-web_catalog:
+overrides:
   catalog_url: http://localhost
 
 file:
