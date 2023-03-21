@@ -20,6 +20,7 @@ pycsw:
 
 overrides:
   catalog_url: http://localhost
+  namespace_uri: test.no
 
 file:
   file_archive_path: /workdir

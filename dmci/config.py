@@ -46,6 +46,9 @@ class Config():
         # Web catalog url
         self.catalog_url = None
 
+        # Namespace uri
+        self.namespace_uri = None
+
         # File Distributor
         self.file_archive_path = None
 
@@ -115,6 +118,7 @@ class Config():
         conf = self._raw_conf.get("overrides", {})
 
         self.catalog_url = conf.get("catalog_url", self.catalog_url)
+        self.namespace_uri = conf.get("namespace_uri", self.namespace_uri)
 
         return
 
