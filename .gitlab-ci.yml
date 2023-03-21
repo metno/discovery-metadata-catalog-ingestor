@@ -14,7 +14,7 @@ build container:
     - |
       # Build if not yet present in registry
       if ! docker pull "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" > /dev/null 2>&1; then
-        docker build --pull --build-arg DMCI_VERSION=$dmci_version -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" container
+        docker build --pull --build-arg DMCI_VERSION=$dmci_version -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" .
         docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
       fi
     - |
