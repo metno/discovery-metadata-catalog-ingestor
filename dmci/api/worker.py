@@ -259,7 +259,6 @@ class Worker:
         self._namespace = namespace
         return True
 
-
     def _extract_title(self, xml_doc):
         title = ""
         for xml_entry in xml_doc:
