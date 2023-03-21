@@ -22,6 +22,7 @@ The requirements can also be installed with:
 ```bash
 pip install -r requirements.txt
 ```
+We need `mmd` from [github.com/metno/mmd](https://github.com/metno/mmd).
 
 ## Environment Variables
 
@@ -55,8 +56,41 @@ To increase logging level to include info and debug messages, set the environmen
 `DEBUG`.
 
 ## Usage
+```
+git clone https://github.com/metno/discovery-metadata-catalog-ingestor
 
-First initialize the config.yaml or use environment-variables. Then, to start the API run:
+cd discovery-metadata-catalog-ingestor
+
+mkdir workdir
+
+cd workdir
+
+mkdir rejected
+
+```
+First initialize the config.yaml or use environment-variables.
+
+```
+dmci:
+  distributors:
+    - file
+    - pycsw
+  distributor_cache: workdir
+  rejected_jobs_path: workdir/rejected
+  max_permitted_size: 100000
+  mmd_xsl_path: path/to/'mmd-to-geonorge.xsl'
+  mmd_xsd_path: path/to/'mmd_strict.xsd'
+  path_to_parent_list: path/to/parent-uuid-list.xml
+
+pycsw:
+  csw_service_url: http://localhost
+
+file:
+  file_archive_path: workdir
+
+```
+
+Then, to start the API run:
 
 ```python
 python dmci_start_api.py
