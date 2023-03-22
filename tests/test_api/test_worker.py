@@ -18,6 +18,7 @@ limitations under the License.
 """
 
 import os
+import re
 from uuid import UUID
 
 import lxml
@@ -161,6 +162,34 @@ def testApiWorker_Validator(monkeypatch, filesDir):
 
 # END Test testApiWorker_Validator
 
+@pytest.mark.api
+def testApiWorker_NamespaceReplacement(monkeypatch, filesDir):
+    """Test the replacement of the namespace with the one read from the config."""
+    xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
+    passFile = os.path.join(filesDir, "api", "passing_wnometnamespace.xml")
+
+    xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
+    passWorker = Worker("none", passFile, xsdObj)
+
+    # Valid data format
+    with monkeypatch.context() as mp:
+        #mp.setattr(Worker, "_check_information_content", lambda *a: (True, ""))
+        
+        passWorker._conf.namespace_uri = "no.yes"
+        
+        # Valid XML
+        passData = bytes(readFile(passFile), "utf-8")
+        valid, msg, passData = passWorker.validate(passData)
+        assert valid is True
+
+        match_meta_id = re.search(
+                b"metadata_identifier>(.+?)</mmd:metadata_identifier>", passData
+        )
+        meta_id = match_meta_id.group(1)
+        namespace = meta_id.split(b":")[0].decode()
+        assert namespace == "no.yes"
+
+# END Test testApiWorker_NamespaceReplacement
 
 @pytest.mark.api
 def testApiWorker_CheckInfoContent(monkeypatch, filesDir):

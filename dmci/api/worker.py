@@ -95,8 +95,8 @@ class Worker:
             # data_mod = self._replace_namespace(data, self._conf.namespace_uri)
             if self._namespace == "no.met":
                 data_mod = re.sub(
-                    str.encode(self._namespace),
-                    str.encode(self._conf.namespace_uri),
+                    str.encode(f"<mmd:metadata_identifier>{self._namespace}"),
+                    str.encode(f"<mmd:metadata_identifier>{self._conf.namespace_uri}"),
                     data,
                 )
                 self._namespace = self._conf.namespace_uri
