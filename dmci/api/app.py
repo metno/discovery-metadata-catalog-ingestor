@@ -17,15 +17,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import dmci
+import logging
 import os
 import sys
 import uuid
-import logging
 
+from flask import Flask, request
 from lxml import etree
-from flask import request, Flask
 
+import dmci
 from dmci.api.worker import Worker
 
 logger = logging.getLogger(__name__)
@@ -128,7 +128,7 @@ class App(Flask):
         # Run the validator
         worker = Worker(cmd, full_path, self._xsd_obj,
                         path_to_parent_list=self._conf.path_to_parent_list)
-        valid, msg = worker.validate(data)
+        valid, msg, data = worker.validate(data)
         if not valid:
             msg += f"\n UUID : {file_uuid} \n "
             self._handle_persist_file(False, full_path, reject_path, msg)
@@ -163,7 +163,7 @@ class App(Flask):
         # Run the validator
         worker = Worker("none", full_path, self._xsd_obj,
                         path_to_parent_list=self._conf.path_to_parent_list)
-        valid, msg = worker.validate(data)
+        valid, msg, data = worker.validate(data)
         self._handle_persist_file(True, full_path)
         if valid:
             return OK_RETURN, 200
