@@ -23,6 +23,7 @@ The requirements can also be installed with:
 pip install -r requirements.txt
 ```
 We need `mmd` from [github.com/metno/mmd](https://github.com/metno/mmd).
+We use path to `mmd-to-geonorge.xsl` and `mmd_strict.xsd` file in `mmd` to initialise the config variables `mmd_xsl_path` and `mmd_xsd_path`
 
 ## Environment Variables
 
@@ -78,9 +79,9 @@ dmci:
   distributor_cache: workdir
   rejected_jobs_path: workdir/rejected
   max_permitted_size: 100000
-  mmd_xsl_path: path/to/'mmd-to-geonorge.xsl'
-  mmd_xsd_path: path/to/'mmd_strict.xsd'
-  path_to_parent_list: path/to/parent-uuid-list.xml
+  mmd_xsl_path: path/to/mmd/xslt/mmd-to-geonorge.xsl
+  mmd_xsd_path: path/to/mmd/xsd/mmd_strict.xsd
+  path_to_parent_list: parent-uuid-list.xml
 
 pycsw:
   csw_service_url: http://localhost
