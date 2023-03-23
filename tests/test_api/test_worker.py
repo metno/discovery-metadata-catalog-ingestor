@@ -173,6 +173,7 @@ def testApiWorker_NamespaceReplacement(monkeypatch, filesDir):
     passWorker = Worker("none", passFile, xsdObj)
 
     passWorker._conf.namespace_uri = "no.yes"
+    passWorker._conf.override_namespace = "no.met"
 
     # Valid XML
     passData = bytes(readFile(passFile), "utf-8")

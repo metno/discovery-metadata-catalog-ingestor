@@ -45,7 +45,8 @@ class Config():
 
         # Web catalog url
         self.catalog_url = None
-
+        # Namespace to override
+        self.override_namespace = None
         # Namespace uri
         self.namespace_uri = None
 
@@ -119,6 +120,7 @@ class Config():
 
         self.catalog_url = conf.get("catalog_url", self.catalog_url)
         self.namespace_uri = conf.get("namespace_uri", self.namespace_uri)
+        self.override_namespace = conf.get("override_namespace", self.override_namespace)
 
         return
 

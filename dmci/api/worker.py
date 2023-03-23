@@ -93,7 +93,7 @@ class Worker:
             valid, msg = self._check_information_content(data)
             # Replace namespace in data
             # data_mod = self._replace_namespace(data, self._conf.namespace_uri)
-            if self._namespace == "no.met":
+            if self._namespace == self._conf.override_namespace:
                 data_mod = re.sub(
                     str.encode(f"<mmd:metadata_identifier>{self._namespace}"),
                     str.encode(f"<mmd:metadata_identifier>{self._conf.namespace_uri}"),

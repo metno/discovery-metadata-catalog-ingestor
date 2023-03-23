@@ -19,6 +19,7 @@ pycsw:
   csw_service_url: http://localhost
 
 overrides:
+  override_namespace: no.met
   catalog_url: http://localhost
   namespace_uri: test.no
 

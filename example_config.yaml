@@ -13,6 +13,7 @@ pycsw:
   csw_service_url: http://localhost
 
 overrides:
+  override: False
   catalog_url: http://localhost
   namespace_uri: null
 
