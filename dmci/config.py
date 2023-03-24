@@ -43,12 +43,10 @@ class Config():
         # PyCSW Distributor
         self.csw_service_url = None
 
-        # Web catalog url
+        # Environment-dependent web catalog url
         self.catalog_url = None
-        # Namespace to override
-        self.override_namespace = None
-        # Namespace uri
-        self.namespace_uri = None
+        # Environment-dependent suffix
+        self.env_string = None
 
         # File Distributor
         self.file_archive_path = None
@@ -81,7 +79,7 @@ class Config():
         # Read Values
         self._read_core()
         self._read_pycsw()
-        self._read_overrides()
+        self._read_customization()
         self._read_file()
 
         valid = self._validate_config()
@@ -114,13 +112,12 @@ class Config():
 
         return
 
-    def _read_overrides(self):
-        """Read config values under 'overrides'."""
-        conf = self._raw_conf.get("overrides", {})
+    def _read_customization(self):
+        """Read config values under 'customization'."""
+        conf = self._raw_conf.get("customization", {})
 
         self.catalog_url = conf.get("catalog_url", self.catalog_url)
-        self.namespace_uri = conf.get("namespace_uri", self.namespace_uri)
-        self.override_namespace = conf.get("override_namespace", self.override_namespace)
+        self.env_string = conf.get("env_string", self.env_string)
 
         return
 

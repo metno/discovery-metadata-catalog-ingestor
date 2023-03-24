@@ -91,15 +91,15 @@ class Worker:
         if valid:
             # Check information content
             valid, msg = self._check_information_content(data)
-            # Replace namespace in data
-            # data_mod = self._replace_namespace(data, self._conf.namespace_uri)
-            if self._namespace == self._conf.override_namespace:
+            # Append env string to namespace in data
+            if self._conf.env_string:
+                full_namespace = f"{self._namespace}.{self._conf.env_string}"
                 data_mod = re.sub(
                     str.encode(f"<mmd:metadata_identifier>{self._namespace}"),
-                    str.encode(f"<mmd:metadata_identifier>{self._conf.namespace_uri}"),
+                    str.encode(f"<mmd:metadata_identifier>{full_namespace}"),
                     data,
                 )
-                self._namespace = self._conf.namespace_uri
+                self._namespace = full_namespace
             # Add landing page info
             data_mod = self._add_landing_page(
                 data_mod, self._conf.catalog_url, self._file_metadata_id
