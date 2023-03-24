@@ -56,7 +56,7 @@ To increase logging level to include info and debug messages, set the environmen
 `DMCI_LOGLEVEL` to the desired level. Valid levels are `CRITICAL`, `ERROR`, `WARNING`, `INFO`, and
 `DEBUG`.
 
-## Usage
+## Installation
 ```
 git clone https://github.com/metno/discovery-metadata-catalog-ingestor
 
@@ -69,13 +69,12 @@ cd workdir
 mkdir rejected
 
 ```
-First initialize the config.yaml or use environment-variables.
+Initialize the config.yaml or use environment-variables.
 
 ```
 dmci:
   distributors:
     - file
-    - pycsw
   distributor_cache: workdir
   rejected_jobs_path: workdir/rejected
   max_permitted_size: 100000
@@ -90,8 +89,9 @@ file:
   file_archive_path: workdir
 
 ```
+## Usage
 
-Then, to start the API run:
+To start the API run:
 
 ```python
 python dmci_start_api.py
