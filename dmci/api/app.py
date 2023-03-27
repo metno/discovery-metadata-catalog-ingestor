@@ -21,6 +21,7 @@ import logging
 import os
 import sys
 import uuid
+import shutil
 
 from flask import Flask, request
 from lxml import etree
@@ -230,7 +231,8 @@ class App(Flask):
 
         else:
             try:
-                os.rename(full_path, reject_path)
+                shutil.copy(full_path, reject_path)
+                os.remove(full_path)
             except Exception as e:
                 logger.error("Failed to move persist file to rejected folder: %s", reject_path)
                 logger.error(str(e))
