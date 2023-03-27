@@ -23,7 +23,7 @@ The requirements can also be installed with:
 pip install -r requirements.txt
 ```
 We need `mmd` from [github.com/metno/mmd](https://github.com/metno/mmd).
-We use path to `mmd-to-geonorge.xsl` and `mmd_strict.xsd` file in `mmd` to initialise the config variables `mmd_xsl_path` and `mmd_xsd_path`
+We use path to `xslt/mmd-to-geonorge.xsl` and `xsd/mmd_strict.xsd` file in `mmd` to initialise the config variables `mmd_xsl_path` and `mmd_xsd_path`
 
 ## Environment Variables
 
@@ -69,7 +69,7 @@ cd workdir
 mkdir rejected
 
 ```
-Initialize the config.yaml or use environment-variables.
+Create the file `config.yaml` based on `example-config.yaml` and fill it with the following:
 
 ```
 dmci:
@@ -85,6 +85,9 @@ dmci:
 pycsw:
   csw_service_url: http://localhost
 
+overrides:
+  catalog_url: http://localhost
+  
 file:
   file_archive_path: workdir
 
