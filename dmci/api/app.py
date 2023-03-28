@@ -235,7 +235,8 @@ class App(Flask):
             # If source and destination are same
             except shutil.SameFileError as e:
                 logger.error(
-                    "Source and destination represents the same file. %s -> %s" % (full_path, reject_path))
+                    "Source and destination represents the same file. %s -> %s"
+                    % (full_path, reject_path))
                 logger.error(str(e))
                 return False
 
