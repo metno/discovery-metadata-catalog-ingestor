@@ -258,10 +258,6 @@ class App(Flask):
                 reason_path = reject_path[:-3]+"txt"
                 with open(reason_path, mode="w", encoding="utf-8") as ofile:
                     ofile.write(reject_reason)
-            except OSError as e:
-                logger.error("Failed to write rejected reason to file: %s", reason_path)
-                logger.error(str(e))
-                return False
             except Exception as e:
                 logger.error("Failed to write rejected reason to file: %s", reason_path)
                 logger.error(str(e))
