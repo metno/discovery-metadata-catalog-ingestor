@@ -22,7 +22,7 @@ import uuid
 import pytest
 import flask
 
-from tools import causeOSError, readFile, writeFile
+from tools import causeOSError, readFile, writeFile, causePermissionError, causeSameFileError, causeShUtilError
 
 from dmci.api import App
 
@@ -315,25 +315,32 @@ def testApiApp_HandlePersistFile(caplog, fncDir, monkeypatch):
     # Status NOK
     # ==========
 
-    # Fail move to rejected
+    # Fail move to rejected samefile error
     writeFile(testFile, "<xml />")
     assert os.path.isfile(testFile)
     caplog.clear()
-    assert App._handle_persist_file(False, testFile, None, "Error") is False
-    assert "Failed to move persist file to rejected folder" in caplog.text
+    with monkeypatch.context() as mp:
+        mp.setattr("shutil.copy", causeSameFileError)
+        assert App._handle_persist_file(False, testFile, rejectFile, "Error") is False
+        assert "Source and destination represents the same file" in caplog.text
+
+    # Fail move to rejected permission error
+    writeFile(testFile, "<xml />")
     assert os.path.isfile(testFile)
-    assert not os.path.isfile(rejectFile)
-    assert not os.path.isfile(errorFile)
+    caplog.clear()
+    with monkeypatch.context() as mp:
+        mp.setattr("shutil.copy", causePermissionError)
+        assert App._handle_persist_file(False, testFile, rejectFile, "Error") is False
+        assert "Permission denied" in caplog.text
 
-
-    # Fail move to rejected samefile error
-    # writeFile(testFile, "<xml />")
-    # assert os.path.isfile(testFile)
-    # caplog.clear()
-    # with monkeypatch.context() as mp:
-    #     mp.setattr("shutil.copy", causeOSError)
-    #     assert App._handle_persist_file(False, testFile, rejectFile, "Error") is False
-    #     assert "The rejected folder is not writeable" in caplog.text
+    # Fail move to rejected generic error
+    writeFile(testFile, "<xml />")
+    assert os.path.isfile(testFile)
+    caplog.clear()
+    with monkeypatch.context() as mp:
+        mp.setattr("shutil.copy", causeShUtilError)
+        assert App._handle_persist_file(False, testFile, rejectFile, "Error") is False
+        assert "Something failed moving the rejected file" in caplog.text
 
     # Successful move to rejected
     writeFile(testFile, "<xml />")
@@ -343,9 +350,6 @@ def testApiApp_HandlePersistFile(caplog, fncDir, monkeypatch):
     assert os.path.isfile(rejectFile)
     assert os.path.isfile(errorFile)
     assert readFile(errorFile) == "Error"
-
-
-
 
     # Fail writing error file
     writeFile(testFile, "<xml />")

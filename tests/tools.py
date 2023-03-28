@@ -39,3 +39,23 @@ def causeOSError(*args, **kwargs):
     OSError when called.
     """
     raise OSError("Test OSError")
+
+def causeSameFileError(*args, **kwargs):
+    """This function will take any arguments and always raise an
+    shutil.SameFileError when called.
+    """
+    import shutil
+    raise shutil.SameFileError("Test shutil.SameFileError")
+
+def causePermissionError(*args, **kwargs):
+    """This function will take any arguments and always raise an
+    PermissionError when called.
+    """
+    raise PermissionError("Test PermissionError")
+
+def causeShUtilError(*args, **kwargs):
+    """This function will take any arguments and always raise an
+    shutil.Error when called.
+    """
+    import shutil
+    raise shutil.Error("Test shutil.Error")
