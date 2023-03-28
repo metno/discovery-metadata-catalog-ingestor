@@ -12,6 +12,7 @@ __pycache__
 
 # Input
 /config.yaml
+/workdir
 
 # Setuptools
 /build/
