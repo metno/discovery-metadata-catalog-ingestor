@@ -232,11 +232,31 @@ class App(Flask):
         else:
             try:
                 shutil.copy(full_path, reject_path)
-                os.remove(full_path)
+            # If source and destination are same
+            except shutil.SameFileError as e:
+                logger.error("Source %s and destination %s represents the same file." % (full_path,reject_path))
+                logger.error(str(e))
+                return False
+
+            # If there is any permission issue
+            except PermissionError as e:
+                logger.error("Permission denied")
+                logger.error(str(e))
+                return False
+
+            # If destiantion is not writeable
+            except OSError as e:
+                logger.error("The rejected folder %s is not writeable", reject_path)
+                logger.error(str(e))
+                return False
+
+            # Handle other possible exceptions
             except Exception as e:
                 logger.error("Failed to move persist file to rejected folder: %s", reject_path)
                 logger.error(str(e))
                 return False
+            else:
+                os.remove(full_path)
 
             try:
                 reason_path = reject_path[:-3]+"txt"
