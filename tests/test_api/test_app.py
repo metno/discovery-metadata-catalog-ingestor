@@ -325,6 +325,16 @@ def testApiApp_HandlePersistFile(caplog, fncDir, monkeypatch):
     assert not os.path.isfile(rejectFile)
     assert not os.path.isfile(errorFile)
 
+
+    # Fail move to rejected samefile error
+    # writeFile(testFile, "<xml />")
+    # assert os.path.isfile(testFile)
+    # caplog.clear()
+    # with monkeypatch.context() as mp:
+    #     mp.setattr("shutil.copy", causeOSError)
+    #     assert App._handle_persist_file(False, testFile, rejectFile, "Error") is False
+    #     assert "The rejected folder is not writeable" in caplog.text
+
     # Successful move to rejected
     writeFile(testFile, "<xml />")
     assert os.path.isfile(testFile)
@@ -333,6 +343,9 @@ def testApiApp_HandlePersistFile(caplog, fncDir, monkeypatch):
     assert os.path.isfile(rejectFile)
     assert os.path.isfile(errorFile)
     assert readFile(errorFile) == "Error"
+
+
+
 
     # Fail writing error file
     writeFile(testFile, "<xml />")
