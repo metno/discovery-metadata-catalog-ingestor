@@ -323,7 +323,7 @@ def testApiApp_HandlePersistFile(caplog, fncDir, monkeypatch):
     assert os.path.isfile(testFile)
     caplog.clear()
     with monkeypatch.context() as mp:
-        #mp.setattr("shutil.copy", causeSameFileError)
+        mp.setattr("shutil.copy", causeSameFileError)
         assert App._handle_persist_file(False, testFile, testFile, "Error") is False
         assert "Source and destination represents the same file" in caplog.text
 
