@@ -22,8 +22,8 @@ The requirements can also be installed with:
 ```bash
 pip install -r requirements.txt
 ```
-We need `mmd` from [github.com/metno/mmd](https://github.com/metno/mmd).
-We use path to `xslt/mmd-to-geonorge.xsl` and `xsd/mmd_strict.xsd` file in `mmd` to initialise the config variables `mmd_xsl_path` and `mmd_xsd_path`
+
+The `xslt/mmd-to-geonorge.xsl` and `xsd/mmd_strict.xsd` files are needed from [github.com/metno/mmd](https://github.com/metno/mmd), and should be set as the values of to the `mmd_xsl_path` and `mmd_xsd_path` config variables.
 
 ## Environment Variables
 
