@@ -12,8 +12,9 @@ dmci:
 pycsw:
   csw_service_url: http://localhost
 
-overrides:
+customization:
   catalog_url: http://localhost
+  env_string: null
 
 file:
   file_archive_path: null
