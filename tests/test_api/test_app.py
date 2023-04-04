@@ -22,7 +22,13 @@ import uuid
 import pytest
 import flask
 
-from tools import causeOSError, readFile, writeFile
+from tools import readFile
+from tools import writeFile
+
+from tools import causeOSError
+from tools import causePermissionError
+from tools import causeSameFileError
+from tools import causeShUtilError
 
 from dmci.api import App
 
@@ -113,6 +119,8 @@ def testApiApp_EndPoints_Exception(tmpDir, tmpConf, mockXsd, monkeypatch):
     rejectDir = os.path.join(tmpDir, "api", "rejected")
     if not os.path.isdir(workDir):
         os.mkdir(workDir)
+    if not os.path.isdir(rejectDir):
+        os.mkdir(rejectDir)
     monkeypatch.setattr("dmci.CONFIG", tmpConf)
 
     tmpConf.distributor_cache = workDir
@@ -136,7 +144,7 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
     assert client.post("/v1/insert", data=tooLargeFile).status_code == 413
     assert client.post("/v1/update", data=tooLargeFile).status_code == 413
 
-    # Fail cahcing the file
+    # Fail caching the file
     with monkeypatch.context() as mp:
         mp.setattr("builtins.open", causeOSError)
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 507
@@ -229,7 +237,7 @@ def testApiApp_ValidateRequests(client, monkeypatch):
     tooLargeFile = bytes(3000000)
     assert client.post("/v1/validate", data=tooLargeFile).status_code == 413
 
-    # Fail cahcing the file
+    # Fail caching the file
     with monkeypatch.context() as mp:
         mp.setattr("builtins.open", causeOSError)
         assert client.post("/v1/validate", data=MOCK_XML).status_code == 507
@@ -315,15 +323,32 @@ def testApiApp_HandlePersistFile(caplog, fncDir, monkeypatch):
     # Status NOK
     # ==========
 
-    # Fail move to rejected
+    # Fail move to rejected samefile error
     writeFile(testFile, "<xml />")
     assert os.path.isfile(testFile)
     caplog.clear()
-    assert App._handle_persist_file(False, testFile, None, "Error") is False
-    assert "Failed to move persist file to rejected folder" in caplog.text
+    with monkeypatch.context() as mp:
+        mp.setattr("shutil.copy", causeSameFileError)
+        assert App._handle_persist_file(False, testFile, testFile, "Error") is False
+        assert "Source and destination represents the same file" in caplog.text
+
+    # Fail move to rejected permission error
+    writeFile(testFile, "<xml />")
     assert os.path.isfile(testFile)
-    assert not os.path.isfile(rejectFile)
-    assert not os.path.isfile(errorFile)
+    caplog.clear()
+    with monkeypatch.context() as mp:
+        mp.setattr("shutil.copy", causePermissionError)
+        assert App._handle_persist_file(False, testFile, rejectFile, "Error") is False
+        assert "Permission denied" in caplog.text
+
+    # Fail move to rejected generic error
+    writeFile(testFile, "<xml />")
+    assert os.path.isfile(testFile)
+    caplog.clear()
+    with monkeypatch.context() as mp:
+        mp.setattr("shutil.copy", causeShUtilError)
+        assert App._handle_persist_file(False, testFile, rejectFile, "Error") is False
+        assert "Something failed moving the rejected file" in caplog.text
 
     # Successful move to rejected
     writeFile(testFile, "<xml />")
@@ -334,13 +359,38 @@ def testApiApp_HandlePersistFile(caplog, fncDir, monkeypatch):
     assert os.path.isfile(errorFile)
     assert readFile(errorFile) == "Error"
 
+
+@pytest.mark.api
+def testApiApp_HandlePersistFile_fail2write_reason(caplog, fncDir, monkeypatch):
+    """ Test that _handle_persist_file catches the error if it fails
+    to open the reject file (that should provide the reason for
+    failing to write the persist file to the rejected folder).
+    """
+    import builtins
+
     # Fail writing error file
-    writeFile(testFile, "<xml />")
-    assert os.path.isfile(testFile)
+    rejectDir = os.path.join(fncDir, "rejected")
+    full_path = os.path.join(fncDir, "test.xml")
+    reject_path = os.path.join(rejectDir, "test.xml")
+
+    os.mkdir(rejectDir)
+    assert os.path.isdir(rejectDir)
+
+    writeFile(full_path, "<xml />")
+    assert os.path.isfile(full_path)
     caplog.clear()
+
+    original_open = builtins.open
+
+    def patched_open(*args, **kwargs):
+        if "rejected/test.xml" in args[0]:
+            mp.setattr("builtins.open", causeOSError)
+
+        return original_open(*args, **kwargs)
+
     with monkeypatch.context() as mp:
-        mp.setattr("builtins.open", causeOSError)
-        assert App._handle_persist_file(False, testFile, rejectFile, "Error") is False
+        mp.setattr("builtins.open", patched_open)
+        assert App._handle_persist_file(False, full_path, reject_path, "Some reason") is False
         assert "Failed to write rejected reason to file" in caplog.text
 
 # END Test testApiApp_HandlePersistFile
