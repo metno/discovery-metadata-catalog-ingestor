@@ -23,6 +23,8 @@ The requirements can also be installed with:
 pip install -r requirements.txt
 ```
 
+The `xslt/mmd-to-geonorge.xsl` and `xsd/mmd_strict.xsd` files are needed from [github.com/metno/mmd](https://github.com/metno/mmd), and should be set as the values of to the `mmd_xsl_path` and `mmd_xsd_path` config variables.
+
 ## Environment Variables
 
 The package reads the following environment variables.
@@ -54,9 +56,45 @@ To increase logging level to include info and debug messages, set the environmen
 `DMCI_LOGLEVEL` to the desired level. Valid levels are `CRITICAL`, `ERROR`, `WARNING`, `INFO`, and
 `DEBUG`.
 
+## Installation
+```
+git clone https://github.com/metno/discovery-metadata-catalog-ingestor
+
+cd discovery-metadata-catalog-ingestor
+
+mkdir workdir
+
+cd workdir
+
+mkdir rejected
+
+```
+Create the file `config.yaml` based on `example-config.yaml` and fill it with the following:
+
+```
+dmci:
+  distributors:
+    - file
+  distributor_cache: workdir
+  rejected_jobs_path: workdir/rejected
+  max_permitted_size: 100000
+  mmd_xsl_path: path/to/mmd/xslt/mmd-to-geonorge.xsl
+  mmd_xsd_path: path/to/mmd/xsd/mmd_strict.xsd
+  path_to_parent_list: parent-uuid-list.xml
+
+pycsw:
+  csw_service_url: http://localhost
+
+overrides:
+  catalog_url: http://localhost
+  
+file:
+  file_archive_path: workdir
+
+```
 ## Usage
 
-First initialize the config.yaml or use environment-variables. Then, to start the API run:
+To start the API run:
 
 ```python
 python dmci_start_api.py
