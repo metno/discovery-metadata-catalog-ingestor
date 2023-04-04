@@ -232,6 +232,7 @@ class App(Flask):
         else:
             try:
                 shutil.copy(full_path, reject_path)
+
             # If source and destination are same
             except shutil.SameFileError as e:
                 logger.error(
@@ -251,11 +252,12 @@ class App(Flask):
                 logger.error("Something failed moving the rejected file.")
                 logger.error(str(e))
                 return False
+
             else:
                 os.remove(full_path)
 
+            reason_path = reject_path[:-3]+"txt"
             try:
-                reason_path = reject_path[:-3]+"txt"
                 with open(reason_path, mode="w", encoding="utf-8") as ofile:
                     ofile.write(reject_reason)
             except Exception as e:

@@ -22,8 +22,13 @@ import uuid
 import pytest
 import flask
 
-from tools import causeOSError, readFile, writeFile
-from tools import causePermissionError, causeSameFileError, causeShUtilError
+from tools import readFile
+from tools import writeFile
+
+from tools import causeOSError
+from tools import causePermissionError
+from tools import causeSameFileError
+from tools import causeShUtilError
 
 from dmci.api import App
 
@@ -139,7 +144,7 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
     assert client.post("/v1/insert", data=tooLargeFile).status_code == 413
     assert client.post("/v1/update", data=tooLargeFile).status_code == 413
 
-    # Fail cahcing the file
+    # Fail caching the file
     with monkeypatch.context() as mp:
         mp.setattr("builtins.open", causeOSError)
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 507
@@ -232,7 +237,7 @@ def testApiApp_ValidateRequests(client, monkeypatch):
     tooLargeFile = bytes(3000000)
     assert client.post("/v1/validate", data=tooLargeFile).status_code == 413
 
-    # Fail cahcing the file
+    # Fail caching the file
     with monkeypatch.context() as mp:
         mp.setattr("builtins.open", causeOSError)
         assert client.post("/v1/validate", data=MOCK_XML).status_code == 507
@@ -354,37 +359,38 @@ def testApiApp_HandlePersistFile(caplog, fncDir, monkeypatch):
     assert os.path.isfile(errorFile)
     assert readFile(errorFile) == "Error"
 
+
+@pytest.mark.api
+def testApiApp_HandlePersistFile_fail2write_reason(caplog, fncDir, monkeypatch):
+    """ Test that _handle_persist_file catches the error if it fails
+    to open the reject file (that should provide the reason for
+    failing to write the persist file to the rejected folder).
     """
-    The followig test conflcts with the shutil.copy() since this function
-    also users "builtins.open" in
-    the background:
-    dmci/api/app.py:234: in _handle_persist_file
-    shutil.copy(full_path, reject_path)
-    ../../../../anaconda3/lib/python3.9/shutil.py:427: in copy
-    copyfile(src, dst, follow_symlinks=follow_symlinks)
-    ../../../../anaconda3/lib/python3.9/shutil.py:264: in copyfile
-    with open(src, 'rb') as fsrc:
-     _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-    args = ('/home/magnarem/git/s-enda/metno/discovery-metadata-catalog-ingestor/
-    tests/temp/f_temp/test.xml', 'rb'), kwargs = {}
-
-    def causeOSError(*args, **kwargs):
-               raise OSError("Test OSError")
-    E       OSError: Test OSError
-
-    tests/tools.py:41: OSError
-
-    just commenting out this.. Maybe some refactoring is needed for this test to be run
-    togheter with the other tests.
-    """
+    import builtins
 
     # Fail writing error file
-    # writeFile(testFile, "<xml />")
-    # assert os.path.isfile(testFile)
-    # caplog.clear()
-    # with monkeypatch.context() as mp:
-    #     mp.setattr("builtins.open", causeOSError)
-    #     assert App._handle_persist_file(False, testFile, rejectFile, "Error") is False
-    #     assert "Failed to write rejected reason to file" in caplog.text
+    rejectDir = os.path.join(fncDir, "rejected")
+    full_path = os.path.join(fncDir, "test.xml")
+    reject_path = os.path.join(rejectDir, "test.xml")
+
+    os.mkdir(rejectDir)
+    assert os.path.isdir(rejectDir)
+
+    writeFile(full_path, "<xml />")
+    assert os.path.isfile(full_path)
+    caplog.clear()
+
+    original_open = builtins.open
+
+    def patched_open(*args, **kwargs):
+        if "rejected/test.xml" in args[0]:
+            mp.setattr("builtins.open", causeOSError)
+
+        return original_open(*args, **kwargs)
+
+    with monkeypatch.context() as mp:
+        mp.setattr("builtins.open", patched_open)
+        assert App._handle_persist_file(False, full_path, reject_path, "Some reason") is False
+        assert "Failed to write rejected reason to file" in caplog.text
 
 # END Test testApiApp_HandlePersistFile
