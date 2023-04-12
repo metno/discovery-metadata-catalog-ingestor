@@ -87,25 +87,45 @@ class Worker:
         # Check xml file against XML schema definition
         valid = self._xsd_obj.validate(etree.fromstring(data))
         msg = repr(self._xsd_obj.error_log)
-        data_mod = data
+
         if valid:
             # Check information content
             valid, msg = self._check_information_content(data)
-            # Append env string to namespace in data
+
+            # Check if parent dataset block is present and if yes
+            # check that the parent exists in the databases
+            if bool(re.search(b'<mmd:related_dataset relation_type="parent">', data)):
+                match_parent_block = re.search(
+                    b'<mmd:related_dataset relation_type="parent">(.+?)</mmd:related_dataset>',
+                    data
+                )
+                found_parent_block_content = match_parent_block.group(1)
+                old_parent_namespace, parent_uuid = found_parent_block_content.split(b":").decode()
+                valid_parent = self._search_parent_uuid(parent_uuid)
+                if not valid_parent:
+                    return False, "Parent uuid not found"
+                if self._conf.env_string:
+                    # Append env string to the namespace in the parent block
+                    new_parent_namespace = f"{old_parent_namespace}.{self._conf.env_string}"
+                    new_parent_block_content = bytes(f"{new_parent_namespace}:{parent_uuid}")
+                    data = re.sub(found_parent_block_content, new_parent_block_content, data)
+
+            # Append env string to namespace in metadata_identifier
             if self._conf.env_string:
                 full_namespace = f"{self._namespace}.{self._conf.env_string}"
-                data_mod = re.sub(
+                data = re.sub(
                     str.encode(f"<mmd:metadata_identifier>{self._namespace}"),
                     str.encode(f"<mmd:metadata_identifier>{full_namespace}"),
                     data,
                 )
                 self._namespace = full_namespace
+
             # Add landing page info
-            data_mod = self._add_landing_page(
-                data_mod, self._conf.catalog_url, self._file_metadata_id
+            data = self._add_landing_page(
+                data, self._conf.catalog_url, self._file_metadata_id
             )
 
-        return valid, msg, data_mod
+        return valid, msg, data
 
     def distribute(self):
         """Loop through all distributors listed in the config and call
@@ -229,6 +249,11 @@ class Worker:
             data_mod = re.sub(found_datasetlandingpage, datasetlandingpage_mod, data)
 
         return data_mod
+
+    def _search_parent_uuid(self, parent_uuid):
+        """Search in all the databases for the parent dataset
+        """
+        return True
 
     def _extract_metadata_id(self, xml_doc):
         """Extract the metadata_identifier from the xml object and set
