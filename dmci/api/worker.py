@@ -102,14 +102,17 @@ class Worker:
                 for dist in self.CALL_MAP:
                     obj = self.CALL_MAP[dist](self._dist_cmd)
                 found_parent_block_content = match_parent_block.group(1)
-                old_parent_namespace, parent_uuid = [x.decode() for x in found_parent_block_content.split(b":")]
+                old_parent_namespace, parent_uuid = [x.decode()
+                                                     for x in
+                                                     found_parent_block_content.split(b":")]
                 found_parent = obj.search(parent_uuid)
                 if not found_parent:
                     return False, "Parent uuid not found"
                 if self._conf.env_string:
                     # Append env string to the namespace in the parent block
                     new_parent_namespace = f"{old_parent_namespace}.{self._conf.env_string}"
-                    new_parent_block_content = bytes(f"{new_parent_namespace}:{parent_uuid}", "utf-8")
+                    new_parent_block_content = bytes(
+                        f"{new_parent_namespace}:{parent_uuid}", "utf-8")
                     data = re.sub(found_parent_block_content, new_parent_block_content, data)
 
             # Append env string to namespace in metadata_identifier

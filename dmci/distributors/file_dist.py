@@ -50,6 +50,15 @@ class FileDist(Distributor):
 
         return status, msg
 
+    def search_uuid(self, uuid):
+        """Simply search for a given uuid to see if it's there"""
+        fileName, archPath = self._make_full_path(uuid)
+        archFile = os.path.join(archPath, fileName)
+        if os.path.isfile(archFile):
+            return True
+        else:
+            return False
+
     ##
     #  Internal Functions
     ##
