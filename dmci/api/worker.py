@@ -99,15 +99,17 @@ class Worker:
                     b'<mmd:related_dataset relation_type="parent">(.+?)</mmd:related_dataset>',
                     data
                 )
+                for dist in self.CALL_MAP:
+                    obj = self.CALL_MAP[dist](self._dist_cmd)
                 found_parent_block_content = match_parent_block.group(1)
-                old_parent_namespace, parent_uuid = found_parent_block_content.split(b":").decode()
-                valid_parent = self._search_parent_uuid(parent_uuid)
-                if not valid_parent:
+                old_parent_namespace, parent_uuid = [x.decode() for x in found_parent_block_content.split(b":")]
+                found_parent = obj.search(parent_uuid)
+                if not found_parent:
                     return False, "Parent uuid not found"
                 if self._conf.env_string:
                     # Append env string to the namespace in the parent block
                     new_parent_namespace = f"{old_parent_namespace}.{self._conf.env_string}"
-                    new_parent_block_content = bytes(f"{new_parent_namespace}:{parent_uuid}")
+                    new_parent_block_content = bytes(f"{new_parent_namespace}:{parent_uuid}", "utf-8")
                     data = re.sub(found_parent_block_content, new_parent_block_content, data)
 
             # Append env string to namespace in metadata_identifier
@@ -249,11 +251,6 @@ class Worker:
             data_mod = re.sub(found_datasetlandingpage, datasetlandingpage_mod, data)
 
         return data_mod
-
-    def _search_parent_uuid(self, parent_uuid):
-        """Search in all the databases for the parent dataset
-        """
-        return True
 
     def _extract_metadata_id(self, xml_doc):
         """Extract the metadata_identifier from the xml object and set
