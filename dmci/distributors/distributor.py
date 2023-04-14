@@ -110,10 +110,9 @@ class Distributor():
         """The main run function to be implemented in each subclass."""
         raise NotImplementedError
 
-    def search(self, uuid):
+    def search(self, namespace, uuid):
         """The search function for a UUID to be implemented in each subclass."""
-        # raise NotImplementedError
-        return True
+        raise NotImplementedError
 
     ##
     #  Getters

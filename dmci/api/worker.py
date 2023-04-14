@@ -99,15 +99,23 @@ class Worker:
                     b'<mmd:related_dataset relation_type="parent">(.+?)</mmd:related_dataset>',
                     data
                 )
-                for dist in self.CALL_MAP:
-                    obj = self.CALL_MAP[dist](self._dist_cmd)
                 found_parent_block_content = match_parent_block.group(1)
                 old_parent_namespace, parent_uuid = [x.decode()
                                                      for x in
                                                      found_parent_block_content.split(b":")]
-                found_parent = obj.search(parent_uuid)
+
+                found_parent = False
+                search_msg = ""
+
+                for dist in self._conf.call_distributors:
+                    if dist not in self.CALL_MAP:
+                        logger.warning(f"Skipping distributor {dist}")
+                        continue
+                    obj = self.CALL_MAP[dist](self._dist_cmd)
+                    found_parent, search_msg = obj.search(old_parent_namespace, parent_uuid)
+
                 if not found_parent:
-                    return False, "Parent uuid not found"
+                    return False, f"Parent uuid not found: {search_msg}", data
                 if self._conf.env_string:
                     # Append env string to the namespace in the parent block
                     new_parent_namespace = f"{old_parent_namespace}.{self._conf.env_string}"
