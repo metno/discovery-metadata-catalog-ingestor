@@ -129,11 +129,20 @@ class App(Flask):
         # Run the validator
         worker = Worker(cmd, full_path, self._xsd_obj,
                         path_to_parent_list=self._conf.path_to_parent_list)
-        valid, msg, data = worker.validate(data)
+        valid, msg, data_ = worker.validate(data)
         if not valid:
             msg += f"\n UUID : {file_uuid} \n "
             self._handle_persist_file(False, full_path, reject_path, msg)
             return msg, 400
+
+        # Check if the data from the request was modified in worker.validate().
+        # If so we will need to write the modified data to disk.
+        if not data == data_:
+            msg, code = self._persist_file(data_, full_path)
+            if code != 200:
+                return msg, code
+
+
 
         # Run the distributors
         err = self._distributor_wrapper(worker)
