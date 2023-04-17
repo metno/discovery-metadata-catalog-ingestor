@@ -126,13 +126,19 @@ class Worker:
             if self._conf.env_string:
 
                 # Append env string to namespace in metadata_identifier
-                full_namespace = f"{self._namespace}.{self._conf.env_string}"
-                data = re.sub(
-                    str.encode(f"<mmd:metadata_identifier>{self._namespace}"),
-                    str.encode(f"<mmd:metadata_identifier>{full_namespace}"),
-                    data,
-                )
-                self._namespace = full_namespace
+                logger.debug("Identifier namespace: %s" % self._namespace)
+                logger.debug("Environment customization %s" % self._conf.env_string)
+                ns_re_pattern = re.compile("\\w.\\w."+self._conf.env_string)
+                logger.debug(re.search(ns_re_pattern, self._namespace))
+
+                if re.search(ns_re_pattern, self._namespace) is None:
+                    full_namespace = f"{self._namespace}.{self._conf.env_string}"
+                    data = re.sub(
+                        str.encode(f"<mmd:metadata_identifier>{self._namespace}"),
+                        str.encode(f"<mmd:metadata_identifier>{full_namespace}"),
+                        data,
+                    )
+                    self._namespace = full_namespace
 
                 # Append env string to the namespace in the parent block, if present
                 if bool(re.search(b'<mmd:related_dataset relation_type="parent">', data)):
@@ -142,14 +148,16 @@ class Worker:
                     )
                     found_parent_block_content = match_parent_block.group(1)
                     old_parent_namespace = found_parent_block_content.split(b":")[0].decode()
-                    new_parent_namespace = f"{old_parent_namespace}.{self._conf.env_string}"
-                    data = re.sub(
-                        str.encode(
-                            f'<mmd:related_dataset relation_type="parent">{old_parent_namespace}'),
-                        str.encode(
-                            f'<mmd:related_dataset relation_type="parent">{new_parent_namespace}'),
-                        data,
-                    )
+                    logger.debug("Parent dataset namespace: %s" % old_parent_namespace)
+                    if re.search(ns_re_pattern, old_parent_namespace) is None:
+                        new_parent_namespace = f"{old_parent_namespace}.{self._conf.env_string}"
+                        data = re.sub(
+                            str.encode(f'<mmd:related_dataset '
+                                       f'relation_type="parent">{old_parent_namespace}'),
+                            str.encode(f'<mmd:related_dataset '
+                                       f'relation_type="parent">{new_parent_namespace}'),
+                            data,
+                        )
 
             # Add landing page info
             data = self._add_landing_page(

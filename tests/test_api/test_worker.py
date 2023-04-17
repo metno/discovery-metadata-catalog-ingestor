@@ -165,8 +165,8 @@ def testApiWorker_Validator(monkeypatch, filesDir):
 
 
 @pytest.mark.api
-def testApiWorker_NamespaceReplacement(monkeypatch, filesDir):
-    """Test the replacement of the namespace with the one read from the config."""
+def testApiWorker_NamespaceReplacement(filesDir):
+    """Test the replacement of the namespace with the one customized for the environment."""
 
     xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
     passFile = os.path.join(filesDir, "api", "passing.xml")
@@ -188,6 +188,33 @@ def testApiWorker_NamespaceReplacement(monkeypatch, filesDir):
     namespace = meta_id.split(b":")[0].decode()
     assert namespace == "test.no.yolo"
 
+
+# END Test testApiWorker_NamespaceReplacement
+
+@pytest.mark.api
+def testApiWorker_ParentNamespaceReplacement(filesDir):
+    """Test the replacement of the namespace in the parent dataset
+    with the one customized for the environment."""
+
+    xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
+    passFile = os.path.join(filesDir, "api", "passing.xml")
+
+    xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
+    passWorker = Worker("none", passFile, xsdObj)
+
+    passWorker._conf.env_string = "yolo"
+
+    # Valid XML
+    passData = bytes(readFile(passFile), "utf-8")
+    valid, msg, passData = passWorker.validate(passData)
+    assert valid is True
+
+    match_parent_id = re.search(
+        b'<mmd:related_dataset relation_type="parent">(.+?)</mmd:related_dataset>', passData
+    )
+    parent_id = match_parent_id.group(1)
+    namespace = parent_id.split(b":")[0].decode()
+    assert namespace == "test.no.yolo"
 
 # END Test testApiWorker_NamespaceReplacement
 
