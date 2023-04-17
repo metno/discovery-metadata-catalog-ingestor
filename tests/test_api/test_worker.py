@@ -102,10 +102,8 @@ def testApiWorker_Distributor(tmpConf, mockXml, monkeypatch):
 
 
 @pytest.mark.api
-def testApiWorker_Validator(tmpConf, monkeypatch, filesDir):
+def testApiWorker_Validator(monkeypatch, filesDir):
     """Test the Worker class validator."""
-
-    tmpConf.call_distributors = ["file", "pycsw", "blabla"]
 
     xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
     passFile = os.path.join(filesDir, "api", "passing.xml")
@@ -121,8 +119,6 @@ def testApiWorker_Validator(tmpConf, monkeypatch, filesDir):
     xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
     passWorker = Worker("none", passFile, xsdObj)
     failWorker = Worker("none", failFile, xsdObj)
-    passWorker._conf = tmpConf
-    failWorker._conf = tmpConf
 
     # Invalid data format
     passData = readFile(passFile)
@@ -131,8 +127,6 @@ def testApiWorker_Validator(tmpConf, monkeypatch, filesDir):
     # Valid data format
     with monkeypatch.context() as mp:
         mp.setattr(Worker, "_check_information_content", lambda *a: (True, ""))
-        mp.setattr(FileDist, "search", lambda *a: (True, "ok"))
-        mp.setattr(PyCSWDist, "search", lambda *a: (True, "ok"))
 
         # Valid XML
         passData = bytes(readFile(passFile), "utf-8")
@@ -171,10 +165,8 @@ def testApiWorker_Validator(tmpConf, monkeypatch, filesDir):
 
 
 @pytest.mark.api
-def testApiWorker_NamespaceReplacement(tmpConf, monkeypatch, filesDir):
+def testApiWorker_NamespaceReplacement(monkeypatch, filesDir):
     """Test the replacement of the namespace with the one read from the config."""
-
-    tmpConf.call_distributors = ["file", "pycsw", "blabla"]
 
     xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
     passFile = os.path.join(filesDir, "api", "passing.xml")
@@ -182,24 +174,19 @@ def testApiWorker_NamespaceReplacement(tmpConf, monkeypatch, filesDir):
     xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
     passWorker = Worker("none", passFile, xsdObj)
 
-    passWorker._conf = tmpConf
     passWorker._conf.env_string = "yolo"
 
-    with monkeypatch.context() as mp:
-        mp.setattr(FileDist, "search", lambda *a: (True, "ok"))
-        mp.setattr(PyCSWDist, "search", lambda *a: (True, "ok"))
+    # Valid XML
+    passData = bytes(readFile(passFile), "utf-8")
+    valid, msg, passData = passWorker.validate(passData)
+    assert valid is True
 
-        # Valid XML
-        passData = bytes(readFile(passFile), "utf-8")
-        valid, msg, passData = passWorker.validate(passData)
-        assert valid is True
-
-        match_meta_id = re.search(
-            b"metadata_identifier>(.+?)</mmd:metadata_identifier>", passData
-        )
-        meta_id = match_meta_id.group(1)
-        namespace = meta_id.split(b":")[0].decode()
-        assert namespace == "test.no.yolo"
+    match_meta_id = re.search(
+        b"metadata_identifier>(.+?)</mmd:metadata_identifier>", passData
+    )
+    meta_id = match_meta_id.group(1)
+    namespace = meta_id.split(b":")[0].decode()
+    assert namespace == "test.no.yolo"
 
 
 # END Test testApiWorker_NamespaceReplacement
