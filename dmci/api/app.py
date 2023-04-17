@@ -142,8 +142,6 @@ class App(Flask):
             if code != 200:
                 return msg, code
 
-
-
         # Run the distributors
         err = self._distributor_wrapper(worker)
 
