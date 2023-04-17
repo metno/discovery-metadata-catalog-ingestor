@@ -94,8 +94,8 @@ class Worker:
             # Append env string to namespace in data
             if self._conf.env_string:
                 logger.debug("Identifier namespace: %s" % self._namespace)
-                logger.debug("Environment customization %s" %self._conf.env_string)
-                ns_re_pattern = re.compile("\w.\w."+self._conf.env_string)
+                logger.debug("Environment customization %s" % self._conf.env_string)
+                ns_re_pattern = re.compile(r"\w.\w."+self._conf.env_string)
                 logger.debug(re.search(ns_re_pattern, self._namespace))
                 if re.search(ns_re_pattern, self._namespace) is None:
                     full_namespace = f"{self._namespace}.{self._conf.env_string}"
