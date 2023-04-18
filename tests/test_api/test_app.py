@@ -156,6 +156,9 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 200
         assert client.post("/v1/update", data=MOCK_XML).status_code == 200
 
+        mp.setattr("dmci.api.app.App._persist_file", lambda *a: ("Failed to persist", 666))
+        assert client.post("/v1/insert", data=MOCK_XML).status_code == 666
+
     # Data is not valid
     with monkeypatch.context() as mp:
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (False, "", MOCK_XML))

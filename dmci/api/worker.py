@@ -93,13 +93,18 @@ class Worker:
             valid, msg = self._check_information_content(data)
             # Append env string to namespace in data
             if self._conf.env_string:
-                full_namespace = f"{self._namespace}.{self._conf.env_string}"
-                data_mod = re.sub(
-                    str.encode(f"<mmd:metadata_identifier>{self._namespace}"),
-                    str.encode(f"<mmd:metadata_identifier>{full_namespace}"),
-                    data,
-                )
-                self._namespace = full_namespace
+                logger.debug("Identifier namespace: %s" % self._namespace)
+                logger.debug("Environment customization %s" % self._conf.env_string)
+                ns_re_pattern = re.compile(r"\w.\w."+self._conf.env_string)
+                logger.debug(re.search(ns_re_pattern, self._namespace))
+                if re.search(ns_re_pattern, self._namespace) is None:
+                    full_namespace = f"{self._namespace}.{self._conf.env_string}"
+                    data_mod = re.sub(
+                        str.encode(f"<mmd:metadata_identifier>{self._namespace}"),
+                        str.encode(f"<mmd:metadata_identifier>{full_namespace}"),
+                        data,
+                    )
+                    self._namespace = full_namespace
             # Add landing page info
             data_mod = self._add_landing_page(
                 data_mod, self._conf.catalog_url, self._file_metadata_id
