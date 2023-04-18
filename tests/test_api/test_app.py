@@ -33,6 +33,7 @@ from tools import causeShUtilError
 from dmci.api import App
 
 MOCK_XML = b"<xml />"
+MOCK_XML_MOD = b"<xml mod />"
 
 
 @pytest.fixture(scope="function")
@@ -161,6 +162,10 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
         assert client.post("/v1/update", data=MOCK_XML).status_code == 666
 
         mp.setattr("dmci.api.app.App._persist_file", lambda *a: ("Success in persisting", 200))
+        assert client.post("/v1/insert", data=MOCK_XML).status_code == 200
+        assert client.post("/v1/update", data=MOCK_XML).status_code == 200
+
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML_MOD))
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 200
         assert client.post("/v1/update", data=MOCK_XML).status_code == 200
 
