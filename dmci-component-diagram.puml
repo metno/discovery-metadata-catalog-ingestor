@@ -1,0 +1,31 @@
+@startuml dmci-component-diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container(mmd_agent, "MMD Agent", "MMS + Python", "Using the MMS client, subscribes and listens for events of MMD create/update/delete, and pushes to DMCI API.")
+
+ContainerDb(file, "Metadata store", "file system", "Backup Dataset Discovery Metadata Store. Committed to git on regular intervals.")
+ContainerDb(solr, "Metadata store", "SOLR", "Dataset Discovery Metadata Store (MMD).")
+Container(csapi, "pycsw", "CSW", "CSW endpoint for search and harvesting. Serves INSPIRE, DIF, etc., compliant metadata. Currently using postgis as backend. This will be replaced by SOLR in a future version.")
+
+
+Container_Boundary(dmci, "Discovery Metadata Catalog Ingestor"){
+  Component(filedist, "Backup distributor", "Python", "Using the MMS client, subscribes and listens for events of MMD create/update/delete, and writes to file storage.")
+  Component(solrdist, "SOLR distributor", "Python", "SOLR ingestor for MMD metadata.")
+  Component(cswdist, "CSW distributor", "Python", "Using the MMS client, subscribes and listens for events of MMD create/update/delete. Can be removed when SOLR becomes the db backend for pycsw.")
+  Component(translator, "MMD2ISO Translator", "Python", "Receives an MMD XML file. Translates from MMD to the Norwegian profile of ISO19115/INSPIRE. Returns an ISO19115 XML file. Can be removed when SOLR becomes the db backend for pycsw.")
+  Component(api, "DMCI API", "Python-Flask", "Create/update: Check size of input, store input MMD to file. Changes environment specific suffix to the namespace, if operating on dev or staging.")
+  ComponentDb(db, "Data store", "File", "Storage of incoming data.")
+  ComponentDb(rejected, "Rejected store", "File", "Storage of rejected data.")
+}
+
+Rel(mmd_agent, api, "create/update/delete/validate", "https")
+Rel(api, rejected, "if validator (400) or any distributor (500) fails, store rejected info in", "")
+Rel(api, filedist, "create/update/delete if valid", "")
+Rel(api, solrdist, "create/update/delete if valid", "")
+Rel(api, cswdist, "create/update/delete if valid", "")
+
+Rel(filedist, file, "create/update/delete", "")
+Rel(solrdist, solr, "create/update/delete", "")
+Rel(cswdist, csapi, "create/update/delete", "")
+
+@enduml
