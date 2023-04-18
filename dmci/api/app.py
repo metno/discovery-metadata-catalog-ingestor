@@ -21,6 +21,7 @@ import logging
 import os
 import sys
 import uuid
+import shutil
 
 from flask import Flask, request
 from lxml import etree
@@ -230,14 +231,33 @@ class App(Flask):
 
         else:
             try:
-                os.rename(full_path, reject_path)
-            except Exception as e:
-                logger.error("Failed to move persist file to rejected folder: %s", reject_path)
+                shutil.copy(full_path, reject_path)
+
+            # If source and destination are same
+            except shutil.SameFileError as e:
+                logger.error(
+                    "Source and destination represents the same file. %s -> %s"
+                    % (full_path, reject_path))
                 logger.error(str(e))
                 return False
 
+            # If there is any permission issue
+            except PermissionError as e:
+                logger.error("Permission denied")
+                logger.error(str(e))
+                return False
+
+            # Handle other possible exceptions
+            except shutil.Error as e:
+                logger.error("Something failed moving the rejected file.")
+                logger.error(str(e))
+                return False
+
+            else:
+                os.remove(full_path)
+
+            reason_path = reject_path[:-3]+"txt"
             try:
-                reason_path = reject_path[:-3]+"txt"
                 with open(reason_path, mode="w", encoding="utf-8") as ofile:
                     ofile.write(reject_reason)
             except Exception as e:
