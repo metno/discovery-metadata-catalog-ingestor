@@ -92,37 +92,6 @@ class Worker:
             # Check information content
             valid, msg = self._check_information_content(data)
 
-            # Check if parent dataset block is present and if yes
-            # check that the parent exists in the databases
-            if bool(re.search(b'<mmd:related_dataset relation_type="parent">', data)):
-                match_parent_block = re.search(
-                    b'<mmd:related_dataset relation_type="parent">(.+?)</mmd:related_dataset>',
-                    data
-                )
-                found_parent_block_content = match_parent_block.group(1)
-                old_parent_namespace, parent_uuid = [x.decode()
-                                                     for x in
-                                                     found_parent_block_content.split(b":")]
-
-#                found_parent = False
-#                search_msg = ""
-
-#                for dist in self._conf.call_distributors:
-#                    if dist not in self.CALL_MAP:
-#                        logger.warning(f"Skipping distributor {dist}")
-#                        continue
-#                    obj = self.CALL_MAP[dist](self._dist_cmd)
-#                    found_parent, search_msg = obj.search(old_parent_namespace, parent_uuid)
-
-#                if not found_parent:
-#                    return False, f"Parent uuid not found: {search_msg}", data
-#                if self._conf.env_string:
-#                    # Append env string to the namespace in the parent block
-#                    new_parent_namespace = f"{old_parent_namespace}.{self._conf.env_string}"
-#                    new_parent_block_content = bytes(
-#                        f"{new_parent_namespace}:{parent_uuid}", "utf-8")
-#                    data = re.sub(found_parent_block_content, new_parent_block_content, data)
-
             if self._conf.env_string:
 
                 # Append env string to namespace in metadata_identifier
@@ -147,7 +116,12 @@ class Worker:
                         data
                     )
                     found_parent_block_content = match_parent_block.group(1)
-                    old_parent_namespace = found_parent_block_content.split(b":")[0].decode()
+                    found_parent_block_content = found_parent_block_content.split(b":")
+                    if len(found_parent_block_content) != 2:
+                        err = f"Malformed parent dataset identifier {found_parent_block_content}"
+                        logger.error(err)
+                        return False, err
+                    old_parent_namespace = found_parent_block_content[0].decode()
                     logger.debug("Parent dataset namespace: %s" % old_parent_namespace)
                     if re.search(ns_re_pattern, old_parent_namespace) is None:
                         new_parent_namespace = f"{old_parent_namespace}.{self._conf.env_string}"

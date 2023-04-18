@@ -216,6 +216,14 @@ def testApiWorker_ParentNamespaceReplacement(filesDir):
     namespace = parent_id.split(b":")[0].decode()
     assert namespace == "test.no.yolo"
 
+    # Malformed parent dataset id
+    badparentidFile = os.path.join(filesDir, "api", "malformedparentid.xml")
+    badparentWorker = Worker("none", badparentidFile, xsdObj)
+    badparentData = bytes(readFile(badparentidFile), "utf-8")
+    valid, msg = badparentWorker.validate(badparentData)
+    assert valid is False
+    assert msg == "Malformed parent dataset identifier [b'64db6102-14ce-41e9-b93b-61dbb2cb8b4e']"
+
 # END Test testApiWorker_NamespaceReplacement
 
 
