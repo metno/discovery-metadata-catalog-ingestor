@@ -219,7 +219,6 @@ def testApiApp_PersistAgainAfterModification(client, monkeypatch):
 
     @staticmethod
     def fake_output(data, full_path):
-        print(f"called with: {data=}, {full_path=}")
         return next(outputs)
 
     with monkeypatch.context() as mp:
