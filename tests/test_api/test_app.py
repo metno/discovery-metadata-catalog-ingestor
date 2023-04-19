@@ -157,15 +157,22 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 200
         assert client.post("/v1/update", data=MOCK_XML).status_code == 200
 
-        mp.setattr("dmci.api.app.App._persist_file", lambda *a: ("Failed to persist", 666))
-        assert client.post("/v1/insert", data=MOCK_XML).status_code == 666
-        assert client.post("/v1/update", data=MOCK_XML).status_code == 666
-
-        mp.setattr("dmci.api.app.App._persist_file", lambda *a: ("Success in persisting", 200))
+        # Data is valid and gets modified by validate
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML_MOD))
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 200
         assert client.post("/v1/update", data=MOCK_XML).status_code == 200
 
-        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML_MOD))
+    # first _persist_file fails
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
+        mp.setattr("dmci.api.app.App._persist_file", lambda *a: ("Failed to write the file", 666))
+        assert client.post("/v1/insert", data=MOCK_XML).status_code == 666
+        assert client.post("/v1/update", data=MOCK_XML).status_code == 666
+
+    # first _persist_file works
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
+        mp.setattr("dmci.api.app.App._persist_file", lambda *a: ("Everything is OK", 200))
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 200
         assert client.post("/v1/update", data=MOCK_XML).status_code == 200
 
@@ -202,6 +209,27 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
         )
 
 # END Test testApiApp_InsertRequests
+
+
+@pytest.mark.api
+def testApiApp_PersistAgainAfterModification(client, monkeypatch):
+
+    outputs = iter([("Everything is OK", 200), ("Failure in persisting", 666),
+                    ("Everything is OK", 200), ("Failure in persisting", 666)])
+
+    @staticmethod
+    def fake_output(data, full_path):
+        print(f"called with: {data=}, {full_path=}")
+        return next(outputs)
+
+    with monkeypatch.context() as mp:
+        # Data is valid but failure to persist again after modifications
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML_MOD))
+        mp.setattr("dmci.api.app.App._persist_file", fake_output)
+        assert client.post("/v1/insert", data=MOCK_XML).status_code == 666
+        assert client.post("/v1/update", data=MOCK_XML).status_code == 666
+
+# END Test testApiApp_PersistAgainAfterModification
 
 
 @pytest.mark.api
