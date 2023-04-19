@@ -19,7 +19,6 @@ limitations under the License.
 
 import logging
 import requests
-import re
 
 from lxml import etree
 
@@ -61,48 +60,6 @@ class PyCSWDist(Distributor):
             status, msg = self._insert()
 
         return status, msg
-
-    def search(self, namespace, uuid):
-        """Search in pyCSW by given namespace and uuid"""
-        headers = requests.structures.CaseInsensitiveDict()
-        headers["Content-Type"] = "application/xml"
-        headers["Accept"] = "application/xml"
-        identifier = self._construct_identifier(namespace, uuid)
-        xml_as_string = (
-            '<?xml version="1.0" encoding="UTF-8"?>'
-            '<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
-            'xmlns:ogc="http://www.opengis.net/ogc" '
-            'xmlns:gml="http://www.opengis.net/gml" '
-            'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
-            'service="CSW" version="2.0.2" resultType="results" '
-            'maxRecords="10" outputFormat="application/xml" '
-            'outputSchema="http://www.opengis.net/cat/csw/2.0.2" '
-            'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
-            'http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd" >'
-            ' <csw:Query typeNames="csw:Record">'
-            '  <csw:ElementSetName>full</csw:ElementSetName>'
-            '  <csw:Constraint version="1.1.0">'
-            '   <ogc:Filter>'
-            '    <ogc:PropertyIsEqualTo>'
-            '     <ogc:PropertyName>apiso:Identifier</ogc:PropertyName>'
-            '     <ogc:Literal>%s</ogc:Literal>'
-            '    </ogc:PropertyIsEqualTo>'
-            '   </ogc:Filter>'
-            '  </csw:Constraint>'
-            ' </csw:Query>'
-            '</csw:GetRecords>'
-        ) % identifier
-        resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
-
-        status = False
-        if resp.status_code >= 200 and resp.status_code < 300:
-            success_string = 'SearchResults numberOfRecordsMatched="1" numberOfRecordsReturned="0"'
-            if re.search(success_string, resp.text):
-                status = True
-        else:
-            logger.error(resp.text)
-
-        return status, resp.text
 
     def _translate(self):
         """Convert from MMD to ISO19139, Norwegian INSPIRE profile."""
