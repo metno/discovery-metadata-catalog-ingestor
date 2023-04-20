@@ -78,6 +78,8 @@ class Worker:
             True if xsd and information content checks are passing
         msg : str
             Validation message
+        data : bytes
+            bytes representation of the xml data
         """
         # Takes in bytes-object data
         # Gives msg when both validating and not validating
