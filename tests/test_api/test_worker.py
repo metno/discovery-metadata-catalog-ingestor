@@ -122,7 +122,7 @@ def testApiWorker_Validator(monkeypatch, filesDir):
 
     # Invalid data format
     passData = readFile(passFile)
-    assert passWorker.validate(passData) == (False, "Input must be bytes type")
+    assert passWorker.validate(passData) == (False, "Input must be bytes type", passData)
 
     # Valid data format
     with monkeypatch.context() as mp:
@@ -231,7 +231,7 @@ def testApiWorker_ParentNamespaceReplacement(filesDir):
     badparentidFile = os.path.join(filesDir, "api", "malformedparentid.xml")
     badparentWorker = Worker("none", badparentidFile, xsdObj)
     badparentData = bytes(readFile(badparentidFile), "utf-8")
-    valid, msg = badparentWorker.validate(badparentData)
+    valid, msg, data = badparentWorker.validate(badparentData)
     assert valid is False
     assert msg == "Malformed parent dataset identifier [b'64db6102-14ce-41e9-b93b-61dbb2cb8b4e']"
 

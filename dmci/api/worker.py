@@ -82,7 +82,7 @@ class Worker:
         # Takes in bytes-object data
         # Gives msg when both validating and not validating
         if not isinstance(data, bytes):
-            return False, "Input must be bytes type"
+            return False, "Input must be bytes type", data
 
         # Check xml file against XML schema definition
         valid = self._xsd_obj.validate(etree.fromstring(data))
@@ -122,7 +122,7 @@ class Worker:
                     if len(found_parent_block_content) != 2:
                         err = f"Malformed parent dataset identifier {found_parent_block_content}"
                         logger.error(err)
-                        return False, err
+                        return False, err, data
                     old_parent_namespace = found_parent_block_content[0].decode()
                     logger.debug("Parent dataset namespace: %s" % old_parent_namespace)
                     if re.search(ns_re_pattern, old_parent_namespace) is None:
