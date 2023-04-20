@@ -91,6 +91,8 @@ class Worker:
         if valid:
             # Check information content
             valid, msg = self._check_information_content(data)
+            if not valid:
+                return valid, msg, data
 
             if self._conf.env_string:
 

@@ -160,6 +160,17 @@ def testApiWorker_Validator(monkeypatch, filesDir):
         assert isinstance(msg, str)
         assert msg
 
+    # _check_information_content fails
+    with monkeypatch.context() as mp:
+        mp.setattr(Worker, "_check_information_content",
+                   lambda *a: (False, "_check_information_content failed"))
+
+        passData = bytes(readFile(passFile), "utf-8")
+        valid, msg, passData = passWorker.validate(passData)
+        assert valid is False
+        assert isinstance(msg, str)
+        assert msg == "_check_information_content failed"
+
 
 # END Test testApiWorker_Validator
 
