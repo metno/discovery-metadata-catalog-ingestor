@@ -104,6 +104,7 @@ def testApiWorker_Distributor(tmpConf, mockXml, monkeypatch):
 @pytest.mark.api
 def testApiWorker_Validator(monkeypatch, filesDir):
     """Test the Worker class validator."""
+
     xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
     passFile = os.path.join(filesDir, "api", "passing.xml")
     passFilewLP = os.path.join(filesDir, "api", "passing_wlandingpage.xml")
@@ -121,7 +122,7 @@ def testApiWorker_Validator(monkeypatch, filesDir):
 
     # Invalid data format
     passData = readFile(passFile)
-    assert passWorker.validate(passData) == (False, "Input must be bytes type")
+    assert passWorker.validate(passData) == (False, "Input must be bytes type", passData)
 
     # Valid data format
     with monkeypatch.context() as mp:
@@ -159,13 +160,25 @@ def testApiWorker_Validator(monkeypatch, filesDir):
         assert isinstance(msg, str)
         assert msg
 
+    # _check_information_content fails
+    with monkeypatch.context() as mp:
+        mp.setattr(Worker, "_check_information_content",
+                   lambda *a: (False, "_check_information_content failed"))
+
+        passData = bytes(readFile(passFile), "utf-8")
+        valid, msg, passData = passWorker.validate(passData)
+        assert valid is False
+        assert isinstance(msg, str)
+        assert msg == "_check_information_content failed"
+
 
 # END Test testApiWorker_Validator
 
 
 @pytest.mark.api
-def testApiWorker_NamespaceReplacement(monkeypatch, filesDir):
-    """Test the replacement of the namespace with the one read from the config."""
+def testApiWorker_NamespaceReplacement(filesDir):
+    """Test the replacement of the namespace with the one customized for the environment."""
+
     xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
     passFile = os.path.join(filesDir, "api", "passing.xml")
 
@@ -186,6 +199,41 @@ def testApiWorker_NamespaceReplacement(monkeypatch, filesDir):
     namespace = meta_id.split(b":")[0].decode()
     assert namespace == "test.no.yolo"
 
+
+# END Test testApiWorker_NamespaceReplacement
+
+@pytest.mark.api
+def testApiWorker_ParentNamespaceReplacement(filesDir):
+    """Test the replacement of the namespace in the parent dataset
+    with the one customized for the environment."""
+
+    xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
+    passFile = os.path.join(filesDir, "api", "passing.xml")
+
+    xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
+    passWorker = Worker("none", passFile, xsdObj)
+
+    passWorker._conf.env_string = "yolo"
+
+    # Valid XML
+    passData = bytes(readFile(passFile), "utf-8")
+    valid, msg, passData = passWorker.validate(passData)
+    assert valid is True
+
+    match_parent_id = re.search(
+        b'<mmd:related_dataset relation_type="parent">(.+?)</mmd:related_dataset>', passData
+    )
+    parent_id = match_parent_id.group(1)
+    namespace = parent_id.split(b":")[0].decode()
+    assert namespace == "test.no.yolo"
+
+    # Malformed parent dataset id
+    badparentidFile = os.path.join(filesDir, "api", "malformedparentid.xml")
+    badparentWorker = Worker("none", badparentidFile, xsdObj)
+    badparentData = bytes(readFile(badparentidFile), "utf-8")
+    valid, msg, data = badparentWorker.validate(badparentData)
+    assert valid is False
+    assert msg == "Malformed parent dataset identifier [b'64db6102-14ce-41e9-b93b-61dbb2cb8b4e']"
 
 # END Test testApiWorker_NamespaceReplacement
 

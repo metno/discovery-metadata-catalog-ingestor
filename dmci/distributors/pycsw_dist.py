@@ -236,6 +236,7 @@ class PyCSWDist(Distributor):
         n_ins = "0"
         n_upd = "0"
         n_del = "0"
+
         if root.tag == "{%s}ExceptionReport" % ns_ows:
             node = root.find("{%s}Exception" % ns_ows, root.nsmap)
             msg = "Unknown Error"

@@ -78,39 +78,71 @@ class Worker:
             True if xsd and information content checks are passing
         msg : str
             Validation message
+        data : bytes
+            bytes representation of the xml data
         """
         # Takes in bytes-object data
         # Gives msg when both validating and not validating
         if not isinstance(data, bytes):
-            return False, "Input must be bytes type"
+            return False, "Input must be bytes type", data
 
         # Check xml file against XML schema definition
         valid = self._xsd_obj.validate(etree.fromstring(data))
         msg = repr(self._xsd_obj.error_log)
-        data_mod = data
+
         if valid:
             # Check information content
             valid, msg = self._check_information_content(data)
-            # Append env string to namespace in data
+            if not valid:
+                return valid, msg, data
+
             if self._conf.env_string:
+
+                # Append env string to namespace in metadata_identifier
                 logger.debug("Identifier namespace: %s" % self._namespace)
                 logger.debug("Environment customization %s" % self._conf.env_string)
                 ns_re_pattern = re.compile(r"\w.\w."+self._conf.env_string)
                 logger.debug(re.search(ns_re_pattern, self._namespace))
+
                 if re.search(ns_re_pattern, self._namespace) is None:
                     full_namespace = f"{self._namespace}.{self._conf.env_string}"
-                    data_mod = re.sub(
+                    data = re.sub(
                         str.encode(f"<mmd:metadata_identifier>{self._namespace}"),
                         str.encode(f"<mmd:metadata_identifier>{full_namespace}"),
                         data,
                     )
                     self._namespace = full_namespace
+
+                # Append env string to the namespace in the parent block, if present
+                if bool(re.search(b'<mmd:related_dataset relation_type="parent">', data)):
+                    match_parent_block = re.search(
+                        b'<mmd:related_dataset relation_type="parent">(.+?)</mmd:related_dataset>',
+                        data
+                    )
+                    found_parent_block_content = match_parent_block.group(1)
+                    found_parent_block_content = found_parent_block_content.split(b":")
+                    if len(found_parent_block_content) != 2:
+                        err = f"Malformed parent dataset identifier {found_parent_block_content}"
+                        logger.error(err)
+                        return False, err, data
+                    old_parent_namespace = found_parent_block_content[0].decode()
+                    logger.debug("Parent dataset namespace: %s" % old_parent_namespace)
+                    if re.search(ns_re_pattern, old_parent_namespace) is None:
+                        new_parent_namespace = f"{old_parent_namespace}.{self._conf.env_string}"
+                        data = re.sub(
+                            str.encode(f'<mmd:related_dataset '
+                                       f'relation_type="parent">{old_parent_namespace}'),
+                            str.encode(f'<mmd:related_dataset '
+                                       f'relation_type="parent">{new_parent_namespace}'),
+                            data,
+                        )
+
             # Add landing page info
-            data_mod = self._add_landing_page(
-                data_mod, self._conf.catalog_url, self._file_metadata_id
+            data = self._add_landing_page(
+                data, self._conf.catalog_url, self._file_metadata_id
             )
 
-        return valid, msg, data_mod
+        return valid, msg, data
 
     def distribute(self):
         """Loop through all distributors listed in the config and call
