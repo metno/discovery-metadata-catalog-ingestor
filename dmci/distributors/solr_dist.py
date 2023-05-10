@@ -42,6 +42,9 @@ class SolRDist(Distributor):
         self.password = kwargs.get('password', None)
         self.authentication = None
 
+        """Configure if we will fail on missing parent in index."""
+        self.missing_parent_fail = False
+
         if self.username is not None and self.password is not None:
             self.authentication = HTTPBasicAuth(self.username, self.password)
 
@@ -126,7 +129,7 @@ class SolRDist(Distributor):
         """Delete entry with a specified metadata_id."""
         identifier = self._construct_identifier(self._worker._namespace, self._metadata_id)
         logger.info("Deleting document %s from SolR index." % identifier)
-        status, msg = self.mysolr.delete(identifier,commit=True)
+        status, msg = self.mysolr.delete(identifier, commit=True)
         # return status, resp.text
         return status, msg
 
