@@ -126,7 +126,7 @@ class SolRDist(Distributor):
         """Delete entry with a specified metadata_id."""
         identifier = self._construct_identifier(self._worker._namespace, self._metadata_id)
         logger.info("Deleting document %s from SolR index." % identifier)
-        status, msg = self.mysolr.delete(identifier,commit=True)
+        status, msg = self.mysolr.delete(identifier, commit=True)
         # return status, resp.text
         return status, msg
 
