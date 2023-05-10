@@ -34,12 +34,14 @@ class SolRDist(Distributor):
     TOTAL_UPDATED = "total_updated"
     STATUS = [TOTAL_DELETED, TOTAL_INSERTED, TOTAL_UPDATED]
 
-    def __init__(self, cmd, xml_file=None, metadata_id=None, worker=None, **kwargs):
+    def __init__(self, cmd, xml_file=None, metadata_id=None, worker=None, username=None,
+                 password=None, **kwargs):
+
         super().__init__(cmd, xml_file, metadata_id, worker, **kwargs)
 
-        """Store solr autentication credentials if used"""
-        self.username = kwargs.get('username', None)
-        self.password = kwargs.get('password', None)
+        """Store solr authentication credentials if used"""
+        self.username = username
+        self.password = password
         self.authentication = None
 
         if self.username is not None and self.password is not None:
