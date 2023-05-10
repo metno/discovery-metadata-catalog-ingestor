@@ -51,6 +51,9 @@ class Config():
         # File Distributor
         self.file_archive_path = None
 
+        # SolR Distributor
+        self.solr_service_url = None
+
         # Internals
         self._raw_conf = {}
 
@@ -81,6 +84,7 @@ class Config():
         self._read_pycsw()
         self._read_customization()
         self._read_file()
+        self._read_solr()
 
         valid = self._validate_config()
 
@@ -109,6 +113,14 @@ class Config():
         conf = self._raw_conf.get("pycsw", {})
 
         self.csw_service_url = conf.get("csw_service_url", self.csw_service_url)
+
+        return
+
+    def _read_solr(self):
+        """Read config values under 'solr'."""
+        conf = self._raw_conf.get("solr", {})
+
+        self.solr_service_url = conf.get("solr_service_url", self.solr_service_url)
 
         return
 

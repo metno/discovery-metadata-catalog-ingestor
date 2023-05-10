@@ -24,7 +24,7 @@ import uuid
 from lxml import etree
 
 from dmci import CONFIG
-from dmci.distributors import FileDist, PyCSWDist
+from dmci.distributors import FileDist, PyCSWDist, SolRDist
 from dmci.tools import CheckMMD
 
 logger = logging.getLogger(__name__)
@@ -35,6 +35,7 @@ class Worker:
     CALL_MAP = {
         "file": FileDist,
         "pycsw": PyCSWDist,
+        "solr": SolRDist
     }
 
     def __init__(self, cmd, xml_file, xsd_validator, **kwargs):
