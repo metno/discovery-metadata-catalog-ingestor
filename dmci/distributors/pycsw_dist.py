@@ -96,7 +96,7 @@ class PyCSWDist(Distributor):
         xml += b"</csw:Insert></csw:Transaction>"
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
         status = self._get_transaction_status(self.TOTAL_INSERTED, resp)
-        logging.debug("Insert status: " + str(status) + ". With response: " + resp.text)
+        logger.debug("Insert status: " + str(status) + ". With response: " + resp.text)
         return status, resp.text
 
     def _update(self):
@@ -136,7 +136,7 @@ class PyCSWDist(Distributor):
         ) % (self._translate(), identifier.encode(encoding="utf-8"))
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
         status = self._get_transaction_status(self.TOTAL_UPDATED, resp)
-
+        logger.debug("Update status: " + str(status) + ". With response: " + resp.text)
         return status, resp.text
 
     def _delete(self):
@@ -169,7 +169,7 @@ class PyCSWDist(Distributor):
         ) % identifier
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
         status = self._get_transaction_status(self.TOTAL_DELETED, resp)
-
+        logger.debug("Delete status: " + str(status) + ". With response: " + resp.text)
         return status, resp.text
 
     def _get_transaction_status(self, key, resp):
