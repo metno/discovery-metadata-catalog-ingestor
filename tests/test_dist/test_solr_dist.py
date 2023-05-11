@@ -23,7 +23,7 @@ import lxml
 import pytest
 import tempfile
 
-from tools import causeOSError
+from requests.auth import HTTPBasicAuth
 from tools import causeException
 from tools import readFile
 
@@ -42,7 +42,7 @@ class MockIndexMMD:
         is_indexed = {
             'doc': None,
         }
-        return is_indexed 
+        return is_indexed
 
     def index_record(self, *args, **kwargs):
         return True, 'test'
@@ -68,7 +68,7 @@ class MockMMD4SolR:
 
 
 @pytest.mark.dist
-def testDistSolR_Init(tmpUUID):
+def testDistSolR_Init(tmpUUID, monkeypatch):
     """Test the SolRDist class init."""
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
@@ -81,12 +81,7 @@ def testDistSolR_Init(tmpUUID):
 @pytest.mark.dist
 def testDistSolR_Init_with_auth(tmpConf, mockXsd, mockXslt, tmpDir, mockXml, monkeypatch):
 
-    import ipdb
-    ipdb.set_trace()
     sd = SolRDist("insert", xml_file=mockXml)
-
-    fd.close()
-    os.remove(tmpfname)
 
 
 @pytest.mark.dist
@@ -135,7 +130,7 @@ def testDistSolR_add_MMD4SolR_raises_exception(mockXml, monkeypatch):
         assert tstDist._add() == (
             False, "Could not read file %s: Test Exception" % mockXml
         )
-        
+
 
 @pytest.mark.dist
 def testDistSolR_add_successful(mockXml, monkeypatch):
@@ -144,9 +139,9 @@ def testDistSolR_add_successful(mockXml, monkeypatch):
     """
     with monkeypatch.context() as mp:
         mp.setattr("dmci.distributors.solr_dist.MMD4SolR",
-            lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
+                   lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
         mp.setattr("dmci.distributors.solr_dist.IndexMMD",
-            lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
+                   lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
 
         # Initialise object, and check that it validates
         tstDist = SolRDist("insert", xml_file=mockXml)
@@ -169,17 +164,17 @@ def testDistSolR_add_successful_with_related_dataset(mockXml, monkeypatch):
     """
     with monkeypatch.context() as mp:
         mp.setattr("dmci.distributors.solr_dist.MMD4SolR",
-            lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
+                   lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
         mp.setattr("dmci.distributors.solr_dist.IndexMMD",
-            lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
+                   lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
         mp.setattr(MockMMD4SolR, "tosolr",
-            lambda *a, **k: {
-                "doc": None,
-                "id": "no-met-dev-250ba38f-1081-4669-a429-f378c569db32",
-                "metadata_identifier": "no.met.dev:250ba38f-1081-4669-a429-f378c569db32",
-                "related_dataset": "no.met.dev:350ba38f-1081-4669-a429-f378c569db32",
-                "related_dataset_id": "no-met-dev-350ba38f-1081-4669-a429-f378c569db32",
-            })
+                   lambda *a, **k: {
+                       "doc": None,
+                       "id": "no-met-dev-250ba38f-1081-4669-a429-f378c569db32",
+                       "metadata_identifier": "no.met.dev:250ba38f-1081-4669-a429-f378c569db32",
+                       "related_dataset": "no.met.dev:350ba38f-1081-4669-a429-f378c569db32",
+                       "related_dataset_id": "no-met-dev-350ba38f-1081-4669-a429-f378c569db32",
+                   })
 
         # Initialise object, and check that it validates
         tstDist = SolRDist("insert", xml_file=mockXml)
@@ -209,7 +204,7 @@ def testDistSolR_add_tosolr_raises_exception(mockXml, monkeypatch):
     """
     with monkeypatch.context() as mp:
         mp.setattr("dmci.distributors.solr_dist.MMD4SolR",
-            lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
+                   lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
         mp.setattr(MockMMD4SolR, "tosolr", causeException)
         tstDist = SolRDist("insert", xml_file=mockXml)
         assert tstDist._add() == (
@@ -224,13 +219,13 @@ def testDistSolR_add_doc_exists(mockXml, monkeypatch):
     """
     with monkeypatch.context() as mp:
         mp.setattr("dmci.distributors.solr_dist.IndexMMD.get_dataset",
-            lambda *a, **k: {"doc": "test"})
+                   lambda *a, **k: {"doc": "test"})
         mp.setattr("dmci.distributors.solr_dist.MMD4SolR.check_mmd", lambda *a, **k: None)
         mp.setattr("dmci.distributors.solr_dist.MMD4SolR.tosolr",
-            lambda *a, **k: {
-                'id': 'no-met-dev-250ba38f-1081-4669-a429-f378c569db32',
-                'metadata_identifier': 'no.met.dev:250ba38f-1081-4669-a429-f378c569db32',
-            })
+                   lambda *a, **k: {
+                       'id': 'no-met-dev-250ba38f-1081-4669-a429-f378c569db32',
+                       'metadata_identifier': 'no.met.dev:250ba38f-1081-4669-a429-f378c569db32',
+                   })
         tstDist = SolRDist("insert", xml_file=mockXml)
         assert tstDist._add() == (
             False,
@@ -238,21 +233,19 @@ def testDistSolR_add_doc_exists(mockXml, monkeypatch):
         )
 
 
-@pytest.mark.dist
-def testDistSolR_Delete(tmpUUID, tmpDir, filesDir, monkeypatch):
+def testDistSolR_Delete(tmpUUID, filesDir, monkeypatch):
+    """Test the SolRDist class delete actions."""
 
+    tstDist = SolRDist("delete", metadata_id=tmpUUID)
+
+    # Test delete exception Sucess
     with monkeypatch.context() as mp:
         mp.setattr("dmci.distributors.solr_dist.IndexMMD.delete",
-            lambda *a, **k: (False, "test failed delete"))
-        obj = SolRDist("delete", metadata_id=tmpUUID)
-        assert obj._delete() == ( # dette skulle ikke gått uten namespac
-            False, "test failed delete"
-        )
+                   lambda *a, **k:  (True, "Document %s sucessfully deleted" % tmpUUID))
+        assert tstDist.run() == (True, "Document %s sucessfully deleted" % tmpUUID)
 
+    # Test delete exception Fail
     with monkeypatch.context() as mp:
         mp.setattr("dmci.distributors.solr_dist.IndexMMD.delete",
-            lambda *a, **k: (True, "test succeed delete"))
-        obj = SolRDist("delete", metadata_id=tmpUUID)
-        assert obj._delete() == ( # dette skulle ikke gått uten namespac
-            True, "test succeed delete"
-        )
+                   lambda *a, **k:  (False, "Document %s not found in index." % tmpUUID))
+        assert tstDist.run() == (False, "Document %s not found in index." % tmpUUID)

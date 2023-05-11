@@ -40,8 +40,6 @@ class SolRDist(Distributor):
 
         """Store solr authentication credentials if used"""
         self.authentication = None
-        import ipdb
-        ipdb.set_trace()
         if self._conf.solr_username is not None and self._conf.solr_password is not None:
             logger.debug("Creating http basic auth object")
             self.authentication = HTTPBasicAuth(self.username, self.password)
