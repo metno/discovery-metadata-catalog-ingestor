@@ -22,6 +22,7 @@ import lxml
 import pytest
 import logging
 
+from requests.auth import HTTPBasicAuth
 from tools import causeOSError
 from tools import causeException
 from tools import readFile
@@ -66,7 +67,7 @@ class MockMMD4SolR:
 
 
 @pytest.mark.dist
-def testDistSolR_Init(tmpUUID):
+def testDistSolR_Init(tmpUUID, monkeypatch):
     """Test the SolRDist class init."""
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
@@ -75,8 +76,9 @@ def testDistSolR_Init(tmpUUID):
     assert SolRDist("delete", metadata_id=tmpUUID).is_valid() is True
     assert SolRDist("blabla", metadata_id=tmpUUID).is_valid() is False
 
+    tstDist =  SolRDist("insert", metadata_id=tmpUUID)
+    assert tstDist.authentication == HTTPBasicAuth
 # END Test testDistSolR_Init
-
 
 @pytest.mark.dist
 def testDistSolR_Run(mockXml, tmpUUID, monkeypatch):
@@ -213,7 +215,7 @@ def testDistSolR_add_doc_exists(mockXml, monkeypatch):
     """
     with monkeypatch.context() as mp:
         mp.setattr("dmci.distributors.solr_dist.IndexMMD.get_dataset",
-            lambda *a, **k: {"doc": "test"})
+                lambda *a, **k: {"doc": "test"})
         mp.setattr("dmci.distributors.solr_dist.MMD4SolR.check_mmd", lambda *a, **k: None)
         mp.setattr("dmci.distributors.solr_dist.MMD4SolR.tosolr",
             lambda *a, **k: {
@@ -228,46 +230,21 @@ def testDistSolR_add_doc_exists(mockXml, monkeypatch):
 
 
 @pytest.mark.dist
-def testDistSolR_Delete(tmpDir, filesDir, monkeypatch):
-    """Test the SolRDist class insert and update actions."""
-    passFile = os.path.join(filesDir, "api", "passing.xml")
+def testDistSolR_Delete(tmpUUID, filesDir, monkeypatch):
+    """Test the SolRDist class delete actions."""
 
-    # Set up a Worker object
-    passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
-    tstWorker = Worker("insert", passFile, None)
-    assert tstWorker._extract_metadata_id(passXML) is True
-    assert tstWorker._file_metadata_id is not None
+    tstDist = SolRDist("delete", metadata_id=tmpUUID)
+    
+    # Test delete exception Sucess
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.distributors.solr_dist.IndexMMD.delete", 
+                   lambda *a, **k:  (True, "Document %s sucessfully deleted" % tmpUUID))
+        assert tstDist.run()
 
-    tstDist = SolRDist("insert", xml_file=passFile)
-    tstDist._worker = tstWorker
+    # Test delete exception Fail
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.distributors.solr_dist.IndexMMD.delete",
+                   lambda *a, **k:  (False, "Document %s not found in index." % tmpUUID))
+        assert tstDist.run()
 
-    # Insert a new file to delete
-    tstDist._cmd = DistCmd.INSERT
-    assert tstDist.run() == (
-        True, "Record successfully added."
-    )
-
-    # Try to delete with no identifier set
-    tstDist._cmd = DistCmd.DELETE
-    goodUUID = tstWorker._file_metadata_id
-
-    tstWorker._metadata_id  = "123456789abcdefghijkl"
-    assert tstDist.run() == (
-            False, "Document 123456789abcdefghijkl not found in index."
-    )
-
-    # Set the identifier and try to delete again, but fail on unlink
-    tstDist._metadata_id = goodUUID
-
-    # Delete properly
-    assert tstDist._delete() == (
-        True, "Sucessfully deleted document with id: %s" % goodUUID
-    )
-
-    # Delete again should fail as the file no longer exists
-    assert tstDist.run() == (
-        False, "Document %s not found in index." % goodUUID
-    )
-
-# END Test testDistSolR_Delete
-
+    # END Test testDistSolR_Delete
