@@ -53,6 +53,11 @@ class Config():
 
         # SolR Distributor
         self.solr_service_url = None
+        self.username = None
+        self.password = None
+        self.authentication = None
+        self.fail_on_missing_parent = True
+        self.commit_on_delete = False
 
         # Internals
         self._raw_conf = {}
@@ -119,8 +124,11 @@ class Config():
     def _read_solr(self):
         """Read config values under 'solr'."""
         conf = self._raw_conf.get("solr", {})
-
         self.solr_service_url = conf.get("solr_service_url", self.solr_service_url)
+        self.fail_on_missing_parent = conf.get("missing_parent_fail", self.fail_on_missing_parent)
+        self.commit_on_delete = conf.get("commit_on_delete", self.commit_on_delete)
+        self.username = os.getenv("SOLR_USERNAME", self.username)
+        self.password = os.getenv("SOLR_PASSWORD", self.password)
 
         return
 
