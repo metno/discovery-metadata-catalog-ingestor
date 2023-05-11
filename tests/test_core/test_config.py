@@ -80,7 +80,7 @@ def testCoreConfig_Validate(rootDir, filesDir, tmpDir):
     # Check the values from example_config.yaml are read
     theConf.readConfig(configFile=exampleConf)
 
-    assert theConf.call_distributors == ["file", "pycsw"]
+    assert theConf.call_distributors == ["file", "pycsw", "solr"]
     assert theConf.distributor_cache is None
     assert theConf.rejected_jobs_path is None
     assert theConf.max_permitted_size == 100000
