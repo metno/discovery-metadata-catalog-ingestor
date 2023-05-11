@@ -75,6 +75,8 @@ Create the file `config.yaml` based on `example-config.yaml` and fill it with th
 dmci:
   distributors:
     - file
+    - pycsw
+    - solr
   distributor_cache: workdir
   rejected_jobs_path: workdir/rejected
   max_permitted_size: 100000
@@ -85,11 +87,15 @@ dmci:
 pycsw:
   csw_service_url: http://localhost
 
-overrides:
-  catalog_url: http://localhost
+customization:
+  catalog_url: https://catalog url
+  env_string: null
   
 file:
   file_archive_path: workdir
+
+solr:
+  solr_service_url: http://localhost
 
 ```
 ## Usage

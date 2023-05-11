@@ -230,8 +230,6 @@ def testDistSolR_add_doc_exists(mockXml, monkeypatch):
 @pytest.mark.dist
 def testDistSolR_Delete(tmpDir, filesDir, monkeypatch):
     """Test the SolRDist class insert and update actions."""
-    fileDir = os.path.join(tmpDir, "file_delete")
-    archDir = os.path.join(fileDir, "archive")
     passFile = os.path.join(filesDir, "api", "passing.xml")
 
     # Set up a Worker object
@@ -241,13 +239,12 @@ def testDistSolR_Delete(tmpDir, filesDir, monkeypatch):
     assert tstWorker._file_metadata_id is not None
 
     tstDist = SolRDist("insert", xml_file=passFile)
-    tstDist._conf.file_archive_path = archDir
     tstDist._worker = tstWorker
 
     # Insert a new file to delete
     tstDist._cmd = DistCmd.INSERT
     assert tstDist.run() == (
-        True, "Added file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+        True, "Record successfully added."
     )
 
     # Try to delete with no identifier set
@@ -256,25 +253,20 @@ def testDistSolR_Delete(tmpDir, filesDir, monkeypatch):
 
     tstWorker._metadata_id  = "123456789abcdefghijkl"
     assert tstDist.run() == (
-        False, "No valid metadata_identifier provided, cannot delete file"
+            False, "Document 123456789abcdefghijkl not found in index."
     )
 
     # Set the identifier and try to delete again, but fail on unlink
     tstDist._metadata_id = goodUUID
-    with monkeypatch.context() as mp:
-        mp.setattr("os.unlink", causeOSError)
-        assert tstDist.run() == (
-            False, "Failed to delete file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
-        )
 
     # Delete properly
-    assert tstDist.run() == (
-        True, "Deleted file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+    assert tstDist._delete() == (
+        True, "Sucessfully deleted document with id: %s" % goodUUID
     )
 
     # Delete again should fail as the file no longer exists
     assert tstDist.run() == (
-        False, "File not found: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+        False, "Document %s not found in index." % goodUUID
     )
 
 # END Test testDistSolR_Delete
