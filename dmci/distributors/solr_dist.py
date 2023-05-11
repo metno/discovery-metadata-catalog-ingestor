@@ -43,9 +43,6 @@ class SolRDist(Distributor):
         self.password = self._conf.password
         self.authentication = None
 
-        """Configure if we will fail on missing parent in index."""
-        self.missing_parent_fail = False
-
         if self.username is not None and self.password is not None:
             logger.debug("Creating http basic auth object")
             self.authentication = HTTPBasicAuth(self.username, self.password)
@@ -107,8 +104,8 @@ class SolRDist(Distributor):
             # newdoc.update({'isChild': True})
             logger.info("Child dataset with parent id %s", newdoc['related_dataset'])
             parentid = newdoc['related_dataset_id']
-            status, msg = self.mysolr.update_parent(parentid,
-                            fail_on_missing= self._conf.fail_on_missing_parent)
+            status, msg = self.mysolr.update_parent(
+                parentid, fail_on_missing=self._conf.fail_on_missing_parent)
             if status:
                 try:
                     self.mysolr.index_record(newdoc, addThumbnail=False, level=2)
