@@ -80,8 +80,9 @@ class SolRDist(Distributor):
         try:
             mydoc = MMD4SolR(self._xml_file)
         except Exception as e:
-            logger.error("Could not read file %s: %s", (self._xml_file, e))
-            return False, e
+            msg = "Could not read file %s: %s" % (self._xml_file, str(e))
+            logger.error(msg)
+            return False, msg
 
         mydoc.check_mmd()  # Determine if we need to run this check.
 
@@ -89,8 +90,9 @@ class SolRDist(Distributor):
         try:
             newdoc = mydoc.tosolr()
         except Exception as e:
-            logger.error('Could not process the file %s: %s', (self._xml_file, e))
-            return False, e
+            msg = 'Could not process the file %s: %s' % (self._xml_file, str(e))
+            logger.error(msg)
+            return False, msg
 
         """Check if document already exsists. Then we throw error and don't index."""
         isIndexed = self.mysolr.get_dataset(newdoc['id'])
