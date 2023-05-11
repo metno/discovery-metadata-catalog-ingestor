@@ -34,24 +34,25 @@ class SolRDist(Distributor):
     TOTAL_UPDATED = "total_updated"
     STATUS = [TOTAL_DELETED, TOTAL_INSERTED, TOTAL_UPDATED]
 
-    def __init__(self, cmd, xml_file=None, metadata_id=None, worker=None, username=None,
-                 password=None, **kwargs):
+    def __init__(self, cmd, xml_file=None, metadata_id=None, worker=None, **kwargs):
 
         super().__init__(cmd, xml_file, metadata_id, worker, **kwargs)
 
         """Store solr authentication credentials if used"""
-        self.username = username
-        self.password = password
+        self.username = self._conf.username
+        self.password = self._conf.password
         self.authentication = None
 
         """Configure if we will fail on missing parent in index."""
         self.missing_parent_fail = False
 
         if self.username is not None and self.password is not None:
+            logger.debug("Creating http basic auth object")
             self.authentication = HTTPBasicAuth(self.username, self.password)
 
         """Create connection to solr"""
-        self.mysolr = IndexMMD(self._conf.solr_service_url, False)
+        self.mysolr = IndexMMD(self._conf.solr_service_url, always_commit=False,
+                               authentication=self.authentication)
         return
 
     def run(self):
@@ -106,7 +107,8 @@ class SolRDist(Distributor):
             # newdoc.update({'isChild': True})
             logger.info("Child dataset with parent id %s", newdoc['related_dataset'])
             parentid = newdoc['related_dataset_id']
-            status, msg = self.mysolr.update_parent(parentid)
+            status, msg = self.mysolr.update_parent(parentid,
+                            fail_on_missing= self._conf.fail_on_missing_parent)
             if status:
                 try:
                     self.mysolr.index_record(newdoc, addThumbnail=False, level=2)
@@ -131,7 +133,7 @@ class SolRDist(Distributor):
         """Delete entry with a specified metadata_id."""
         identifier = self._construct_identifier(self._worker._namespace, self._metadata_id)
         logger.info("Deleting document %s from SolR index." % identifier)
-        status, msg = self.mysolr.delete(identifier, commit=True)
+        status, msg = self.mysolr.delete(identifier, commit=self._conf.commit_on_delete)
         # return status, resp.text
         return status, msg
 
