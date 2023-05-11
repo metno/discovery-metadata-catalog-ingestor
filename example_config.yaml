@@ -2,6 +2,7 @@ dmci:
   distributors:
     - file
     - pycsw
+    - solr
   distributor_cache: null
   rejected_jobs_path: null
   max_permitted_size: 100000
@@ -18,3 +19,6 @@ customization:
 
 file:
   file_archive_path: null
+
+solr:
+  solr_service_url: http://localhost:8983/solr/senda

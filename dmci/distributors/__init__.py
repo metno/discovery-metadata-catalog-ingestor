@@ -19,8 +19,10 @@ limitations under the License.
 
 from dmci.distributors.file_dist import FileDist
 from dmci.distributors.pycsw_dist import PyCSWDist
+from dmci.distributors.solr_dist import SolRDist
 
 __all__ = [
     "FileDist",
-    "PyCSWDist"
+    "PyCSWDist",
+    "SolRDist"
 ]
