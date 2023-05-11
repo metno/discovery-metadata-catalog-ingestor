@@ -97,35 +97,37 @@ class SolRDist(Distributor):
         """Check if document already exsists. Then we throw error and don't index."""
         isIndexed = self.mysolr.get_dataset(newdoc['id'])
         if isIndexed['doc'] is not None and self._cmd == DistCmd.INSERT:
-            logger.error("Document already exists in index, %s" % newdoc['metadata_identifier'])
-            return False, "Document already exists in index, %s" % newdoc['metadata_identifier']
+            msg = "Document already exists in index, %s" % newdoc['metadata_identifier']
+            logger.error(msg)
+            return False, msg
 
-        elif 'related_dataset' in newdoc:
-            logger.info("Child/Level-2 - dataset - %s", newdoc['metadata_identifier'])
-            # newdoc.update({'dataset_type': 'Level-2'})
-            # newdoc.update({'isChild': True})
-            logger.info("Child dataset with parent id %s", newdoc['related_dataset'])
+        if 'related_dataset' in newdoc:
+            logger.info("Child dataset with id %s", newdoc['metadata_identifier'])
+            logger.info("Child dataset's parent's id is %s", newdoc['related_dataset'])
             parentid = newdoc['related_dataset_id']
             status, msg = self.mysolr.update_parent(
-                parentid, fail_on_missing=self._conf.fail_on_missing_parent)
+                parentid,
+                fail_on_missing=self._conf.fail_on_missing_parent
+            )
             if status:
-                try:
-                    self.mysolr.index_record(newdoc, addThumbnail=False, level=2)
-                except Exception as e:
-                    logger.error("Could not index file %s: %s", (self._xml_file, e))
-                    return False, e
+                status, msg = self._index_record(newdoc, add_thumbnail=False, level=2)
             else:
                 return status, msg
         else:
             logger.info("Parent/Level-1 - dataset - %s", newdoc['metadata_identifier'])
-            # newdoc.update({'dataset_type':'Level-1'})
-            # newdoc.update({'isParent': False})
-            try:
-                status, msg = self.mysolr.index_record(newdoc, addThumbnail=False, level=1)
-            except Exception as e:
-                logger.error("Could not index file %s: %s", (self._xml_file, e))
-                return False, e
+            status, msg = self._index_record(newdoc, add_thumbnail=False, level=1)
 
+        return status, msg
+
+    def _index_record(self, newdoc, add_thumbnail=False, level=1):
+        """ Wrapper function to return correct parameters (status and msg).
+        """
+        try:
+            status, msg = self.mysolr.index_record(newdoc, addThumbnail=add_thumbnail, level=level)
+        except Exception as e:
+            msg = "Could not index file %s: %s" % (self._xml_file, str(e))
+            logger.error(msg)
+            status = False
         return status, msg
 
     def _delete(self):
