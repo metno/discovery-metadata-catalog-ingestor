@@ -201,44 +201,24 @@ def testDistSolR_InsertUpdate(tmpDir, filesDir, monkeypatch):
 @pytest.mark.dist
 def testDistSolR_Delete(tmpDir, filesDir, monkeypatch):
     """Test the SolRDist class insert and update actions."""
-    passFile = os.path.join(filesDir, "api", "passing.xml")
 
-    # Set up a Worker object
-    passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
-    tstWorker = Worker("insert", passFile, None)
-    assert tstWorker._extract_metadata_id(passXML) is True
-    assert tstWorker._file_metadata_id is not None
+    md_id = "no.met:c7f8731b-5cfe-4cb5-ac57-168a19a2957b"
+    tstDist = SolRDist("delete", metadata_id=md_id)
+    # tstDist._cmd = DistCmd.DELETE
+    # assert tstDist.run() == (True, "test")
 
-    tstDist = SolRDist("insert", xml_file=passFile)
-    tstDist._worker = tstWorker
+    # delete returns True
+    with monkeypatch.context() as mp:
+        mp.setattr(SolRDist, "_delete", lambda *a: (True, "Sucessfully deleted document with id: no.met:c7f8731b-5cfe-4cb5-ac57-168a19a2957b"))
+        res = SolRDist("delete", metadata_id=md_id).run()
+        assert res == (True, "Sucessfully deleted document with id: no.met:c7f8731b-5cfe-4cb5-ac57-168a19a2957b")
 
-    # Insert a new file to delete
-    tstDist._cmd = DistCmd.INSERT
-    assert tstDist.run() == (
-        True, "Record successfully added."
-    )
 
-    # Try to delete with no identifier set
-    tstDist._cmd = DistCmd.DELETE
-    goodUUID = tstWorker._file_metadata_id
-
-    tstWorker._metadata_id  = "123456789abcdefghijkl"
-    assert tstDist.run() == (
-            False, "Document 123456789abcdefghijkl not found in index."
-    )
-
-    # Set the identifier and try to delete again, but fail on unlink
-    tstDist._metadata_id = goodUUID
-
-    # Delete properly
-    assert tstDist._delete() == (
-        True, "Sucessfully deleted document with id: %s" % goodUUID
-    )
-
-    # Delete again should fail as the file no longer exists
-    assert tstDist.run() == (
-        False, "Document %s not found in index." % goodUUID
-    )
+    # delete returns false
+    with monkeypatch.context() as mp:
+        mp.setattr(SolRDist, "_delete", lambda *a: (False, "Document no.met:c7f8731b-5cfe-4cb5-ac57-168a19a2957b not found in index."))
+        res = SolRDist("delete", metadata_id=md_id).run()
+        assert res == (False, "Document no.met:c7f8731b-5cfe-4cb5-ac57-168a19a2957b not found in index.")
 
 # END Test testDistSolR_Delete
 

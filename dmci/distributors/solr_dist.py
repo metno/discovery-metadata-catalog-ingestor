@@ -128,34 +128,11 @@ class SolRDist(Distributor):
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
-        identifier = self._construct_identifier(self._worker._namespace, self._metadata_id)
+        identifier = self._metadata_id
         logger.info("Deleting document %s from SolR index." % identifier)
         status, msg = self.mysolr.delete(identifier, commit=self._conf.commit_on_delete)
-        # return status, resp.text
+        # return status, message
         return status, msg
 
-    @staticmethod
-    def _construct_identifier(namespace, metadata_id):
-        """Helper function to construct identifier from namespace and
-        UUID. Currently accepts empty namespaces, but later will only
-        accept correctly formed namespaced UUID
 
-        Parameters
-        ----------
-        namespace : str
-            namespace for the UUID
-        metadata_id : UUID or str
-            UUID for the metadata-file we want to Update or Delete
-
-        Returns
-        -------
-        str
-            namespace:UUID or just UUID if namespace is empty.
-        """
-        if namespace != "":
-            identifier = namespace + ":" + str(metadata_id)
-        else:
-            identifier = str(metadata_id)
-        return identifier
-
-# END Class PyCSWDist
+# END Class SolRDist
