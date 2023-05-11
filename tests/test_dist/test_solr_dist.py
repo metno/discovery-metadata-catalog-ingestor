@@ -20,12 +20,49 @@ limitations under the License.
 import os
 import lxml
 import pytest
+import logging
 
-from tools import causeOSError, readFile
+from tools import causeOSError
+from tools import causeException
+from tools import readFile
 
 from dmci.api.worker import Worker
 from dmci.distributors import SolRDist
 from dmci.distributors.distributor import DistCmd
+
+
+class MockIndexMMD:
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def get_dataset(self, *args, **kwargs):
+        is_indexed = {
+            'doc': None,
+        }
+        return is_indexed 
+
+    def index_record(self, *args, **kwargs):
+        return True, 'test'
+
+    def update_parent(self, *args, **kwargs):
+        return True, "Test successful update message"
+
+
+class MockMMD4SolR:
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def check_mmd(self, *args, **kwargs):
+        return None
+
+    def tosolr(self, *args, **kwargs):
+        solr_formatted = {
+            'id': 'no-met-dev-250ba38f-1081-4669-a429-f378c569db32',
+            'metadata_identifier': 'no.met.dev:250ba38f-1081-4669-a429-f378c569db32',
+        }
+        return solr_formatted
 
 
 @pytest.mark.dist
@@ -44,9 +81,6 @@ def testDistSolR_Init(tmpUUID):
 @pytest.mark.dist
 def testDistSolR_Run(mockXml, tmpUUID, monkeypatch):
     """Test the SolRDist class run function."""
-
-    #assert PyCSWDist("blabla", metadata_id=tmpUUID).run() == (False, "The run job is invalid")
-    #assert PyCSWDist("insert", metadata_id=tmpUUID).run() == (False, "The run job is invalid")
 
     # Initialise object, and check that it validates
     tstDist = SolRDist("insert", xml_file=mockXml)
@@ -75,11 +109,24 @@ def testDistSolR_Run(mockXml, tmpUUID, monkeypatch):
     tstDist._cmd = 1234
     assert tstDist.run() == (False, "No job was run")
 
-# END Test testDistSolR_Run
 
+@pytest.mark.dist
+def testDistSolR_add_MMD4SolR_raises_exception(mockXml, monkeypatch):
+    """ Test _add function failing on initialization of MMD4SolR
+    instance.
+    """
+    # Initialise object, and check that it validates
+    tstDist = SolRDist("insert", xml_file=mockXml)
+    assert tstDist.is_valid()
 
-    #class MockIndexMMD:
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.distributors.solr_dist.MMD4SolR", causeException)
+        assert tstDist._add() == (
+            False, "Could not read file %s: Test Exception" % mockXml
+        )
+        
 
+<<<<<<< HEAD
     #    def __init__(self, *args, **kwargs):
     #        pass
 
@@ -112,10 +159,35 @@ def testDistSolR_Run(mockXml, tmpUUID, monkeypatch):
     #               lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
     #    mp.setattr("dmci.distributors.solr_dist.IndexMMD",
     #               lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
+=======
+@pytest.mark.dist
+def testDistSolR_add_successful(mockXml, monkeypatch):
+    """ Test that the _add function successfully completes with the
+    correct return message.
+    """
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.distributors.solr_dist.MMD4SolR",
+            lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
+        mp.setattr("dmci.distributors.solr_dist.IndexMMD",
+            lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
+>>>>>>> 9dff0ccffd54c9068e538d26215ec330a3ac6e40
 
+        # Initialise object, and check that it validates
+        tstDist = SolRDist("insert", xml_file=mockXml)
+        assert tstDist.is_valid()
+        assert tstDist._add() == (
+            True, "test"
+        )
+        # Check that it fails correctly if index_record raises an
+        # exception
+        mp.setattr(MockIndexMMD, "index_record", causeException)
+        assert tstDist._add() == (
+            False, "Could not index file %s: Test Exception" % mockXml
+        )
 
 
 @pytest.mark.dist
+<<<<<<< HEAD
 def testDistSolR_InsertUpdate(tmpDir, filesDir, monkeypatch):
     """Test the SolRDist class insert and update actions."""
     fileDir = os.path.join(tmpDir, "file_insupd")
@@ -147,55 +219,81 @@ def testDistSolR_InsertUpdate(tmpDir, filesDir, monkeypatch):
     tstWorker._file_metadata_id = goodUUID
 
     # Fail the making of folders
+=======
+def testDistSolR_add_successful_with_related_dataset(mockXml, monkeypatch):
+    """ Test that the _add function successfully completes with the
+    correct return message.
+    """
+>>>>>>> 9dff0ccffd54c9068e538d26215ec330a3ac6e40
     with monkeypatch.context() as mp:
-        mp.setattr("os.makedirs", causeOSError)
-        assert tstDist.run() == (
-            False, "Failed to archive file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+        mp.setattr("dmci.distributors.solr_dist.MMD4SolR",
+            lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
+        mp.setattr("dmci.distributors.solr_dist.IndexMMD",
+            lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
+        mp.setattr(MockMMD4SolR, "tosolr",
+            lambda *a, **k: {
+                "doc": None,
+                "id": "no-met-dev-250ba38f-1081-4669-a429-f378c569db32",
+                "metadata_identifier": "no.met.dev:250ba38f-1081-4669-a429-f378c569db32",
+                "related_dataset": "no.met.dev:350ba38f-1081-4669-a429-f378c569db32",
+                "related_dataset_id": "no-met-dev-350ba38f-1081-4669-a429-f378c569db32",
+            })
+
+        # Initialise object, and check that it validates
+        tstDist = SolRDist("insert", xml_file=mockXml)
+        assert tstDist.is_valid()
+        assert tstDist._add() == (
+            True, "test"
         )
 
-    # Fail the copy process
-    with monkeypatch.context() as mp:
-        mp.setattr("shutil.copy2", causeOSError)
-        assert tstDist.run() == (
-            False, "Failed to archive file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
+        # Check that it fails correctly if index_record raises an
+        # exception
+        mp.setattr(MockIndexMMD, "index_record", causeException)
+        assert tstDist._add() == (
+            False, "Could not index file %s: Test Exception" % mockXml
         )
 
-    # Update a new file is not allowed
-    tstDist._cmd = DistCmd.UPDATE
-    assert tstDist.run() == (
-        False, "Cannot update non-existing file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
-    )
+        # And failing when it fails to update_parent
+        mp.setattr(MockIndexMMD, "update_parent", lambda *a, **k: (False, "No parent"))
+        assert tstDist._add() == (
+            False, "No parent"
+        )
 
-    # Insert a new file is allowed
-    tstDist._cmd = DistCmd.INSERT
-    assert tstDist.run() == (
-        True, "Added file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
-    )
 
-    dirA = os.path.join(archDir, "arch_f")
-    assert os.path.isdir(dirA)
+@pytest.mark.dist
+def testDistSolR_add_tosolr_raises_exception(mockXml, monkeypatch):
+    """ Test that the _add function fails correctly when
+    MMD4SolR.tosolr raises an exception.
+    """
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.distributors.solr_dist.MMD4SolR",
+            lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
+        mp.setattr(MockMMD4SolR, "tosolr", causeException)
+        tstDist = SolRDist("insert", xml_file=mockXml)
+        assert tstDist._add() == (
+            False, "Could not process the file %s: Test Exception" % mockXml
+        )
 
-    dirB = os.path.join(dirA, "arch_0")
-    assert os.path.isdir(dirB)
 
-    dirC = os.path.join(dirB, "arch_f")
-    assert os.path.isdir(dirC)
-
-    archFile = os.path.join(dirC, "a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml")
-    assert os.path.isfile(archFile)
-
-    # Insert an existing file is not allowed
-    assert tstDist.run() == (
-        False, "File already exists: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
-    )
-
-    # Update an existing file is allowed
-    tstDist._cmd = DistCmd.UPDATE
-    assert tstDist.run() == (
-        True, "Replaced file: a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b.xml"
-    )
-
-# END Test testDistSolR_InsertUpdate
+@pytest.mark.dist
+def testDistSolR_add_doc_exists(mockXml, monkeypatch):
+    """ Test that an the _add function fails correctly when the
+    dataset already exists.
+    """
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.distributors.solr_dist.IndexMMD.get_dataset",
+            lambda *a, **k: {"doc": "test"})
+        mp.setattr("dmci.distributors.solr_dist.MMD4SolR.check_mmd", lambda *a, **k: None)
+        mp.setattr("dmci.distributors.solr_dist.MMD4SolR.tosolr",
+            lambda *a, **k: {
+                'id': 'no-met-dev-250ba38f-1081-4669-a429-f378c569db32',
+                'metadata_identifier': 'no.met.dev:250ba38f-1081-4669-a429-f378c569db32',
+            })
+        tstDist = SolRDist("insert", xml_file=mockXml)
+        assert tstDist._add() == (
+            False,
+            "Document already exists in index, no.met.dev:250ba38f-1081-4669-a429-f378c569db32"
+        )
 
 
 @pytest.mark.dist
