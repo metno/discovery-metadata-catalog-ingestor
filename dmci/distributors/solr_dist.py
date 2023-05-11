@@ -117,12 +117,12 @@ class SolRDist(Distributor):
             # newdoc.update({'dataset_type':'Level-1'})
             # newdoc.update({'isParent': False})
             try:
-                self.mysolr.index_record(newdoc, addThumbnail=False, level=1)
+                status, msg = self.mysolr.index_record(newdoc, addThumbnail=False, level=1)
             except Exception as e:
                 logger.error("Could not index file %s: %s", (self._xml_file, e))
                 return False, e
 
-        return True, ""
+        return status, msg
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""

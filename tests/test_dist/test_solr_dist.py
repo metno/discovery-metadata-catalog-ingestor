@@ -42,17 +42,26 @@ def testDistSolR_Init(tmpUUID):
 
 
 @pytest.mark.dist
-def testDistSolR_Run(mockXml):
+def testDistSolR_Run(mockXml, tmpUUID, monkeypatch):
     """Test the SolRDist class run function."""
+
+    #assert PyCSWDist("blabla", metadata_id=tmpUUID).run() == (False, "The run job is invalid")
+    #assert PyCSWDist("insert", metadata_id=tmpUUID).run() == (False, "The run job is invalid")
+
+    # Initialise object, and check that it validates
     tstDist = SolRDist("insert", xml_file=mockXml)
     assert tstDist.is_valid()
 
+    # Invalidate object and assert that the run function returns the
+    # expected tuple
     tstDist._valid = False
     assert tstDist.run() == (False, "The run job is invalid")
+
     tstDist._valid = True
 
-    tstDist._add_to_archive = lambda *a: (True, "test")
-    tstDist._delete_from_archive = lambda *a: (True, "test")
+    # Mock functions called by SolRDist.run
+    tstDist._add = lambda *a: (True, "test")
+    tstDist._delete = lambda *a: (True, "test")
 
     tstDist._cmd = DistCmd.INSERT
     assert tstDist.run() == (True, "test")
@@ -67,6 +76,43 @@ def testDistSolR_Run(mockXml):
     assert tstDist.run() == (False, "No job was run")
 
 # END Test testDistSolR_Run
+
+
+    #class MockIndexMMD:
+
+    #    def __init__(self, *args, **kwargs):
+    #        pass
+
+    #    def get_dataset(self, *args, **kwargs):
+    #        is_indexed = {
+    #            'doc': None,
+    #        }
+    #        return is_indexed 
+
+    #    def index_record(self, *args, **kwargs):
+    #        return True, 'test'
+
+    #class MockMMD4SolR:
+
+    #    def __init__(self, xml):
+    #        pass
+
+    #    def check_mmd(self, *args, **kwargs):
+    #        return None
+
+    #    def tosolr(self, *args, **kwargs):
+    #        solr_formatted = {
+    #            'id': 'no-met-dev-250ba38f-1081-4669-a429-f378c569db32',
+    #            'metadata_identifier': 'no.met.dev:250ba38f-1081-4669-a429-f378c569db32',
+    #        }
+    #        return solr_formatted
+
+    #with monkeypatch.context() as mp:
+    #    mp.setattr("dmci.distributors.solr_dist.MMD4SolR",
+    #               lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
+    #    mp.setattr("dmci.distributors.solr_dist.IndexMMD",
+    #               lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
+
 
 
 @pytest.mark.dist
