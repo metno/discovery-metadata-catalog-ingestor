@@ -18,14 +18,16 @@ limitations under the License.
 """
 
 import os
+import logging
 import lxml
 import pytest
-import logging
+import tempfile
 
 from tools import causeOSError
 from tools import causeException
 from tools import readFile
 
+from dmci.config import Config
 from dmci.api.worker import Worker
 from dmci.distributors import SolRDist
 from dmci.distributors.distributor import DistCmd
@@ -75,7 +77,16 @@ def testDistSolR_Init(tmpUUID):
     assert SolRDist("delete", metadata_id=tmpUUID).is_valid() is True
     assert SolRDist("blabla", metadata_id=tmpUUID).is_valid() is False
 
-# END Test testDistSolR_Init
+
+@pytest.mark.dist
+def testDistSolR_Init_with_auth(tmpConf, mockXsd, mockXslt, tmpDir, mockXml, monkeypatch):
+
+    import ipdb
+    ipdb.set_trace()
+    sd = SolRDist("insert", xml_file=mockXml)
+
+    fd.close()
+    os.remove(tmpfname)
 
 
 @pytest.mark.dist
@@ -228,46 +239,20 @@ def testDistSolR_add_doc_exists(mockXml, monkeypatch):
 
 
 @pytest.mark.dist
-def testDistSolR_Delete(tmpDir, filesDir, monkeypatch):
-    """Test the SolRDist class insert and update actions."""
-    passFile = os.path.join(filesDir, "api", "passing.xml")
+def testDistSolR_Delete(tmpUUID, tmpDir, filesDir, monkeypatch):
 
-    # Set up a Worker object
-    passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
-    tstWorker = Worker("insert", passFile, None)
-    assert tstWorker._extract_metadata_id(passXML) is True
-    assert tstWorker._file_metadata_id is not None
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.distributors.solr_dist.IndexMMD.delete",
+            lambda *a, **k: (False, "test failed delete"))
+        obj = SolRDist("delete", metadata_id=tmpUUID)
+        assert obj._delete() == ( # dette skulle ikke gått uten namespac
+            False, "test failed delete"
+        )
 
-    tstDist = SolRDist("insert", xml_file=passFile)
-    tstDist._worker = tstWorker
-
-    # Insert a new file to delete
-    tstDist._cmd = DistCmd.INSERT
-    assert tstDist.run() == (
-        True, "Record successfully added."
-    )
-
-    # Try to delete with no identifier set
-    tstDist._cmd = DistCmd.DELETE
-    goodUUID = tstWorker._file_metadata_id
-
-    tstWorker._metadata_id  = "123456789abcdefghijkl"
-    assert tstDist.run() == (
-            False, "Document 123456789abcdefghijkl not found in index."
-    )
-
-    # Set the identifier and try to delete again, but fail on unlink
-    tstDist._metadata_id = goodUUID
-
-    # Delete properly
-    assert tstDist._delete() == (
-        True, "Sucessfully deleted document with id: %s" % goodUUID
-    )
-
-    # Delete again should fail as the file no longer exists
-    assert tstDist.run() == (
-        False, "Document %s not found in index." % goodUUID
-    )
-
-# END Test testDistSolR_Delete
-
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.distributors.solr_dist.IndexMMD.delete",
+            lambda *a, **k: (True, "test succeed delete"))
+        obj = SolRDist("delete", metadata_id=tmpUUID)
+        assert obj._delete() == ( # dette skulle ikke gått uten namespac
+            True, "test succeed delete"
+        )

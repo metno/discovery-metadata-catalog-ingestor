@@ -22,3 +22,5 @@ file:
 
 solr:
   solr_service_url: http://localhost:8983/solr/senda
+  solr_username: username
+  solr_password: psw
