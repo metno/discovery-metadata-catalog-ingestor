@@ -96,7 +96,8 @@ file:
 
 solr:
   solr_service_url: http://localhost
-
+  solr_username: username
+  solr_password: psw
 ```
 ## Usage
 
