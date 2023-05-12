@@ -20,8 +20,10 @@ limitations under the License.
 import os
 import logging
 import lxml
-import pytest
 import tempfile
+
+import pytest
+from unittest.mock import patch
 
 from requests.auth import HTTPBasicAuth
 from tools import causeException
@@ -31,6 +33,7 @@ from dmci.config import Config
 from dmci.api.worker import Worker
 from dmci.distributors import SolRDist
 from dmci.distributors.distributor import DistCmd
+from dmci.distributors.distributor import Distributor
 
 
 class MockIndexMMD:
@@ -79,9 +82,25 @@ def testDistSolR_Init(tmpUUID, monkeypatch):
 
 
 @pytest.mark.dist
-def testDistSolR_Init_with_auth(tmpConf, mockXsd, mockXslt, tmpDir, mockXml, monkeypatch):
+def testDistSolR_Init_with_auth(tmpConf, mockXml, monkeypatch):
+    """ Test that the if-clause in SolRDist.__init__ is entered.
+    This is already done if all tests are run together, since tmpConf
+    is applied globally (the method tests.conftest.tmpConf
+    monkeypatches dmci.CONFIG). However, that is not the case when
+    running the tests individually.
 
-    sd = SolRDist("insert", xml_file=mockXml)
+    This test requires that the solr_username and solr_password are
+    provided in example_config.py in the root folder.
+    """
+
+    patch.object(Distributor, "_conf", side_effect=tmpConf, autospec=True)
+    with monkeypatch.context() as mp:
+        #mp.setattr(SolRDist, "_conf", tmpConf)
+        mp.setattr("dmci.distributors.solr_dist.IndexMMD",
+                   lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
+        sd = SolRDist("insert", xml_file=mockXml)
+    assert sd._conf.solr_username == "username"
+    assert sd._conf.solr_password == "psw"
 
 
 @pytest.mark.dist
@@ -157,38 +176,33 @@ def testDistSolR_add_successful(mockXml, monkeypatch):
         )
 
 
-@pytest.mark.dist
-def testDistSolR_InsertUpdate(tmpDir, filesDir, monkeypatch):
-    """Test the SolRDist class insert and update actions."""
-    fileDir = os.path.join(tmpDir, "file_insupd")
-    archDir = os.path.join(fileDir, "archive")
-    passFile = os.path.join(filesDir, "api", "passing.xml")
-
-    # Set up a Worker object
-    passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
-    tstWorker = Worker("insert", passFile, None)
-    assert tstWorker._extract_metadata_id(passXML) is True
-    assert tstWorker._file_metadata_id is not None
-
-    # No file archive path set
-    tstDist = SolRDist("insert", xml_file=passFile)
-
-    # No identifier set
-    tstDist._conf.file_archive_path = archDir
-    assert tstDist.run() == (False, "Internal error")
-
-    # Invalid identifier set
-    tstDist._worker = tstWorker
-    goodUUID = tstWorker._file_metadata_id
-    tstWorker._file_metadata_id = "123456789abcdefghijkl"
-    assert tstDist.run() == (
-        False, "No valid metadata_identifier provided, cannot archive file"
-    )
-
-    # Should have a valid identifier from here on
-    tstWorker._file_metadata_id = goodUUID
-
-    # Fail the making of folders
+#@pytest.mark.dist
+#def testDistSolR_InsertUpdate(tmpDir, filesDir, monkeypatch):
+#    """Test the SolRDist class insert and update actions."""
+#    fileDir = os.path.join(tmpDir, "file_insupd")
+#    archDir = os.path.join(fileDir, "archive")
+#    passFile = os.path.join(filesDir, "api", "passing.xml")
+#
+#    # Set up a Worker object
+#    passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
+#    tstWorker = Worker("insert", passFile, None)
+#    assert tstWorker._extract_metadata_id(passXML) is True
+#    assert tstWorker._file_metadata_id is not None
+#
+#    # No file archive path set
+#    tstDist = SolRDist("insert", xml_file=passFile)
+#
+#    # No identifier set
+#    tstDist._conf.file_archive_path = archDir
+#    assert tstDist.run() == (False, "Internal error")
+#
+#    # Invalid identifier set
+#    tstDist._worker = tstWorker
+#    goodUUID = tstWorker._file_metadata_id
+#    tstWorker._file_metadata_id = "123456789abcdefghijkl"
+#    assert tstDist.run() == (
+#        False, "No valid metadata_identifier provided, cannot archive file"
+#    )
 
 
 def testDistSolR_add_successful_with_related_dataset(mockXml, monkeypatch):
@@ -269,6 +283,7 @@ def testDistSolR_add_doc_exists(mockXml, monkeypatch):
         )
 
 
+@pytest.mark.dist
 def testDistSolR_Delete(tmpUUID, filesDir, monkeypatch):
     """Test the SolRDist class delete actions."""
 

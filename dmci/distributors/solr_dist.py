@@ -42,7 +42,7 @@ class SolRDist(Distributor):
         self.authentication = None
         if self._conf.solr_username is not None and self._conf.solr_password is not None:
             logger.warn("No credentials configured." +
-                        "SorDist will fail if authentication is reqired")
+                        "SolrDist will fail if authentication is required")
             self.authentication = HTTPBasicAuth(self._conf.solr_username,
                                                 self._conf.solr_password)
 

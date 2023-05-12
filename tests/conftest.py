@@ -99,7 +99,11 @@ def mockXsd(filesDir):
 
 @pytest.fixture(scope="function")
 def tmpConf(monkeypatch):
-    """Create a temporary configuration object."""
+    """Create a temporary configuration object.
+
+    ???NOTE that tmpConf is now applied globally once the method is
+    called, since it monkeypatches dmci.CONFIG here.
+    """
     theConf = Config()
     confFile = os.path.join(theConf.pkg_root, "example_config.yaml")
     theConf.readConfig(confFile)
