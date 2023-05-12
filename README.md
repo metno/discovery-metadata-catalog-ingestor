@@ -46,7 +46,7 @@ python -m pytest -vv
 
 To add coverage, and to optionally generate a coverage report in HTML, run:
 ```bash
-python -m pytest -vv --cov=dmci --cov-report=term --cov-report=html
+python -m pytest -vv --cov=dmci --cov-report=term-missing --cov-report=html
 ```
 Coverage requires the `pytest-cov` package.
 
@@ -125,7 +125,7 @@ The API uses HTTP return codes, and expected returns are:
     500 for validation errors and other internal server problems
     507 if file could not be saved to the work queue
 
-## Licence
+## License
 
 Copyright 2021 MET Norway
 

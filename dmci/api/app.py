@@ -54,9 +54,11 @@ class App(Flask):
 
         # Create the XML Validator Object
         try:
-            self._xsd_obj = etree.XMLSchema(etree.parse(self._conf.mmd_xsd_path))
+            self._xsd_obj = etree.XMLSchema(
+                etree.parse(self._conf.mmd_xsd_path))
         except Exception as e:
-            logger.critical("XML Schema could not be parsed: %s" % str(self._conf.mmd_xsd_path))
+            logger.critical("XML Schema could not be parsed: %s" %
+                            str(self._conf.mmd_xsd_path))
             logger.critical(str(e))
             sys.exit(1)
 
@@ -75,7 +77,9 @@ class App(Flask):
         @self.route("/v1/delete/<metadata_id>", methods=["POST"])
         def post_delete(metadata_id=None):
             """Process delete command."""
-            md_uuid, md_namespace, err = self._check_namespace_UUID(metadata_id)
+            md_uuid, md_namespace, err = self._check_namespace_UUID(
+                metadata_id)
+
             if md_uuid is not None:
                 worker = Worker("delete", None, self._xsd_obj,
                                 md_uuid=md_uuid, md_namespace=md_namespace)
@@ -120,8 +124,10 @@ class App(Flask):
 
         # Cache the job file
         file_uuid = uuid.uuid4()
-        full_path = os.path.join(self._conf.distributor_cache, f"{file_uuid}.xml")
-        reject_path = os.path.join(self._conf.rejected_jobs_path, f"{file_uuid}.xml")
+        full_path = os.path.join(
+            self._conf.distributor_cache, f"{file_uuid}.xml")
+        reject_path = os.path.join(
+            self._conf.rejected_jobs_path, f"{file_uuid}.xml")
         msg, code = self._persist_file(data, full_path)
         if code != 200:
             return msg, code
@@ -162,7 +168,8 @@ class App(Flask):
 
         # Cache the job file
         file_uuid = uuid.uuid4()
-        full_path = os.path.join(self._conf.distributor_cache, f"{file_uuid}.xml")
+        full_path = os.path.join(
+            self._conf.distributor_cache, f"{file_uuid}.xml")
         msg, code = self._persist_file(data, full_path)
         if code != 200:
             self._handle_persist_file(True, full_path)
@@ -185,12 +192,14 @@ class App(Flask):
         err = []
         status, valid, _, failed, skipped, failed_msg = worker.distribute()
         if not status:
-            err.append("The following distributors failed: %s" % ", ".join(failed))
+            err.append("The following distributors failed: %s" %
+                       ", ".join(failed))
             for name, reason in zip(failed, failed_msg):
                 err.append(" - %s: %s" % (name, reason))
 
         if not valid:
-            err.append("The following jobs were skipped: %s" % ", ".join(skipped))
+            err.append("The following jobs were skipped: %s" %
+                       ", ".join(skipped))
 
         return err
 
@@ -263,12 +272,13 @@ class App(Flask):
             else:
                 os.remove(full_path)
 
-            reason_path = reject_path[:-3]+"txt"
+            reason_path = reject_path[:-3] + "txt"
             try:
                 with open(reason_path, mode="w", encoding="utf-8") as ofile:
                     ofile.write(reject_reason)
             except Exception as e:
-                logger.error("Failed to write rejected reason to file: %s", reason_path)
+                logger.error(
+                    "Failed to write rejected reason to file: %s", reason_path)
                 logger.error(str(e))
                 return False
 

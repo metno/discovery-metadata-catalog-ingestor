@@ -53,8 +53,8 @@ class Config():
 
         # SolR Distributor
         self.solr_service_url = None
-        self.username = None
-        self.password = None
+        self.solr_username = None
+        self.solr_password = None
         self.authentication = None
         self.fail_on_missing_parent = True
         self.commit_on_delete = False
@@ -90,6 +90,9 @@ class Config():
         self._read_customization()
         self._read_file()
         self._read_solr()
+
+        # Read SolR environment credential variables
+        self._read_solr_env_vars()
 
         valid = self._validate_config()
 
@@ -127,10 +130,15 @@ class Config():
         self.solr_service_url = conf.get("solr_service_url", self.solr_service_url)
         self.fail_on_missing_parent = conf.get("missing_parent_fail", self.fail_on_missing_parent)
         self.commit_on_delete = conf.get("commit_on_delete", self.commit_on_delete)
-        self.username = os.getenv("SOLR_USERNAME", self.username)
-        self.password = os.getenv("SOLR_PASSWORD", self.password)
+        self.solr_username = conf.get("solr_username", self.solr_username)
+        self.solr_password = conf.get("solr_password", self.solr_password)
 
         return
+
+    def _read_solr_env_vars(self):
+        """Read solr credentials from environment variables."""
+        self.solr_username = os.getenv("SOLR_USERNAME", self.solr_username)
+        self.solr_password = os.getenv("SOLR_PASSWORD", self.solr_password)
 
     def _read_customization(self):
         """Read config values under 'customization'."""

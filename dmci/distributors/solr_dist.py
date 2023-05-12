@@ -39,13 +39,11 @@ class SolRDist(Distributor):
         super().__init__(cmd, xml_file, metadata_id, worker, **kwargs)
 
         """Store solr authentication credentials if used"""
-        self.username = self._conf.username
-        self.password = self._conf.password
         self.authentication = None
 
-        if self.username is not None and self.password is not None:
-            logger.debug("Creating http basic auth object")
-            self.authentication = HTTPBasicAuth(self.username, self.password)
+        if self._conf.solr_username is not None and self._conf.solr_password is not None:
+            self.authentication = HTTPBasicAuth(self._conf.solr_username,
+                                                self._conf.solr_password)
 
         """Create connection to solr"""
         self.mysolr = IndexMMD(self._conf.solr_service_url, always_commit=False,
@@ -80,8 +78,9 @@ class SolRDist(Distributor):
         try:
             mydoc = MMD4SolR(self._xml_file)
         except Exception as e:
-            logger.error("Could not read file %s: %s", (self._xml_file, e))
-            return False, e
+            msg = "Could not read file %s: %s" % (self._xml_file, str(e))
+            logger.error(msg)
+            return False, msg
 
         mydoc.check_mmd()  # Determine if we need to run this check.
 
@@ -89,73 +88,61 @@ class SolRDist(Distributor):
         try:
             newdoc = mydoc.tosolr()
         except Exception as e:
-            logger.error('Could not process the file %s: %s', (self._xml_file, e))
-            return False, e
+            msg = 'Could not process the file %s: %s' % (
+                self._xml_file, str(e))
+            logger.error(msg)
+            return False, msg
 
         """Check if document already exsists. Then we throw error and don't index."""
         isIndexed = self.mysolr.get_dataset(newdoc['id'])
         if isIndexed['doc'] is not None and self._cmd == DistCmd.INSERT:
-            logger.error("Document already exists in index, %s" % newdoc['metadata_identifier'])
-            return False, "Document already exists in index, %s" % newdoc['metadata_identifier']
+            msg = "Document already exists in index, %s" % newdoc['metadata_identifier']
+            logger.error(msg)
+            return False, msg
 
-        elif 'related_dataset' in newdoc:
-            logger.info("Child/Level-2 - dataset - %s", newdoc['metadata_identifier'])
-            # newdoc.update({'dataset_type': 'Level-2'})
-            # newdoc.update({'isChild': True})
-            logger.info("Child dataset with parent id %s", newdoc['related_dataset'])
+        if 'related_dataset' in newdoc:
+            logger.info("Child dataset with id %s",
+                        newdoc['metadata_identifier'])
+            logger.info("Child dataset's parent's id is %s",
+                        newdoc['related_dataset'])
             parentid = newdoc['related_dataset_id']
             status, msg = self.mysolr.update_parent(
-                parentid, fail_on_missing=self._conf.fail_on_missing_parent)
+                parentid,
+                fail_on_missing=self._conf.fail_on_missing_parent
+            )
             if status:
-                try:
-                    self.mysolr.index_record(newdoc, addThumbnail=False, level=2)
-                except Exception as e:
-                    logger.error("Could not index file %s: %s", (self._xml_file, e))
-                    return False, e
+                status, msg = self._index_record(
+                    newdoc, add_thumbnail=False, level=2)
             else:
                 return status, msg
         else:
-            logger.info("Parent/Level-1 - dataset - %s", newdoc['metadata_identifier'])
-            # newdoc.update({'dataset_type':'Level-1'})
-            # newdoc.update({'isParent': False})
-            try:
-                status, msg = self.mysolr.index_record(newdoc, addThumbnail=False, level=1)
-            except Exception as e:
-                logger.error("Could not index file %s: %s", (self._xml_file, e))
-                return False, e
+            logger.info("Parent/Level-1 - dataset - %s",
+                        newdoc['metadata_identifier'])
+            status, msg = self._index_record(
+                newdoc, add_thumbnail=False, level=1)
 
+        return status, msg
+
+    def _index_record(self, newdoc, add_thumbnail=False, level=1):
+        """ Wrapper function to return correct parameters (status and msg).
+        """
+        try:
+            status, msg = self.mysolr.index_record(
+                newdoc, addThumbnail=add_thumbnail, level=level)
+        except Exception as e:
+            msg = "Could not index file %s: %s" % (self._xml_file, str(e))
+            logger.error(msg)
+            status = False
         return status, msg
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
-        identifier = self._construct_identifier(self._worker._namespace, self._metadata_id)
-        logger.info("Deleting document %s from SolR index." % identifier)
-        status, msg = self.mysolr.delete(identifier, commit=self._conf.commit_on_delete)
-        # return status, resp.text
+        identifier = self._construct_identifier(self._worker._namespace,
+                                                self._metadata_id)
+        status, msg = self.mysolr.delete(
+            identifier, commit=self._conf.commit_on_delete)
+        logger.debug("Delete status: " + str(status) + ". With response: " + str(msg))
+        # return status, message
         return status, msg
 
-    @staticmethod
-    def _construct_identifier(namespace, metadata_id):
-        """Helper function to construct identifier from namespace and
-        UUID. Currently accepts empty namespaces, but later will only
-        accept correctly formed namespaced UUID
-
-        Parameters
-        ----------
-        namespace : str
-            namespace for the UUID
-        metadata_id : UUID or str
-            UUID for the metadata-file we want to Update or Delete
-
-        Returns
-        -------
-        str
-            namespace:UUID or just UUID if namespace is empty.
-        """
-        if namespace != "":
-            identifier = namespace + ":" + str(metadata_id)
-        else:
-            identifier = str(metadata_id)
-        return identifier
-
-# END Class PyCSWDist
+# END Class SolRDist

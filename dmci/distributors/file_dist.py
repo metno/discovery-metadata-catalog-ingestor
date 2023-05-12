@@ -138,7 +138,7 @@ class FileDist(Distributor):
         lvlB = "arch_%s" % fileUUID.hex[6]
         lvlC = "arch_%s" % fileUUID.hex[5]
 
-        fileName = str(fileUUID)+".xml"
+        fileName = str(fileUUID) + ".xml"
         archPath = os.path.join(self._conf.file_archive_path, lvlA, lvlB, lvlC)
 
         return fileName, archPath
