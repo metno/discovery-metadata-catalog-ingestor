@@ -18,16 +18,13 @@ limitations under the License.
 """
 
 import os
-import logging
 import lxml
 import pytest
-import tempfile
 
-from requests.auth import HTTPBasicAuth
+
 from tools import causeException
 from tools import readFile
 
-from dmci.config import Config
 from dmci.api.worker import Worker
 from dmci.distributors import SolRDist
 from dmci.distributors.distributor import DistCmd
@@ -76,12 +73,6 @@ def testDistSolR_Init(tmpUUID, monkeypatch):
     assert SolRDist("update", metadata_id=tmpUUID).is_valid() is False
     assert SolRDist("delete", metadata_id=tmpUUID).is_valid() is True
     assert SolRDist("blabla", metadata_id=tmpUUID).is_valid() is False
-
-
-@pytest.mark.dist
-def testDistSolR_Init_with_auth(tmpConf, mockXsd, mockXslt, tmpDir, mockXml, monkeypatch):
-
-    sd = SolRDist("insert", xml_file=mockXml)
 
 
 @pytest.mark.dist

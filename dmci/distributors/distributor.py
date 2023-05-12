@@ -79,7 +79,8 @@ class Distributor():
                     self._valid = False
                     return
         else:
-            logger.error("Either xml_file or metadata_id must be specified, but not both")
+            logger.error(
+                "Either xml_file or metadata_id must be specified, but not both")
             self._valid = False
             return
 
@@ -89,18 +90,21 @@ class Distributor():
                 self._path_to_parent_list = kwargs['path_to_parent_list']
                 self._valid = True
             else:
-                logger.error("File does not exist: %s" % str(kwargs['path_to_parent_list']))
+                logger.error("File does not exist: %s" %
+                             str(kwargs['path_to_parent_list']))
                 self._valid = False
                 return
 
         # Check consistency between command and data
         if self._cmd in (DistCmd.UPDATE, DistCmd.INSERT) and self._xml_file is None:
-            logger.error("Command '%s' requires `xml_file` to be specified" % str(cmd))
+            logger.error(
+                "Command '%s' requires `xml_file` to be specified" % str(cmd))
             self._valid = False
             return
 
         if self._cmd == DistCmd.DELETE and self._metadata_id is None:
-            logger.error("Command '%s' requires `metadata_id` to be specified" % str(cmd))
+            logger.error(
+                "Command '%s' requires `metadata_id` to be specified" % str(cmd))
             self._valid = False
             return
 
@@ -116,5 +120,6 @@ class Distributor():
 
     def is_valid(self):
         return self._valid
+
 
 # END Class Distributor

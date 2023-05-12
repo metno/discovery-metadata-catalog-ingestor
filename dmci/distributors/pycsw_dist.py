@@ -71,7 +71,8 @@ class PyCSWDist(Distributor):
             # self._xml_file needs to contain the string "parent"
             new_doc = transform(xml_doc, path_to_parent_list=etree.XSLT.strparam(
                 self._path_to_parent_list))
-            result = etree.tostring(new_doc, pretty_print=False, encoding="utf-8")
+            result = etree.tostring(
+                new_doc, pretty_print=False, encoding="utf-8")
         except Exception as e:
             logger.error("Failed to translate MMD to ISO19139")
             logger.debug(str(e))
@@ -94,9 +95,11 @@ class PyCSWDist(Distributor):
         )
         xml += self._translate()
         xml += b"</csw:Insert></csw:Transaction>"
-        resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
+        resp = requests.post(self._conf.csw_service_url,
+                             headers=headers, data=xml)
         status = self._get_transaction_status(self.TOTAL_INSERTED, resp)
-        logger.debug("Insert status: " + str(status) + ". With response: " + resp.text)
+        logger.debug("Insert status: " + str(status) +
+                     ". With response: " + resp.text)
         return status, resp.text
 
     def _update(self):
@@ -134,14 +137,17 @@ class PyCSWDist(Distributor):
             b'  </csw:Update>'
             b'</csw:Transaction>'
         ) % (self._translate(), identifier.encode(encoding="utf-8"))
-        resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
+        resp = requests.post(self._conf.csw_service_url,
+                             headers=headers, data=xml)
         status = self._get_transaction_status(self.TOTAL_UPDATED, resp)
-        logger.debug("Update status: " + str(status) + ". With response: " + resp.text)
+        logger.debug("Update status: " + str(status) +
+                     ". With response: " + resp.text)
         return status, resp.text
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
-        identifier = self._construct_identifier(self._worker._namespace, self._metadata_id)
+        identifier = self._construct_identifier(
+            self._worker._namespace, self._metadata_id)
 
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
@@ -167,9 +173,11 @@ class PyCSWDist(Distributor):
             '  </csw:Delete>'
             '</csw:Transaction>'
         ) % identifier
-        resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
+        resp = requests.post(self._conf.csw_service_url,
+                             headers=headers, data=xml_as_string)
         status = self._get_transaction_status(self.TOTAL_DELETED, resp)
-        logger.debug("Delete status: " + str(status) + ". With response: " + resp.text)
+        logger.debug("Delete status: " + str(status) +
+                     ". With response: " + resp.text)
         return status, resp.text
 
     def _get_transaction_status(self, key, resp):
@@ -188,11 +196,13 @@ class PyCSWDist(Distributor):
             True if the transaction succeeded, otherwise False
         """
         if key not in self.STATUS:
-            logger.error("Input key must be one of: %s", ", ".join(self.STATUS))
+            logger.error("Input key must be one of: %s",
+                         ", ".join(self.STATUS))
             return False
 
         if not isinstance(resp, requests.models.Response):
-            logger.error("Input argument 'resp' must be instance of requests.models.Response")
+            logger.error(
+                "Input argument 'resp' must be instance of requests.models.Response")
             return False
 
         status = False
@@ -219,7 +229,8 @@ class PyCSWDist(Distributor):
             status of insert, update and delete
         """
         if key not in self.STATUS:
-            logger.error("Input key must be one of: %s", ", ".join(self.STATUS))
+            logger.error("Input key must be one of: %s",
+                         ", ".join(self.STATUS))
             return False
 
         status = False
@@ -241,7 +252,8 @@ class PyCSWDist(Distributor):
             node = root.find("{%s}Exception" % ns_ows, root.nsmap)
             msg = "Unknown Error"
             if node is not None:
-                msg = node.findtext("{%s}ExceptionText" % ns_ows, "Unknown Error", root.nsmap)
+                msg = node.findtext("{%s}ExceptionText" %
+                                    ns_ows, "Unknown Error", root.nsmap)
             else:
                 msg = "Unknown Error"
             logger.error(msg)
@@ -249,9 +261,12 @@ class PyCSWDist(Distributor):
         elif root.tag == "{%s}TransactionResponse" % ns_csw:
             node = root.find("{%s}TransactionSummary" % ns_csw, root.nsmap)
             if node is not None:
-                n_ins = node.findtext("{%s}totalInserted" % ns_csw, "0", root.nsmap)
-                n_upd = node.findtext("{%s}totalUpdated" % ns_csw, "0", root.nsmap)
-                n_del = node.findtext("{%s}totalDeleted" % ns_csw, "0", root.nsmap)
+                n_ins = node.findtext("{%s}totalInserted" %
+                                      ns_csw, "0", root.nsmap)
+                n_upd = node.findtext("{%s}totalUpdated" %
+                                      ns_csw, "0", root.nsmap)
+                n_del = node.findtext("{%s}totalDeleted" %
+                                      ns_csw, "0", root.nsmap)
 
         else:
             msg = "This should not happen"
