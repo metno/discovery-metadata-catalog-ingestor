@@ -86,7 +86,7 @@ COPY --from=builder /dst/. /
 
 RUN ls -l /dist/*; for PKG in /dist/*.tar.gz; do pip install $PKG; done
 
-# Fix netcdf4 ssl error
+# Fix netcdf4 ssl error, occurring when solr-indexer tries to read featureType from the netcdf file
 RUN echo "HTTP.SSL.CAINFO=/etc/ssl/certs/ca-certificates.crt" > /.ncrc
 
 # Default port to expose
