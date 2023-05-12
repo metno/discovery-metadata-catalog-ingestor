@@ -40,9 +40,8 @@ class SolRDist(Distributor):
 
         """Store solr authentication credentials if used"""
         self.authentication = None
+
         if self._conf.solr_username is not None and self._conf.solr_password is not None:
-            logger.warn("No credentials configured." +
-                        "SolrDist will fail if authentication is required")
             self.authentication = HTTPBasicAuth(self._conf.solr_username,
                                                 self._conf.solr_password)
 
@@ -138,10 +137,11 @@ class SolRDist(Distributor):
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
-        identifier = self._metadata_id
-        logger.info("Deleting document %s from SolR index." % identifier)
+        identifier = self._construct_identifier(self._worker._namespace,
+                                                self._metadata_id)
         status, msg = self.mysolr.delete(
             identifier, commit=self._conf.commit_on_delete)
+        logger.debug("Delete status: " + str(status) + ". With response: " + str(msg))
         # return status, message
         return status, msg
 

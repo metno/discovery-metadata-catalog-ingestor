@@ -91,6 +91,9 @@ class Config():
         self._read_file()
         self._read_solr()
 
+        # Read SolR environment credential variables
+        self._read_solr_env_vars()
+
         valid = self._validate_config()
 
         return valid
@@ -131,6 +134,11 @@ class Config():
         self.solr_password = conf.get("solr_password", self.solr_password)
 
         return
+
+    def _read_solr_env_vars(self):
+        """Read solr credentials from environment variables."""
+        self.solr_username = os.getenv("SOLR_USERNAME", self.solr_username)
+        self.solr_password = os.getenv("SOLR_PASSWORD", self.solr_password)
 
     def _read_customization(self):
         """Read config values under 'customization'."""

@@ -125,7 +125,7 @@ The API uses HTTP return codes, and expected returns are:
     500 for validation errors and other internal server problems
     507 if file could not be saved to the work queue
 
-## Licence
+## License
 
 Copyright 2021 MET Norway
 

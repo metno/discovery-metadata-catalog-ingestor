@@ -269,28 +269,4 @@ class PyCSWDist(Distributor):
 
         return status
 
-    @staticmethod
-    def _construct_identifier(namespace, metadata_id):
-        """Helper function to construct identifier from namespace and
-        UUID. Currently accepts empty namespaces, but later will only
-        accept correctly formed namespaced UUID
-
-        Parameters
-        ----------
-        namespace : str
-            namespace for the UUID
-        metadata_id : UUID or str
-            UUID for the metadata-file we want to Update or Delete
-
-        Returns
-        -------
-        str
-            namespace:UUID or just UUID if namespace is empty.
-        """
-        if namespace != "":
-            identifier = namespace + ":" + str(metadata_id)
-        else:
-            identifier = str(metadata_id)
-        return identifier
-
 # END Class PyCSWDist

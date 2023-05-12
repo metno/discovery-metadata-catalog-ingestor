@@ -180,7 +180,7 @@ def testDistFile_Delete(tmpDir, filesDir, monkeypatch):
     tstDist._cmd = DistCmd.DELETE
     goodUUID = tstWorker._file_metadata_id
 
-    tstWorker._metadata_id  = "123456789abcdefghijkl"
+    tstWorker._metadata_id = "123456789abcdefghijkl"
     assert tstDist.run() == (
         False, "No valid metadata_identifier provided, cannot delete file"
     )
