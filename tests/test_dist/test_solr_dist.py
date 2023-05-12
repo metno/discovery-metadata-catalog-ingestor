@@ -176,33 +176,38 @@ def testDistSolR_add_successful(mockXml, monkeypatch):
         )
 
 
-#@pytest.mark.dist
-#def testDistSolR_InsertUpdate(tmpDir, filesDir, monkeypatch):
-#    """Test the SolRDist class insert and update actions."""
-#    fileDir = os.path.join(tmpDir, "file_insupd")
-#    archDir = os.path.join(fileDir, "archive")
-#    passFile = os.path.join(filesDir, "api", "passing.xml")
-#
-#    # Set up a Worker object
-#    passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
-#    tstWorker = Worker("insert", passFile, None)
-#    assert tstWorker._extract_metadata_id(passXML) is True
-#    assert tstWorker._file_metadata_id is not None
-#
-#    # No file archive path set
-#    tstDist = SolRDist("insert", xml_file=passFile)
-#
-#    # No identifier set
-#    tstDist._conf.file_archive_path = archDir
-#    assert tstDist.run() == (False, "Internal error")
-#
-#    # Invalid identifier set
-#    tstDist._worker = tstWorker
-#    goodUUID = tstWorker._file_metadata_id
-#    tstWorker._file_metadata_id = "123456789abcdefghijkl"
-#    assert tstDist.run() == (
-#        False, "No valid metadata_identifier provided, cannot archive file"
-#    )
+@pytest.mark.dist
+def testDistSolR_InsertUpdate(tmpDir, filesDir, monkeypatch):
+    """Test the SolRDist class insert and update actions."""
+    fileDir = os.path.join(tmpDir, "file_insupd")
+    archDir = os.path.join(fileDir, "archive")
+    passFile = os.path.join(filesDir, "api", "passing.xml")
+
+    # Set up a Worker object
+    passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
+    tstWorker = Worker("insert", passFile, None)
+    assert tstWorker._extract_metadata_id(passXML) is True
+    assert tstWorker._file_metadata_id is not None
+
+    # No file archive path set
+    tstDist = SolRDist("insert", xml_file=passFile)
+
+    # No identifier set
+    tstDist._conf.file_archive_path = archDir
+    assert tstDist.run() == (False, "Internal error")
+
+    # Invalid identifier set
+    tstDist._worker = tstWorker
+    goodUUID = tstWorker._file_metadata_id
+    tstWorker._file_metadata_id = "123456789abcdefghijkl"
+    assert tstDist.run() == (
+        False, "No valid metadata_identifier provided, cannot archive file"
+    )
+
+    # Should have a valid identifier from here on
+    tstWorker._file_metadata_id = goodUUID
+
+    # Fail the making of folders
 
 
 def testDistSolR_add_successful_with_related_dataset(mockXml, monkeypatch):
