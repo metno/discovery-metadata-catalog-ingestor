@@ -21,6 +21,9 @@ RUN apt-get -qqy update && \
       git \
       python3-pip \
       python3-venv \
+      python3-gdal \
+      libgeos++-dev \
+      build-essential \
     && python3 -m pip install pip-tools
 
 COPY . /src
@@ -73,6 +76,7 @@ RUN apt-get -qqy update && \
       libxslt1.1 \
       python3-lxml \
       python3-pip \
+      libgeos++-dev \
       python3-wheel \
       wget \
     && rm -rf /var/lib/apt/lists/* && \

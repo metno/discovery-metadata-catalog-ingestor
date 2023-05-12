@@ -63,6 +63,7 @@ def causeShUtilError(*args, **kwargs):
     import shutil
     raise shutil.Error("Test shutil.Error")
 
+
 def causeException(*args, **kwargs):
     raise Exception("Test Exception")
 

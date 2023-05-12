@@ -18,14 +18,16 @@ limitations under the License.
 """
 
 import os
+import logging
 import lxml
 import pytest
-import logging
+import tempfile
 
-from tools import causeOSError
+from requests.auth import HTTPBasicAuth
 from tools import causeException
 from tools import readFile
 
+from dmci.config import Config
 from dmci.api.worker import Worker
 from dmci.distributors import SolRDist
 from dmci.distributors.distributor import DistCmd
@@ -40,7 +42,7 @@ class MockIndexMMD:
         is_indexed = {
             'doc': None,
         }
-        return is_indexed 
+        return is_indexed
 
     def index_record(self, *args, **kwargs):
         return True, 'test'
@@ -66,7 +68,7 @@ class MockMMD4SolR:
 
 
 @pytest.mark.dist
-def testDistSolR_Init(tmpUUID):
+def testDistSolR_Init(tmpUUID, monkeypatch):
     """Test the SolRDist class init."""
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
@@ -75,7 +77,11 @@ def testDistSolR_Init(tmpUUID):
     assert SolRDist("delete", metadata_id=tmpUUID).is_valid() is True
     assert SolRDist("blabla", metadata_id=tmpUUID).is_valid() is False
 
-# END Test testDistSolR_Init
+
+@pytest.mark.dist
+def testDistSolR_Init_with_auth(tmpConf, mockXsd, mockXslt, tmpDir, mockXml, monkeypatch):
+
+    sd = SolRDist("insert", xml_file=mockXml)
 
 
 @pytest.mark.dist
@@ -124,42 +130,8 @@ def testDistSolR_add_MMD4SolR_raises_exception(mockXml, monkeypatch):
         assert tstDist._add() == (
             False, "Could not read file %s: Test Exception" % mockXml
         )
-        
 
-<<<<<<< HEAD
-    #    def __init__(self, *args, **kwargs):
-    #        pass
 
-    #    def get_dataset(self, *args, **kwargs):
-    #        is_indexed = {
-    #            'doc': None,
-    #        }
-    #        return is_indexed
-
-    #    def index_record(self, *args, **kwargs):
-    #        return True, 'test'
-
-    #class MockMMD4SolR:
-
-    #    def __init__(self, xml):
-    #        pass
-
-    #    def check_mmd(self, *args, **kwargs):
-    #        return None
-
-    #    def tosolr(self, *args, **kwargs):
-    #        solr_formatted = {
-    #            'id': 'no-met-dev-250ba38f-1081-4669-a429-f378c569db32',
-    #            'metadata_identifier': 'no.met.dev:250ba38f-1081-4669-a429-f378c569db32',
-    #        }
-    #        return solr_formatted
-
-    #with monkeypatch.context() as mp:
-    #    mp.setattr("dmci.distributors.solr_dist.MMD4SolR",
-    #               lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
-    #    mp.setattr("dmci.distributors.solr_dist.IndexMMD",
-    #               lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
-=======
 @pytest.mark.dist
 def testDistSolR_add_successful(mockXml, monkeypatch):
     """ Test that the _add function successfully completes with the
@@ -167,10 +139,9 @@ def testDistSolR_add_successful(mockXml, monkeypatch):
     """
     with monkeypatch.context() as mp:
         mp.setattr("dmci.distributors.solr_dist.MMD4SolR",
-            lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
+                   lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
         mp.setattr("dmci.distributors.solr_dist.IndexMMD",
-            lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
->>>>>>> 9dff0ccffd54c9068e538d26215ec330a3ac6e40
+                   lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
 
         # Initialise object, and check that it validates
         tstDist = SolRDist("insert", xml_file=mockXml)
@@ -187,7 +158,6 @@ def testDistSolR_add_successful(mockXml, monkeypatch):
 
 
 @pytest.mark.dist
-<<<<<<< HEAD
 def testDistSolR_InsertUpdate(tmpDir, filesDir, monkeypatch):
     """Test the SolRDist class insert and update actions."""
     fileDir = os.path.join(tmpDir, "file_insupd")
@@ -219,25 +189,26 @@ def testDistSolR_InsertUpdate(tmpDir, filesDir, monkeypatch):
     tstWorker._file_metadata_id = goodUUID
 
     # Fail the making of folders
-=======
+
+
 def testDistSolR_add_successful_with_related_dataset(mockXml, monkeypatch):
     """ Test that the _add function successfully completes with the
     correct return message.
     """
->>>>>>> 9dff0ccffd54c9068e538d26215ec330a3ac6e40
+
     with monkeypatch.context() as mp:
         mp.setattr("dmci.distributors.solr_dist.MMD4SolR",
-            lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
+                   lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
         mp.setattr("dmci.distributors.solr_dist.IndexMMD",
-            lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
+                   lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
         mp.setattr(MockMMD4SolR, "tosolr",
-            lambda *a, **k: {
-                "doc": None,
-                "id": "no-met-dev-250ba38f-1081-4669-a429-f378c569db32",
-                "metadata_identifier": "no.met.dev:250ba38f-1081-4669-a429-f378c569db32",
-                "related_dataset": "no.met.dev:350ba38f-1081-4669-a429-f378c569db32",
-                "related_dataset_id": "no-met-dev-350ba38f-1081-4669-a429-f378c569db32",
-            })
+                   lambda *a, **k: {
+                       "doc": None,
+                       "id": "no-met-dev-250ba38f-1081-4669-a429-f378c569db32",
+                       "metadata_identifier": "no.met.dev:250ba38f-1081-4669-a429-f378c569db32",
+                       "related_dataset": "no.met.dev:350ba38f-1081-4669-a429-f378c569db32",
+                       "related_dataset_id": "no-met-dev-350ba38f-1081-4669-a429-f378c569db32",
+                   })
 
         # Initialise object, and check that it validates
         tstDist = SolRDist("insert", xml_file=mockXml)
@@ -254,7 +225,8 @@ def testDistSolR_add_successful_with_related_dataset(mockXml, monkeypatch):
         )
 
         # And failing when it fails to update_parent
-        mp.setattr(MockIndexMMD, "update_parent", lambda *a, **k: (False, "No parent"))
+        mp.setattr(MockIndexMMD, "update_parent",
+                   lambda *a, **k: (False, "No parent"))
         assert tstDist._add() == (
             False, "No parent"
         )
@@ -267,7 +239,7 @@ def testDistSolR_add_tosolr_raises_exception(mockXml, monkeypatch):
     """
     with monkeypatch.context() as mp:
         mp.setattr("dmci.distributors.solr_dist.MMD4SolR",
-            lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
+                   lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
         mp.setattr(MockMMD4SolR, "tosolr", causeException)
         tstDist = SolRDist("insert", xml_file=mockXml)
         assert tstDist._add() == (
@@ -282,13 +254,14 @@ def testDistSolR_add_doc_exists(mockXml, monkeypatch):
     """
     with monkeypatch.context() as mp:
         mp.setattr("dmci.distributors.solr_dist.IndexMMD.get_dataset",
-            lambda *a, **k: {"doc": "test"})
-        mp.setattr("dmci.distributors.solr_dist.MMD4SolR.check_mmd", lambda *a, **k: None)
+                   lambda *a, **k: {"doc": "test"})
+        mp.setattr("dmci.distributors.solr_dist.MMD4SolR.check_mmd",
+                   lambda *a, **k: None)
         mp.setattr("dmci.distributors.solr_dist.MMD4SolR.tosolr",
-            lambda *a, **k: {
-                'id': 'no-met-dev-250ba38f-1081-4669-a429-f378c569db32',
-                'metadata_identifier': 'no.met.dev:250ba38f-1081-4669-a429-f378c569db32',
-            })
+                   lambda *a, **k: {
+                       'id': 'no-met-dev-250ba38f-1081-4669-a429-f378c569db32',
+                       'metadata_identifier': 'no.met.dev:250ba38f-1081-4669-a429-f378c569db32',
+                   })
         tstDist = SolRDist("insert", xml_file=mockXml)
         assert tstDist._add() == (
             False,
@@ -296,27 +269,19 @@ def testDistSolR_add_doc_exists(mockXml, monkeypatch):
         )
 
 
-@pytest.mark.dist
-def testDistSolR_Delete(tmpDir, filesDir, monkeypatch):
-    """Test the SolRDist class insert and update actions."""
+def testDistSolR_Delete(tmpUUID, filesDir, monkeypatch):
+    """Test the SolRDist class delete actions."""
 
-    md_id = "no.met:c7f8731b-5cfe-4cb5-ac57-168a19a2957b"
-    tstDist = SolRDist("delete", metadata_id=md_id)
-    # tstDist._cmd = DistCmd.DELETE
-    # assert tstDist.run() == (True, "test")
+    tstDist = SolRDist("delete", metadata_id=tmpUUID)
 
-    # delete returns True
+    # Test delete exception Sucess
     with monkeypatch.context() as mp:
-        mp.setattr(SolRDist, "_delete", lambda *a: (True, "Sucessfully deleted document with id: no.met:c7f8731b-5cfe-4cb5-ac57-168a19a2957b"))
-        res = SolRDist("delete", metadata_id=md_id).run()
-        assert res == (True, "Sucessfully deleted document with id: no.met:c7f8731b-5cfe-4cb5-ac57-168a19a2957b")
+        mp.setattr("dmci.distributors.solr_dist.IndexMMD.delete",
+                   lambda *a, **k: (True, "Document %s sucessfully deleted" % tmpUUID))
+        assert tstDist.run() == (True, "Document %s sucessfully deleted" % tmpUUID)
 
-
-    # delete returns false
+    # Test delete exception Fail
     with monkeypatch.context() as mp:
-        mp.setattr(SolRDist, "_delete", lambda *a: (False, "Document no.met:c7f8731b-5cfe-4cb5-ac57-168a19a2957b not found in index."))
-        res = SolRDist("delete", metadata_id=md_id).run()
-        assert res == (False, "Document no.met:c7f8731b-5cfe-4cb5-ac57-168a19a2957b not found in index.")
-
-# END Test testDistSolR_Delete
-
+        mp.setattr("dmci.distributors.solr_dist.IndexMMD.delete",
+                   lambda *a, **k: (False, "Document %s not found in index." % tmpUUID))
+        assert tstDist.run() == (False, "Document %s not found in index." % tmpUUID)

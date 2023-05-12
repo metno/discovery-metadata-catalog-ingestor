@@ -39,13 +39,12 @@ class SolRDist(Distributor):
         super().__init__(cmd, xml_file, metadata_id, worker, **kwargs)
 
         """Store solr authentication credentials if used"""
-        self.username = self._conf.username
-        self.password = self._conf.password
         self.authentication = None
-
-        if self.username is not None and self.password is not None:
-            logger.debug("Creating http basic auth object")
-            self.authentication = HTTPBasicAuth(self.username, self.password)
+        if self._conf.solr_username is not None and self._conf.solr_password is not None:
+            logger.warn("No credentials configured." +
+                        "SorDist will fail if authentication is reqired")
+            self.authentication = HTTPBasicAuth(self._conf.solr_username,
+                                                self._conf.solr_password)
 
         """Create connection to solr"""
         self.mysolr = IndexMMD(self._conf.solr_service_url, always_commit=False,
@@ -90,7 +89,8 @@ class SolRDist(Distributor):
         try:
             newdoc = mydoc.tosolr()
         except Exception as e:
-            msg = 'Could not process the file %s: %s' % (self._xml_file, str(e))
+            msg = 'Could not process the file %s: %s' % (
+                self._xml_file, str(e))
             logger.error(msg)
             return False, msg
 
@@ -102,20 +102,25 @@ class SolRDist(Distributor):
             return False, msg
 
         if 'related_dataset' in newdoc:
-            logger.info("Child dataset with id %s", newdoc['metadata_identifier'])
-            logger.info("Child dataset's parent's id is %s", newdoc['related_dataset'])
+            logger.info("Child dataset with id %s",
+                        newdoc['metadata_identifier'])
+            logger.info("Child dataset's parent's id is %s",
+                        newdoc['related_dataset'])
             parentid = newdoc['related_dataset_id']
             status, msg = self.mysolr.update_parent(
                 parentid,
                 fail_on_missing=self._conf.fail_on_missing_parent
             )
             if status:
-                status, msg = self._index_record(newdoc, add_thumbnail=False, level=2)
+                status, msg = self._index_record(
+                    newdoc, add_thumbnail=False, level=2)
             else:
                 return status, msg
         else:
-            logger.info("Parent/Level-1 - dataset - %s", newdoc['metadata_identifier'])
-            status, msg = self._index_record(newdoc, add_thumbnail=False, level=1)
+            logger.info("Parent/Level-1 - dataset - %s",
+                        newdoc['metadata_identifier'])
+            status, msg = self._index_record(
+                newdoc, add_thumbnail=False, level=1)
 
         return status, msg
 
@@ -123,7 +128,8 @@ class SolRDist(Distributor):
         """ Wrapper function to return correct parameters (status and msg).
         """
         try:
-            status, msg = self.mysolr.index_record(newdoc, addThumbnail=add_thumbnail, level=level)
+            status, msg = self.mysolr.index_record(
+                newdoc, addThumbnail=add_thumbnail, level=level)
         except Exception as e:
             msg = "Could not index file %s: %s" % (self._xml_file, str(e))
             logger.error(msg)
@@ -134,9 +140,9 @@ class SolRDist(Distributor):
         """Delete entry with a specified metadata_id."""
         identifier = self._metadata_id
         logger.info("Deleting document %s from SolR index." % identifier)
-        status, msg = self.mysolr.delete(identifier, commit=self._conf.commit_on_delete)
+        status, msg = self.mysolr.delete(
+            identifier, commit=self._conf.commit_on_delete)
         # return status, message
         return status, msg
-
 
 # END Class SolRDist
