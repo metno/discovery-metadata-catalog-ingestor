@@ -64,6 +64,10 @@ class MockMMD4SolR:
         return solr_formatted
 
 
+class mockWorker:
+    _namespace = ""
+
+
 @pytest.mark.dist
 def testDistSolR_Init(tmpUUID, monkeypatch):
     """Test the SolRDist class init."""
@@ -262,17 +266,17 @@ def testDistSolR_add_doc_exists(mockXml, monkeypatch):
 
 def testDistSolR_Delete(tmpUUID, filesDir, monkeypatch):
     """Test the SolRDist class delete actions."""
-
-    tstDist = SolRDist("delete", metadata_id=tmpUUID)
+    id = "no.met.dev:250ba38f-1081-4669-a429-f378c569db32"
+    tstDist = SolRDist("delete", metadata_id=id, worker=mockWorker)
 
     # Test delete exception Sucess
     with monkeypatch.context() as mp:
         mp.setattr("dmci.distributors.solr_dist.IndexMMD.delete",
-                   lambda *a, **k: (True, "Document %s sucessfully deleted" % tmpUUID))
-        assert tstDist.run() == (True, "Document %s sucessfully deleted" % tmpUUID)
-
+                   lambda *a, **k: (True, "Document %s sucessfully deleted" % id))
+        assert tstDist._delete() == (True, "Document %s sucessfully deleted" % id)
+        tstDist._delete()
     # Test delete exception Fail
     with monkeypatch.context() as mp:
         mp.setattr("dmci.distributors.solr_dist.IndexMMD.delete",
-                   lambda *a, **k: (False, "Document %s not found in index." % tmpUUID))
-        assert tstDist.run() == (False, "Document %s not found in index." % tmpUUID)
+                   lambda *a, **k: (False, "Document %s not found in index." % id))
+        assert tstDist._delete() == (False, "Document %s not found in index." % id)
