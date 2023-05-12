@@ -21,9 +21,9 @@ RUN apt-get -qqy update && \
       git \
       python3-pip \
       python3-venv \
-      python3-gdal \
+    #  python3-gdal \
       libgeos++-dev \
-      build-essential \
+    #  build-essential \
     && python3 -m pip install pip-tools
 
 COPY . /src
