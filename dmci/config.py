@@ -29,7 +29,8 @@ class Config():
     def __init__(self):
 
         # Paths
-        self.pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+        self.pkg_root = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), os.pardir))
 
         # Core Values
         self.call_distributors = []
@@ -91,6 +92,9 @@ class Config():
         self._read_file()
         self._read_solr()
 
+        # Read SolR environment credential variables
+        self._read_solr_env_vars()
+
         valid = self._validate_config()
 
         return valid
@@ -103,13 +107,18 @@ class Config():
         """Read config values under 'dmci'."""
         conf = self._raw_conf.get("dmci", {})
 
-        self.call_distributors = conf.get("distributors", self.call_distributors)
-        self.distributor_cache = conf.get("distributor_cache", self.distributor_cache)
-        self.rejected_jobs_path = conf.get("rejected_jobs_path", self.rejected_jobs_path)
-        self.max_permitted_size = conf.get("max_permitted_size", self.max_permitted_size)
+        self.call_distributors = conf.get(
+            "distributors", self.call_distributors)
+        self.distributor_cache = conf.get(
+            "distributor_cache", self.distributor_cache)
+        self.rejected_jobs_path = conf.get(
+            "rejected_jobs_path", self.rejected_jobs_path)
+        self.max_permitted_size = conf.get(
+            "max_permitted_size", self.max_permitted_size)
         self.mmd_xsl_path = conf.get("mmd_xsl_path", self.mmd_xsl_path)
         self.mmd_xsd_path = conf.get("mmd_xsd_path", self.mmd_xsd_path)
-        self.path_to_parent_list = conf.get("path_to_parent_list", self.path_to_parent_list)
+        self.path_to_parent_list = conf.get(
+            "path_to_parent_list", self.path_to_parent_list)
 
         return
 
@@ -117,20 +126,29 @@ class Config():
         """Read config values under 'pycsw'."""
         conf = self._raw_conf.get("pycsw", {})
 
-        self.csw_service_url = conf.get("csw_service_url", self.csw_service_url)
+        self.csw_service_url = conf.get(
+            "csw_service_url", self.csw_service_url)
 
         return
 
     def _read_solr(self):
         """Read config values under 'solr'."""
         conf = self._raw_conf.get("solr", {})
-        self.solr_service_url = conf.get("solr_service_url", self.solr_service_url)
-        self.fail_on_missing_parent = conf.get("missing_parent_fail", self.fail_on_missing_parent)
-        self.commit_on_delete = conf.get("commit_on_delete", self.commit_on_delete)
+        self.solr_service_url = conf.get(
+            "solr_service_url", self.solr_service_url)
+        self.fail_on_missing_parent = conf.get(
+            "missing_parent_fail", self.fail_on_missing_parent)
+        self.commit_on_delete = conf.get(
+            "commit_on_delete", self.commit_on_delete)
         self.solr_username = conf.get("solr_username", self.solr_username)
         self.solr_password = conf.get("solr_password", self.solr_password)
 
         return
+
+    def _read_solr_env_vars(self):
+        """Read solr credentials from environment variables."""
+        self.solr_username = os.getenv("SOLR_USERNAME", self.solr_username)
+        self.solr_password = os.getenv("SOLR_PASSWORD", self.solr_password)
 
     def _read_customization(self):
         """Read config values under 'customization'."""
@@ -145,7 +163,8 @@ class Config():
         """Read config values under 'pycsw'."""
         conf = self._raw_conf.get("file", {})
 
-        self.file_archive_path = conf.get("file_archive_path", self.file_archive_path)
+        self.file_archive_path = conf.get(
+            "file_archive_path", self.file_archive_path)
 
         return
 
@@ -157,15 +176,19 @@ class Config():
         valid = True
 
         valid &= self._check_file_exists(self.mmd_xsd_path, "mmd_xsd_path")
-        valid &= self._check_folder_exists(self.distributor_cache, "distributor_cache")
-        valid &= self._check_folder_exists(self.rejected_jobs_path, "rejected_jobs_path")
-        valid &= self._check_file_exists(self.path_to_parent_list, "path_to_parent_list")
+        valid &= self._check_folder_exists(
+            self.distributor_cache, "distributor_cache")
+        valid &= self._check_folder_exists(
+            self.rejected_jobs_path, "rejected_jobs_path")
+        valid &= self._check_file_exists(
+            self.path_to_parent_list, "path_to_parent_list")
 
         if "pycsw" in self.call_distributors:
             valid &= self._check_file_exists(self.mmd_xsl_path, "mmd_xsl_path")
 
         if "file" in self.call_distributors:
-            valid &= self._check_folder_exists(self.file_archive_path, "file_archive_path")
+            valid &= self._check_folder_exists(
+                self.file_archive_path, "file_archive_path")
 
         return valid
 
@@ -175,7 +198,8 @@ class Config():
             logger.error("Config value '%s' must be set", setting)
             return False
         if not os.path.isfile(path):
-            logger.error("Config value '%s' must point to an existing file", setting)
+            logger.error(
+                "Config value '%s' must point to an existing file", setting)
             return False
         return True
 
@@ -185,7 +209,8 @@ class Config():
             logger.error("Config value '%s' must be set", setting)
             return False
         if not os.path.isdir(path):
-            logger.error("Config value '%s' must point to an existing folder", setting)
+            logger.error(
+                "Config value '%s' must point to an existing folder", setting)
             return False
         return True
 
