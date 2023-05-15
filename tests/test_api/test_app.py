@@ -319,19 +319,19 @@ def testApiApp_CheckNamespaceUUID():
     correct_UUID = uuid.UUID(testUUID)
 
     # Without namespace
-    assert App._check_namespace_UUID(testUUID) == (correct_UUID, "", None)
+    assert App._check_namespace_UUID(testUUID) == ("", correct_UUID, None)
     # With namespace
-    assert App._check_namespace_UUID("test:"+testUUID) == (correct_UUID, "test", None)
+    assert App._check_namespace_UUID("test:"+testUUID) == ("test", correct_UUID, None)
 
     # Test with namespace, but malformed UUID
     out = App._check_namespace_UUID("test:blabla")
-    assert out[0] is None
-    assert out[1] == ""
+    assert out[0] == ""
+    assert out[1] is None
     assert out[2] == "Can not convert to UUID: blabla"
 
     out = App._check_namespace_UUID("test:wrong:7278888a96a54ee5845a2051bb8994c8")
-    assert out[0] is None
-    assert out[1] == ""
+    assert out[0] == ""
+    assert out[1] is None
     assert out[2] == "Malformed metadata id. Should be <namespace>:<UUID>."
 
 

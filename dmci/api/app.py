@@ -221,7 +221,7 @@ class App(Flask):
             else:
                 err = "Malformed metadata id. Should be <namespace>:<UUID>."
                 logger.error(err)
-                return None, "", err
+                return "", None, err
 
         except ValueError as e:
             err = f"Can not convert to UUID: {elements[-1]}"
