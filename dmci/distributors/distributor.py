@@ -47,6 +47,7 @@ class Distributor():
         self._cmd = None
         self._xml_file = None
         self._path_to_parent_list = None
+        # TODO: either use as uri:UUID or split in two
         self._metadata_id = None
         self._worker = worker
         self._kwargs = kwargs
@@ -117,6 +118,7 @@ class Distributor():
     def is_valid(self):
         return self._valid
 
+    # Should be possible to remove this is we consistently use uri:UUID
     @staticmethod
     def _construct_identifier(namespace, metadata_id):
         """Helper function to construct identifier from namespace and

@@ -48,9 +48,11 @@ class Worker:
             self._dist_cmd = cmd
 
         self._kwargs = kwargs
-        self._dist_metadata_id = kwargs.get("md_uuid", None)
-        self._namespace = kwargs.get("md_namespace", "")
+        # ID as input to the API
+        self._dist_metadata_id_uuid = kwargs.get("md_uuid", None)
+        self._dist_metadata_id_namespace = kwargs.get("md_namespace", "")
 
+        # ID as provided in the file input to the API
         self._file_metadata_id = None
         self._file_title_en = None
 
