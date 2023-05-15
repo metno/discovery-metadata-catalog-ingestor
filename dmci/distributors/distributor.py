@@ -39,7 +39,7 @@ class DistCmd(Enum):
 
 class Distributor():
 
-    def __init__(self, cmd, xml_file=None, metadata_id=None, worker=None, **kwargs):
+    def __init__(self, cmd, xml_file=None, metadata_UUID=None, worker=None, **kwargs):
 
         self._conf = CONFIG
         self._valid = False
@@ -47,8 +47,7 @@ class Distributor():
         self._cmd = None
         self._xml_file = None
         self._path_to_parent_list = None
-        # TODO: either use as uri:UUID or split in two
-        self._metadata_id = None
+        self._metadata_UUID = None
         self._worker = worker
         self._kwargs = kwargs
 
@@ -61,7 +60,7 @@ class Distributor():
             self._valid = False
             return
 
-        if (xml_file is None) ^ (metadata_id is None):
+        if (xml_file is None) ^ (metadata_UUID is None):
             if xml_file is not None:
                 if os.path.isfile(xml_file):
                     self._xml_file = xml_file
@@ -71,9 +70,9 @@ class Distributor():
                     self._valid = False
                     return
 
-            if metadata_id is not None:
-                if isinstance(metadata_id, uuid.UUID) and metadata_id:
-                    self._metadata_id = metadata_id
+            if metadata_UUID is not None:
+                if isinstance(metadata_UUID, uuid.UUID) and metadata_UUID:
+                    self._metadata_UUID = metadata_UUID
                     self._valid = True
                 else:
                     logger.error("Metadata identifier must be a valid UUID")
@@ -100,7 +99,7 @@ class Distributor():
             self._valid = False
             return
 
-        if self._cmd == DistCmd.DELETE and self._metadata_id is None:
+        if self._cmd == DistCmd.DELETE and self._metadata_UUID is None:
             logger.error("Command '%s' requires `metadata_id` to be specified" % str(cmd))
             self._valid = False
             return
