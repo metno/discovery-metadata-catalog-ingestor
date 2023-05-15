@@ -157,7 +157,7 @@ def testDistSolR_add_successful(mockXml, monkeypatch):
         # exception
         mp.setattr(MockIndexMMD, "index_record", causeException)
         assert tstDist._add() == (
-            False, "Could not index file %s: Test Exception" % mockXml
+            False, "Could not index file %s, in SolR. Reason: Test Exception" % mockXml
         )
 
 
@@ -227,7 +227,7 @@ def testDistSolR_add_successful_with_related_dataset(mockXml, monkeypatch):
         # exception
         mp.setattr(MockIndexMMD, "index_record", causeException)
         assert tstDist._add() == (
-            False, "Could not index file %s: Test Exception" % mockXml
+            False, "Could not index file %s, in SolR. Reason: Test Exception" % mockXml
         )
 
         # And failing when it fails to update_parent
