@@ -101,10 +101,9 @@ class Worker:
 
                 # Append env string to namespace in metadata_identifier
                 logger.debug("Identifier namespace: %s" % self._namespace)
-                logger.debug("Environment customization %s" %
+                logger.debug("Environment customization: %s" %
                              self._conf.env_string)
                 ns_re_pattern = re.compile(r"\w.\w." + self._conf.env_string)
-                logger.debug(re.search(ns_re_pattern, self._namespace))
 
                 if re.search(ns_re_pattern, self._namespace) is None:
                     full_namespace = f"{self._namespace}.{self._conf.env_string}"
@@ -124,13 +123,16 @@ class Worker:
                         data
                     )
                     found_parent_block_content = match_parent_block.group(1)
-                    found_parent_block_content = found_parent_block_content.split(b":")
+                    found_parent_block_content = found_parent_block_content.split(
+                        b":")
                     if len(found_parent_block_content) != 2:
                         err = f"Malformed parent dataset identifier {found_parent_block_content}"
                         logger.error(err)
                         return False, err, data
-                    old_parent_namespace = found_parent_block_content[0].decode()
-                    logger.debug("Parent dataset namespace: %s" % old_parent_namespace)
+                    old_parent_namespace = found_parent_block_content[0].decode(
+                    )
+                    logger.debug("Parent dataset namespace: %s" %
+                                 old_parent_namespace)
                     if re.search(ns_re_pattern, old_parent_namespace) is None:
                         new_parent_namespace = f"{old_parent_namespace}.{self._conf.env_string}"
                         data = re.sub(
@@ -183,7 +185,8 @@ class Worker:
                 xml_file=self._dist_xml_file,
                 metadata_id=self._dist_metadata_id,
                 worker=self,
-                path_to_parent_list=self._kwargs.get("path_to_parent_list", None),
+                path_to_parent_list=self._kwargs.get(
+                    "path_to_parent_list", None),
             )
             valid &= obj.is_valid()
             if obj.is_valid():
@@ -267,7 +270,8 @@ class Worker:
                 f"\n    <mmd:description/>\n    "
                 f"<mmd:resource>{catalog_url}/{uuid}</mmd:resource>\n  "
             )
-            data_mod = re.sub(found_datasetlandingpage, datasetlandingpage_mod, data)
+            data_mod = re.sub(found_datasetlandingpage,
+                              datasetlandingpage_mod, data)
 
         return data_mod
 
@@ -292,19 +296,24 @@ class Worker:
                 # only accept if format is uri:UUID, both need to be present
                 words = xml_entry.text.split(":")
                 if len(words) != 2:
-                    logger.warning("metadata_identifier not formed as namespace:UUID")
+                    logger.error(
+                        "metadata_identifier not formed as namespace:UUID")
                     return False
                 namespace, file_uuid = words
 
-                logger.info("XML file metadata_identifier namespace:%s", namespace)
-                logger.info("XML file metadata_identifier UUID: %s", file_uuid)
+                logger.info("XML file metadata_identifier: %s:%s" %
+                            (namespace, file_uuid))
+                logger.debug(
+                    "XML file metadata_identifier namespace: %s", namespace)
+                logger.debug(
+                    "XML file metadata_identifier UUID: %s", file_uuid)
                 break
 
         if file_uuid == "":
-            logger.warning("No UUID found in XML file")
+            logger.error("No UUID found in XML file")
             return False
         if namespace == "":
-            logger.warning("No namespace found in XML file")
+            logger.error("No namespace found in XML file")
             return False
 
         try:
