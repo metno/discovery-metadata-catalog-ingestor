@@ -134,7 +134,7 @@ class SolRDist(Distributor):
         try:
             status, msg = self.mysolr.index_record(
                 newdoc, addThumbnail=add_thumbnail, level=level)
-            logger.info("Indexed document: %s"
+            logger.info("Indexed document %s in SolR"
                         % newdoc['metadata_identifier'])
         except Exception as e:
             msg = "Could not index file: %s. Reason: %s" % (
