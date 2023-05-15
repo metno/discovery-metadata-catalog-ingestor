@@ -48,11 +48,11 @@ class Worker:
             self._dist_cmd = cmd
 
         self._kwargs = kwargs
-        # ID as input to the API
-        self._dist_metadata_id_uuid = kwargs.get("md_uuid", None)
-        self._dist_metadata_id_namespace = kwargs.get("md_namespace", "")
 
-        # ID as provided in the file input to the API
+        # ID as given from API
+        self._dist_metadata_id_uuid = kwargs.get("md_uuid", None)
+        self._namespace = kwargs.get("md_namespace", "")
+        # Metadata ID read from file given as input to the API
         self._file_metadata_id = None
         self._file_title_en = None
 
@@ -184,7 +184,7 @@ class Worker:
             obj = self.CALL_MAP[dist](
                 self._dist_cmd,
                 xml_file=self._dist_xml_file,
-                metadata_id=self._dist_metadata_id,
+                metadata_id=self._dist_metadata_id_uuid,
                 worker=self,
                 path_to_parent_list=self._kwargs.get(
                     "path_to_parent_list", None),
