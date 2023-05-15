@@ -17,14 +17,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import pytest
-from unittest.mock import patch
 
 from tools import causeException
 
 from dmci.distributors import SolRDist
 from dmci.distributors.distributor import DistCmd
-from dmci.distributors.distributor import Distributor
-
 
 class MockIndexMMD:
 
@@ -76,25 +73,20 @@ def testDistSolR_Init(tmpUUID, monkeypatch):
 
 
 @pytest.mark.dist
-def testDistSolR_Init_with_auth(tmpConf, mockXml, monkeypatch):
-    """ Test that the if-clause in SolRDist.__init__ is entered.
-    This is already done if all tests are run together, since tmpConf
-    is applied globally (the method tests.conftest.tmpConf
-    monkeypatches dmci.CONFIG). However, that is not the case when
-    running the tests individually.
-
-    This test requires that the solr_username and solr_password are
-    provided in example_config.py in the root folder.
+def testDistSolR_InitAuthentication(mockXml):
+    """Test the authentication initiation by
+    first initiate a SolRDist without authentication, then call
+    _init_authentication with new conf values
     """
+    sd = SolRDist("insert", xml_file=mockXml)
+    assert sd.is_valid()
+    assert sd._conf.solr_username is None
+    assert sd._conf.solr_password is None
+    assert sd.authentication is None
 
-    patch.object(Distributor, "_conf", side_effect=tmpConf, autospec=True)
-    with monkeypatch.context() as mp:
-        # mp.setattr(SolRDist, "_conf", tmpConf)
-        mp.setattr("dmci.distributors.solr_dist.IndexMMD",
-                   lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
-        sd = SolRDist("insert", xml_file=mockXml)
-    assert sd._conf.solr_username == "username"
-    assert sd._conf.solr_password == "psw"
+    sd._conf.solr_username = "username"
+    sd._conf.solr_password = "password"
+    assert sd._init_authentication() is not None
 
 
 @pytest.mark.dist
