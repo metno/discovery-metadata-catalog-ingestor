@@ -149,8 +149,8 @@ class SolRDist(Distributor):
                                                 self._metadata_id)
         status, msg = self.mysolr.delete(
             identifier, commit=self._conf.commit_on_delete)
-        logger.info("Delete status: " + str(status) +
-                    ". With response: " + str(msg))
+        logger.info("Delete status: %s. With response: %s" %
+                    (str(status), str(msg)))
         # return status, message
         return status, msg
 
