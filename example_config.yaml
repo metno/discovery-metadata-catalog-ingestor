@@ -21,6 +21,6 @@ file:
   file_archive_path: null
 
 solr:
-  solr_service_url: http://localhost:8983/solr/senda
+  solr_service_url: http://localhost
   solr_username: null
   solr_password: null
