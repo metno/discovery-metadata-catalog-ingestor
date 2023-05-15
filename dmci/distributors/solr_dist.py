@@ -26,6 +26,11 @@ from dmci.distributors.distributor import Distributor, DistCmd
 
 logger = logging.getLogger(__name__)
 
+"""Configure log level for solrindexer
+NOTE: Should the be configureable from dmci config?
+"""
+logging.getLogger('solrindexer').setLevel(logging.WARNING)
+
 
 class SolRDist(Distributor):
 
@@ -101,10 +106,10 @@ class SolRDist(Distributor):
             return False, msg
 
         if 'related_dataset' in newdoc:
-            logger.info("Child dataset with id %s",
-                        newdoc['metadata_identifier'])
-            logger.info("Child dataset's parent's id is %s",
-                        newdoc['related_dataset'])
+            logger.debug("Child dataset with id: %s",
+                         newdoc['metadata_identifier'])
+            logger.debug("Child dataset's parent's id is: %s",
+                         newdoc['related_dataset'])
             parentid = newdoc['related_dataset_id']
             status, msg = self.mysolr.update_parent(
                 parentid,
@@ -116,8 +121,8 @@ class SolRDist(Distributor):
             else:
                 return status, msg
         else:
-            logger.info("Parent/Level-1 - dataset - %s",
-                        newdoc['metadata_identifier'])
+            logger.debug("Parent/Level-1 - dataset - %s",
+                         newdoc['metadata_identifier'])
             status, msg = self._index_record(
                 newdoc, add_thumbnail=False, level=1)
 
@@ -129,8 +134,11 @@ class SolRDist(Distributor):
         try:
             status, msg = self.mysolr.index_record(
                 newdoc, addThumbnail=add_thumbnail, level=level)
+            logger.info("Indexed document %s in SolR"
+                        % newdoc['metadata_identifier'])
         except Exception as e:
-            msg = "Could not index file %s: %s" % (self._xml_file, str(e))
+            msg = "Could not index file %s, in SolR. Reason: %s" % (
+                self._xml_file, str(e))
             logger.error(msg)
             status = False
         return status, msg
@@ -141,7 +149,8 @@ class SolRDist(Distributor):
                                                 self._metadata_id)
         status, msg = self.mysolr.delete(
             identifier, commit=self._conf.commit_on_delete)
-        logger.debug("Delete status: " + str(status) + ". With response: " + str(msg))
+        logger.info("SolR delete status: %s. With response: %s" %
+                    (str(status), str(msg)))
         # return status, message
         return status, msg
 
