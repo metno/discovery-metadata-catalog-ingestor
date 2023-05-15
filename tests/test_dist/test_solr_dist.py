@@ -121,7 +121,7 @@ def testDistSolR_Run(mockXml):
 
 
 @pytest.mark.dist
-def testDistSolR_add_MMD4SolR_raises_exception(mockXml, monkeypatch):
+def testDistSolR_AddMMD4SolRRaisesException(mockXml, monkeypatch):
     """ Test _add function failing on initialization of MMD4SolR
     instance.
     """
@@ -137,7 +137,7 @@ def testDistSolR_add_MMD4SolR_raises_exception(mockXml, monkeypatch):
 
 
 @pytest.mark.dist
-def testDistSolR_add_successful(mockXml, monkeypatch):
+def testDistSolR_AddSuccessful(mockXml, monkeypatch):
     """ Test that the _add function successfully completes with the
     correct return message.
     """
@@ -161,7 +161,7 @@ def testDistSolR_add_successful(mockXml, monkeypatch):
         )
 
 
-def testDistSolR_add_successful_with_related_dataset(mockXml, monkeypatch):
+def testDistSolR_AddSuccessfulWithRelatedDataset(mockXml, monkeypatch):
     """ Test that the _add function successfully completes with the
     correct return message.
     """
@@ -203,7 +203,7 @@ def testDistSolR_add_successful_with_related_dataset(mockXml, monkeypatch):
 
 
 @pytest.mark.dist
-def testDistSolR_add_tosolr_raises_exception(mockXml, monkeypatch):
+def testDistSolR_AddTosolrRaisesException(mockXml, monkeypatch):
     """ Test that the _add function fails correctly when
     MMD4SolR.tosolr raises an exception.
     """
@@ -218,7 +218,7 @@ def testDistSolR_add_tosolr_raises_exception(mockXml, monkeypatch):
 
 
 @pytest.mark.dist
-def testDistSolR_add_doc_exists(mockXml, monkeypatch):
+def testDistSolR_AddDocExists(mockXml, monkeypatch):
     """ Test that an the _add function fails correctly when the
     dataset already exists.
     """
