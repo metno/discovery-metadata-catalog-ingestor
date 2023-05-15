@@ -77,7 +77,7 @@ class App(Flask):
         @self.route("/v1/delete/<metadata_id>", methods=["POST"])
         def post_delete(metadata_id=None):
             """Process delete command."""
-            md_uuid, md_namespace, err = self._check_namespace_UUID(
+            md_namespace, md_uuid, err = self._check_namespace_UUID(
                 metadata_id)
 
             if md_uuid is not None:
@@ -228,7 +228,7 @@ class App(Flask):
             logger.error(err)
             logger.error(str(e))
 
-        return md_uuid, md_namespace, err
+        return md_namespace, md_uuid, err
 
     @staticmethod
     def _handle_persist_file(status, full_path, reject_path=None, reject_reason=""):
