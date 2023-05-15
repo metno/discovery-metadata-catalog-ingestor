@@ -34,8 +34,8 @@ class PyCSWDist(Distributor):
     TOTAL_UPDATED = "total_updated"
     STATUS = [TOTAL_DELETED, TOTAL_INSERTED, TOTAL_UPDATED]
 
-    def __init__(self, cmd, xml_file=None, metadata_id=None, worker=None, **kwargs):
-        super().__init__(cmd, xml_file, metadata_id, worker, **kwargs)
+    def __init__(self, cmd, xml_file=None, metadata_UUID=None, worker=None, **kwargs):
+        super().__init__(cmd, xml_file, metadata_UUID, worker, **kwargs)
         return
 
     def run(self):
@@ -141,7 +141,7 @@ class PyCSWDist(Distributor):
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
-        identifier = self._construct_identifier(self._worker._namespace, self._metadata_id)
+        identifier = self._construct_identifier(self._worker._namespace, self._metadata_UUID)
 
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
