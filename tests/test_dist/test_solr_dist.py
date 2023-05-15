@@ -23,8 +23,8 @@ from tools import causeException
 from dmci.distributors import SolRDist
 from dmci.distributors.distributor import DistCmd
 
-class MockIndexMMD:
 
+class MockIndexMMD:
     def __init__(self, *args, **kwargs):
         pass
 
@@ -42,7 +42,6 @@ class MockIndexMMD:
 
 
 class MockMMD4SolR:
-
     def __init__(self, *args, **kwargs):
         pass
 
