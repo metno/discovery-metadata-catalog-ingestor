@@ -25,30 +25,30 @@ from dmci.distributors.distributor import DistCmd
 
 
 class MockIndexMMD:
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         pass
 
-    def get_dataset(self, *args, **kwargs):
+    def get_dataset(self):
         is_indexed = {
             'doc': None,
         }
         return is_indexed
 
-    def index_record(self, *args, **kwargs):
+    def index_record(self):
         return True, 'test'
 
-    def update_parent(self, *args, **kwargs):
+    def update_parent(self):
         return True, "Test successful update message"
 
 
 class MockMMD4SolR:
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         pass
 
-    def check_mmd(self, *args, **kwargs):
+    def check_mmd(self):
         return None
 
-    def tosolr(self, *args, **kwargs):
+    def tosolr(self):
         solr_formatted = {
             'id': 'no-met-dev-250ba38f-1081-4669-a429-f378c569db32',
             'metadata_identifier': 'no.met.dev:250ba38f-1081-4669-a429-f378c569db32',
@@ -61,7 +61,7 @@ class mockWorker:
 
 
 @pytest.mark.dist
-def testDistSolR_Init(tmpUUID, monkeypatch):
+def testDistSolR_Init(tmpUUID):
     """Test the SolRDist class init."""
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
@@ -89,7 +89,7 @@ def testDistSolR_InitAuthentication(mockXml):
 
 
 @pytest.mark.dist
-def testDistSolR_Run(mockXml, tmpUUID, monkeypatch):
+def testDistSolR_Run(mockXml):
     """Test the SolRDist class run function."""
 
     # Initialise object, and check that it validates
@@ -159,42 +159,6 @@ def testDistSolR_add_successful(mockXml, monkeypatch):
         assert tstDist._add() == (
             False, "Could not index file %s, in SolR. Reason: Test Exception" % mockXml
         )
-
-
-"""
-@pytest.mark.dist
-def testDistSolR_InsertUpdate(tmpDir, filesDir, monkeypatch):
-    # Test the SolRDist class insert and update actions.
-    fileDir = os.path.join(tmpDir, "file_insupd")
-    archDir = os.path.join(fileDir, "archive")
-    passFile = os.path.join(filesDir, "api", "passing.xml")
-
-    # Set up a Worker object
-    passXML = lxml.etree.fromstring(bytes(readFile(passFile), "utf-8"))
-    tstWorker = Worker("insert", passFile, None)
-    assert tstWorker._extract_metadata_id(passXML) is True
-    assert tstWorker._file_metadata_id is not None
-
-    # No file archive path set
-    tstDist = SolRDist("insert", xml_file=passFile)
-
-    # No identifier set
-    tstDist._conf.file_archive_path = archDir
-    assert tstDist.run() == (False, "Internal error")
-
-    # Invalid identifier set
-    tstDist._worker = tstWorker
-    goodUUID = tstWorker._file_metadata_id
-    tstWorker._file_metadata_id = "123456789abcdefghijkl"
-    assert tstDist.run() == (
-        False, "No valid metadata_identifier provided, cannot archive file"
-    )
-
-    # Should have a valid identifier from here on
-    tstWorker._file_metadata_id = goodUUID
-
-    # Fail the making of folders
-"""
 
 
 def testDistSolR_add_successful_with_related_dataset(mockXml, monkeypatch):
@@ -276,7 +240,7 @@ def testDistSolR_add_doc_exists(mockXml, monkeypatch):
 
 
 @pytest.mark.dist
-def testDistSolR_Delete(tmpUUID, filesDir, monkeypatch):
+def testDistSolR_Delete(monkeypatch):
     """Test the SolRDist class delete actions."""
     id = "no.met.dev:250ba38f-1081-4669-a429-f378c569db32"
     tstDist = SolRDist("delete", metadata_id=id, worker=mockWorker)
