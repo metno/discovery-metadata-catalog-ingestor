@@ -32,10 +32,10 @@ def testDistPyCSW_Init(tmpUUID):
     """Test the PyCSWDist class init."""
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
-    assert PyCSWDist("insert", metadata_id=tmpUUID).is_valid() is False
-    assert PyCSWDist("update", metadata_id=tmpUUID).is_valid() is False
-    assert PyCSWDist("delete", metadata_id=tmpUUID).is_valid() is True
-    assert PyCSWDist("blabla", metadata_id=tmpUUID).is_valid() is False
+    assert PyCSWDist("insert", metadata_UUID=tmpUUID).is_valid() is False
+    assert PyCSWDist("update", metadata_UUID=tmpUUID).is_valid() is False
+    assert PyCSWDist("delete", metadata_UUID=tmpUUID).is_valid() is True
+    assert PyCSWDist("blabla", metadata_UUID=tmpUUID).is_valid() is False
 
 # END Test testDistPyCSW_Init
 
@@ -44,8 +44,8 @@ def testDistPyCSW_Init(tmpUUID):
 def testDistPyCSW_Run(tmpUUID):
     """Test the run command with invalid parameters."""
     # WRONG command test
-    assert PyCSWDist("blabla", metadata_id=tmpUUID).run() == (False, "The run job is invalid")
-    assert PyCSWDist("insert", metadata_id=tmpUUID).run() == (False, "The run job is invalid")
+    assert PyCSWDist("blabla", metadata_UUID=tmpUUID).run() == (False, "The run job is invalid")
+    assert PyCSWDist("insert", metadata_UUID=tmpUUID).run() == (False, "The run job is invalid")
 
 # END Test testDistPyCSW_Run
 
@@ -140,10 +140,10 @@ def testDistPyCSW_Delete(monkeypatch, mockXml, tmpUUID):
             "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: mockResp
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: True)
-        res = PyCSWDist("delete", metadata_id=tmpUUID, worker=mockWorker).run()
+        res = PyCSWDist("delete", metadata_UUID=tmpUUID, worker=mockWorker).run()
         assert res == (True, "Mock response")
         mockWorker._namespace = "test.no"
-        res = PyCSWDist("delete", metadata_id=tmpUUID, worker=mockWorker).run()
+        res = PyCSWDist("delete", metadata_UUID=tmpUUID, worker=mockWorker).run()
         assert res == (True, "Mock response")
 
     mockWorker._namespace = ""
@@ -154,7 +154,7 @@ def testDistPyCSW_Delete(monkeypatch, mockXml, tmpUUID):
             "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: mockResp
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: False)
-        res = PyCSWDist("delete", metadata_id=tmpUUID, worker=mockWorker).run()
+        res = PyCSWDist("delete", metadata_UUID=tmpUUID, worker=mockWorker).run()
         assert res == (False, "Mock response")
 
 
@@ -348,7 +348,7 @@ def testDistPyCSW_ReadResponse(mockXml, caplog):
         '</csw:TransactionResponse>'
     )
     assert PyCSWDist(
-        "delete", metadata_id=md_id
+        "delete", metadata_UUID=md_id
     )._read_response_text(
         "total_deleted", text
     ) is True
@@ -375,7 +375,7 @@ def testDistPyCSW_ReadResponse(mockXml, caplog):
         '</csw:TransactionResponse>'
     )
     assert PyCSWDist(
-        "delete", metadata_id=md_id
+        "delete", metadata_UUID=md_id
     )._read_response_text(
         "total_deleted", text
     ) is False
@@ -395,7 +395,7 @@ def testDistPyCSW_ReadResponse(mockXml, caplog):
         '</SomeNewTagName>'
     )
     assert PyCSWDist(
-        "delete", metadata_id=md_id
+        "delete", metadata_UUID=md_id
     )._read_response_text(
         "total_deleted", text
     ) is False

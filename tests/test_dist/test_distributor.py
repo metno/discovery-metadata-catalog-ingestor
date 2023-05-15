@@ -27,33 +27,33 @@ def testDistDistributor_Init(mockXml, tmpUUID):
     """Test the Distributor super class init."""
 
     # Check Insert Command
-    assert Distributor("insert", metadata_id=tmpUUID).is_valid() is False
+    assert Distributor("insert", metadata_UUID=tmpUUID).is_valid() is False
     assert Distributor("insert", xml_file="/path/to/nowhere").is_valid() is False
     assert Distributor("insert", xml_file=mockXml).is_valid() is True
     assert Distributor("inSeRt", xml_file=mockXml).is_valid() is True
-    assert Distributor("insert", xml_file=mockXml, metadata_id="stuff").is_valid() is False
+    assert Distributor("insert", xml_file=mockXml, metadata_UUID="stuff").is_valid() is False
     assert Distributor("insert", xml_file=mockXml,
                        path_to_parent_list="/path/to/nowhere").is_valid() is False
 
     # Check Update Command
-    assert Distributor("update", metadata_id=tmpUUID).is_valid() is False
+    assert Distributor("update", metadata_UUID=tmpUUID).is_valid() is False
     assert Distributor("update", xml_file="/path/to/nowhere").is_valid() is False
     assert Distributor("update", xml_file=mockXml).is_valid() is True
     assert Distributor("uPdatE", xml_file=mockXml).is_valid() is True
-    assert Distributor("update", xml_file=mockXml, metadata_id="stuff").is_valid() is False
+    assert Distributor("update", xml_file=mockXml, metadata_UUID="stuff").is_valid() is False
 
     # Check Delete Command
     assert Distributor("delete", xml_file=mockXml).is_valid() is False
-    assert Distributor("delete", metadata_id=None).is_valid() is False
-    assert Distributor("delete", metadata_id=1234).is_valid() is False
-    assert Distributor("delete", metadata_id=tmpUUID).is_valid() is True
-    assert Distributor("deLEte", metadata_id=tmpUUID).is_valid() is True
-    assert Distributor("delete", xml_file=mockXml, metadata_id=tmpUUID).is_valid() is False
+    assert Distributor("delete", metadata_UUID=None).is_valid() is False
+    assert Distributor("delete", metadata_UUID=1234).is_valid() is False
+    assert Distributor("delete", metadata_UUID=tmpUUID).is_valid() is True
+    assert Distributor("deLEte", metadata_UUID=tmpUUID).is_valid() is True
+    assert Distributor("delete", xml_file=mockXml, metadata_UUID=tmpUUID).is_valid() is False
 
     # Check Unsupported Command
-    assert Distributor("blabla", metadata_id=tmpUUID).is_valid() is False
+    assert Distributor("blabla", metadata_UUID=tmpUUID).is_valid() is False
     assert Distributor("blabla", xml_file=mockXml).is_valid() is False
-    assert Distributor(12345678, metadata_id=tmpUUID).is_valid() is False
+    assert Distributor(12345678, metadata_UUID=tmpUUID).is_valid() is False
     assert Distributor(12345678, xml_file=mockXml).is_valid() is False
 
 # END Test testDistDistributor_Init
@@ -67,6 +67,6 @@ def testDistDistributor_Run(tmpUUID):
     function must be implemented in subclasses.
     """
     with pytest.raises(NotImplementedError):
-        Distributor("insert", metadata_id=tmpUUID).run()
+        Distributor("insert", metadata_UUID=tmpUUID).run()
 
 # END Test testDistDistributor_Run
