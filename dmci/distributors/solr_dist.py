@@ -137,7 +137,7 @@ class SolRDist(Distributor):
             logger.info("Indexed document %s in SolR"
                         % newdoc['metadata_identifier'])
         except Exception as e:
-            msg = "Could not index file: %s. Reason: %s" % (
+            msg = "Could not index file %s, in SolR. Reason: %s" % (
                 self._xml_file, str(e))
             logger.error(msg)
             status = False
