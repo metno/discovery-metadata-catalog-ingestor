@@ -25,30 +25,30 @@ from dmci.distributors.distributor import DistCmd
 
 
 class MockIndexMMD:
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         pass
 
-    def get_dataset(self):
+    def get_dataset(self, *args, **kwargs):
         is_indexed = {
             'doc': None,
         }
         return is_indexed
 
-    def index_record(self):
+    def index_record(self, *args, **kwargs):
         return True, 'test'
 
-    def update_parent(self):
+    def update_parent(self, *args, **kwargs):
         return True, "Test successful update message"
 
 
 class MockMMD4SolR:
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         pass
 
-    def check_mmd(self):
+    def check_mmd(self, *args, **kwargs):
         return None
 
-    def tosolr(self):
+    def tosolr(self, *args, **kwargs):
         solr_formatted = {
             'id': 'no-met-dev-250ba38f-1081-4669-a429-f378c569db32',
             'metadata_identifier': 'no.met.dev:250ba38f-1081-4669-a429-f378c569db32',
