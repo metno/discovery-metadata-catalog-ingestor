@@ -129,8 +129,7 @@ class Worker:
                         err = f"Malformed parent dataset identifier {found_parent_block_content}"
                         logger.error(err)
                         return False, err, data
-                    old_parent_namespace = found_parent_block_content[0].decode(
-                    )
+                    old_parent_namespace = found_parent_block_content[0].decode()
                     logger.debug("Parent dataset namespace: %s" %
                                  old_parent_namespace)
                     if re.search(ns_re_pattern, old_parent_namespace) is None:
