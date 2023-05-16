@@ -43,17 +43,18 @@ class SolRDist(Distributor):
 
         super().__init__(cmd, xml_file, metadata_id, worker, **kwargs)
 
-        """Store solr authentication credentials if used"""
-        self.authentication = None
+        self.authentication = self._init_authentication()
 
-        if self._conf.solr_username is not None and self._conf.solr_password is not None:
-            self.authentication = HTTPBasicAuth(self._conf.solr_username,
-                                                self._conf.solr_password)
-
-        """Create connection to solr"""
+        #  Create connection to solr
         self.mysolr = IndexMMD(self._conf.solr_service_url, always_commit=False,
                                authentication=self.authentication)
         return
+
+    def _init_authentication(self):
+        if self._conf.solr_username is not None and self._conf.solr_password is not None:
+            return HTTPBasicAuth(self._conf.solr_username,
+                                 self._conf.solr_password)
+        return None
 
     def run(self):
         """Run function to handle insert, update or delete
