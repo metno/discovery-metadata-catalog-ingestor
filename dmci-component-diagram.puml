@@ -5,7 +5,7 @@
 Person(producer, "Data Producer", "The data producer registers discovery metadata in the metadata catalogs.")
 
 ContainerDb(file, "Metadata store", "file system", "Backup Dataset Discovery Metadata Store. Committed to git on regular intervals.")
-ContainerDb(solr, "Metadata store", "SOLR", "Dataset Discovery Metadata Store (MMD).")
+ContainerDb(solr, "Metadata store", "SolR", "Dataset Discovery Metadata Store (MMD).")
 Container(csapi, "pycsw", "CSW", "CSW endpoint for search and harvesting. Serves INSPIRE, DIF, etc., compliant metadata. Currently using postgis as backend. This will be replaced by SOLR in a future version.")
 Container(other, "Metadata store", "..", "Another custom metadata store.")
 
@@ -18,9 +18,9 @@ Container_Boundary(dmci, "Discovery Metadata Catalog Ingestor"){
 
   Component(config, "DMCI Configuration", "YAML", "The configuration file defines which distributors to use, internal paths, API urls, and other relevant information such as db passwords and usernames.")
 
-  Component(filedist, "Backup distributor", "Python", "Using the MMS client, subscribes and listens for events of MMD create/update/delete, and writes to file storage.")
-  Component(solrdist, "SOLR distributor", "Python", "SOLR ingestor for MMD metadata.")
-  Component(cswdist, "CSW distributor", "Python", "Using the MMS client, subscribes and listens for events of MMD create/update/delete. Can be removed when SOLR becomes the db backend for pycsw.")
+  Component(filedist, "Backup distributor", "Python", "Create/update/delete for MMD file storage.")
+  Component(solrdist, "SolR distributor", "Python", "SolR ingestor for MMD metadata.")
+  Component(cswdist, "CSW distributor", "Python", "Create/update/delete for PyCSW. Can be removed when SolR becomes the db backend for PyCSW.")
   Component(plugin, "Other distributor", "Python", "DMCI is designed to allow addition of other distributors as custom plugins.")
 
   Component(translator, "MMD2ISO Translator", "Python", "Receives an MMD XML file. Translates from MMD to the Norwegian profile of ISO19115/INSPIRE. Returns an ISO19115 XML file. Can be removed when SOLR becomes the db backend for pycsw.")
