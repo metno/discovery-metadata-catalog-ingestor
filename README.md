@@ -37,25 +37,6 @@ If the config variable is not set, the package will look for a file named `confi
 package root location. If neither the environment variable is set, or this file exists, the
 initialisation will fail and exit with exit code `1`.
 
-## Tests
-
-The tests use `pytest`. To run all tests for all modules, run:
-```bash
-python -m pytest -vv
-```
-
-To add coverage, and to optionally generate a coverage report in HTML, run:
-```bash
-python -m pytest -vv --cov=dmci --cov-report=term-missing --cov-report=html
-```
-Coverage requires the `pytest-cov` package.
-
-## Debugging
-
-To increase logging level to include info and debug messages, set the environment variable
-`DMCI_LOGLEVEL` to the desired level. Valid levels are `CRITICAL`, `ERROR`, `WARNING`, `INFO`, and
-`DEBUG`.
-
 ## Installation
 ```
 git clone https://github.com/metno/discovery-metadata-catalog-ingestor
@@ -99,6 +80,7 @@ solr:
   solr_username: username
   solr_password: psw
 ```
+
 ## Usage
 
 To start the API run:
@@ -125,6 +107,29 @@ The API uses HTTP return codes, and expected returns are:
     413 for files being bigger than treshold (Default is 10MB, given as max_permitted_size)
     500 for validation errors and other internal server problems
     507 if file could not be saved to the work queue
+
+## Design
+
+![C4 component diagram](./dmci-component-diagram.png)
+
+## Tests
+
+The tests use `pytest`. To run all tests for all modules, run:
+```bash
+python -m pytest -vv
+```
+
+To add coverage, and to optionally generate a coverage report in HTML, run:
+```bash
+python -m pytest -vv --cov=dmci --cov-report=term-missing --cov-report=html
+```
+Coverage requires the `pytest-cov` package.
+
+## Debugging
+
+To increase logging level to include info and debug messages, set the environment variable
+`DMCI_LOGLEVEL` to the desired level. Valid levels are `CRITICAL`, `ERROR`, `WARNING`, `INFO`, and
+`DEBUG`.
 
 ## License
 
