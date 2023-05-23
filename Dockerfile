@@ -40,7 +40,7 @@ RUN git clone --depth 1 --branch ${MMD_VERSION} ${MMD_REPO} /tmp/mmd && \
     cp -a /tmp/mmd/xslt/* $DST/usr/share/mmd/xslt && \
     cp -a /tmp/mmd/xsd/* $DST/usr/share/mmd/xsd && \
     sed -Ei 's#http\://www.w3.org/2001/(xml.xsd)#\1#g' $DST/usr/share/mmd/xsd/*.xsd && \
-    rm -rf /tmp/mmd 
+    rm -rf /tmp/mmd
 
 # Place container only files in correct location for later copy
 RUN cp -a /src/container/. /dst/
@@ -80,10 +80,12 @@ RUN apt-get -qqy update && \
 
 COPY --from=builder /dst/. /
 
-RUN ls -l /dist/*; for PKG in /dist/*.tar.gz; do pip install $PKG; done
-
 # Fix netcdf4 ssl error, occurring when solr-indexer tries to read featureType from the netcdf file
-ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+RUN mkdir -p /etc/pki/tls/certs/ && \
+    ln -s /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt
+
+# Install distribution and dependencies.
+RUN ls -l /dist/*; for PKG in /dist/*.tar.gz; do pip install $PKG; done
 
 # Default port to expose
 EXPOSE 8000
