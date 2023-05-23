@@ -81,8 +81,6 @@ RUN apt-get -qqy update && \
 COPY --from=builder /dst/. /
 
 # Fix netcdf4 ssl error, occurring when solr-indexer tries to read featureType from the netcdf file
-# ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-# RUN pip config set global.cert /etc/ssl/certs/ca-certificates.crt
 RUN mkdir -p /etc/pki/tls/certs/ && \
     ln -s /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt
 
