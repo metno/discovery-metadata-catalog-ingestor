@@ -252,7 +252,8 @@ class Worker:
             matchstring_end = b"\n</mmd:mmd>\n"
             end_mod = str.encode(
                 f"\n  <mmd:related_information>\n    <mmd:type>Dataset landing page</mmd:type>"
-                f"\n    <mmd:description/>\n    <mmd:resource>{catalog_url}/dataset/{uuid}</mmd:resource>"
+                f"\n    <mmd:description/>"
+                f"\n    <mmd:resource>{catalog_url}/dataset/{uuid}</mmd:resource>"
                 f"\n  </mmd:related_information>\n</mmd:mmd>\n"
             )
             data_mod = re.sub(matchstring_end, end_mod, data)
