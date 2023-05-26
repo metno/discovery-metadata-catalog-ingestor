@@ -401,7 +401,7 @@ def testApiWorker_AddLandingPage(filesDir):
         filesDir, "api", "passing_wrelatedinfo_nolandingpage.xml"
     )
 
-    catalog_url = "https://data.met.no/dataset"
+    catalog_url = "https://data.met.no"
     uuid = "a1ddaf0f-cae0-4a15-9b37-3468e9cb1a2b"
 
     data_wo_landingpage = bytes(readFile(passFile), "utf-8")
