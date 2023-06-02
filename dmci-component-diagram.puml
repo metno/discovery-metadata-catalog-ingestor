@@ -1,31 +1,50 @@
 @startuml dmci-component-diagram
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+'!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+!include <C4/C4_Component>
 
-Container(mmd_agent, "MMD Agent", "MMS + Python", "Using the MMS client, subscribes and listens for events of MMD create/update/delete, and pushes to DMCI API.")
+Person(producer, "Data Producer", "The data producer registers discovery metadata in the metadata catalogs.")
 
 ContainerDb(file, "Metadata store", "file system", "Backup Dataset Discovery Metadata Store. Committed to git on regular intervals.")
-ContainerDb(solr, "Metadata store", "SOLR", "Dataset Discovery Metadata Store (MMD).")
+ContainerDb(solr, "Metadata store", "SolR", "Dataset Discovery Metadata Store (MMD).")
 Container(csapi, "pycsw", "CSW", "CSW endpoint for search and harvesting. Serves INSPIRE, DIF, etc., compliant metadata. Currently using postgis as backend. This will be replaced by SOLR in a future version.")
-
+Container(other, "Metadata store", "..", "Another custom metadata store.")
 
 Container_Boundary(dmci, "Discovery Metadata Catalog Ingestor"){
-  Component(filedist, "Backup distributor", "Python", "Using the MMS client, subscribes and listens for events of MMD create/update/delete, and writes to file storage.")
-  Component(solrdist, "SOLR distributor", "Python", "SOLR ingestor for MMD metadata.")
-  Component(cswdist, "CSW distributor", "Python", "Using the MMS client, subscribes and listens for events of MMD create/update/delete. Can be removed when SOLR becomes the db backend for pycsw.")
-  Component(translator, "MMD2ISO Translator", "Python", "Receives an MMD XML file. Translates from MMD to the Norwegian profile of ISO19115/INSPIRE. Returns an ISO19115 XML file. Can be removed when SOLR becomes the db backend for pycsw.")
   Component(api, "DMCI API", "Python-Flask", "Create/update: Check size of input, store input MMD to file. Changes environment specific suffix to the namespace, if operating on dev or staging.")
-  ComponentDb(db, "Data store", "File", "Storage of incoming data.")
+
+  ComponentDb(db, "Data store", "File", "Storage of incoming data. Based on the status of the process, the file is deleted or saved in a rejected folder for later manual inspection.")
+
+  Component(worker, "DMCI Worker", "Python", "Validates incoming data and forwards to the distributors defined in the configuration file.")
+
+  Component(config, "DMCI Configuration", "YAML", "The configuration file defines which distributors to use, internal paths, API urls, and other relevant information such as db passwords and usernames.")
+
+  Component(filedist, "Backup distributor", "Python", "Create/update/delete for MMD file storage.")
+  Component(solrdist, "SolR distributor", "Python", "SolR ingestor for MMD metadata.")
+  Component(cswdist, "CSW distributor", "Python", "Create/update/delete for PyCSW. Can be removed when SolR becomes the db backend for PyCSW.")
+  Component(plugin, "Other distributor", "Python", "DMCI is designed to allow addition of other distributors as custom plugins.")
+
+  Component(translator, "MMD2ISO Translator", "Python", "Receives an MMD XML file. Translates from MMD to the Norwegian profile of ISO19115/INSPIRE. Returns an ISO19115 XML file. Can be removed when SOLR becomes the db backend for pycsw.")
+
+  'ComponentDb(db, "Data store", "File", "Storage of incoming data.")
   ComponentDb(rejected, "Rejected store", "File", "Storage of rejected data.")
 }
 
-Rel(mmd_agent, api, "create/update/delete/validate", "https")
-Rel(api, rejected, "if validator (400) or any distributor (500) fails, store rejected info in", "")
-Rel(api, filedist, "create/update/delete if valid", "")
-Rel(api, solrdist, "create/update/delete if valid", "")
-Rel(api, cswdist, "create/update/delete if valid", "")
+Rel(producer, api, "creates/updates/deletes/validates", "https")
+Rel_L(api, db, "creates/deletes persistent file in")
+Rel_R(api, rejected, "if validator (400) or any distributor (500) fails, stores rejected info in")
+Rel(api, worker, "processes create/update/delete/validate using", "https")
 
-Rel(filedist, file, "create/update/delete", "")
-Rel(solrdist, solr, "create/update/delete", "")
-Rel(cswdist, csapi, "create/update/delete", "")
+Rel_R(worker, config, "gets metadata from")
+Rel(worker, filedist, "create/update/delete if valid")
+Rel(worker, solrdist, "create/update/delete if valid")
+Rel(worker, cswdist, "create/update/delete if valid")
+Rel(worker, plugin, "create/update/delete if valid")
+
+Rel_L(cswdist, translator, "translates metadata using")
+
+Rel(filedist, file, "create/update/delete")
+Rel(solrdist, solr, "create/update/delete")
+Rel(cswdist, csapi, "create/update/delete")
+Rel(plugin, other, "create/update/delete")
 
 @enduml

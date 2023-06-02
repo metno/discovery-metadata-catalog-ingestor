@@ -27,7 +27,7 @@ from dmci.distributors.distributor import Distributor, DistCmd
 logger = logging.getLogger(__name__)
 
 """Configure log level for solrindexer
-NOTE: Should the be configureable from dmci config?
+TODO: Maybe read this from env variable SOLRINDEXER_LOGLEVEL?
 """
 logging.getLogger('solrindexer').setLevel(logging.WARNING)
 
