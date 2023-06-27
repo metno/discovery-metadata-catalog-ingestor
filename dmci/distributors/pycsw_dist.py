@@ -106,34 +106,20 @@ class PyCSWDist(Distributor):
         properties against a csw:Constraint, to update: Define
         overwriting property, search for places to overwrite.
         """
-        identifier = self._construct_identifier(self._worker._namespace,
-                                                self._worker._file_metadata_id)
-
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
         headers["Accept"] = "application/xml"
         xml = (
             b'<?xml version="1.0" encoding="UTF-8"?>'
-            b'<csw:Transaction xmlns:ogc="http://www.opengis.net/ogc" '
-            b'xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
+            b'<csw:Transaction xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
             b'xmlns:ows="http://www.opengis.net/ows" '
             b'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
             b'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
             b'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd" '
-            b'service="CSW" version="2.0.2">'
-            b'  <csw:Update>'
-            b'    <csw:RecordProperty>%s</csw:RecordProperty>'
-            b'    <csw:Constraint version="1.1.0">'
-            b'      <ogc:Filter>'
-            b'        <ogc:PropertyIsEqualTo>'
-            b'          <ogc:PropertyName>apiso:Identifier</ogc:PropertyName>'
-            b'          <ogc:Literal>%s</ogc:Literal>'
-            b'        </ogc:PropertyIsEqualTo>'
-            b'      </ogc:Filter>'
-            b'    </csw:Constraint>'
-            b'  </csw:Update>'
-            b'</csw:Transaction>'
-        ) % (self._translate(), identifier.encode(encoding="utf-8"))
+            b'service="CSW" version="2.0.2"><csw:Update>'
+        )
+        xml += self._translate()
+        xml += b"</csw:Update></csw:Transaction>"
         resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
         status = self._get_transaction_status(self.TOTAL_UPDATED, resp)
         logger.debug("Update status: " + str(status) + ". With response: " + resp.text)
