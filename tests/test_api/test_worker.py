@@ -115,14 +115,23 @@ def testApiWorker_Validator(monkeypatch, filesDir):
         filesDir, "api", "passing_wrelatedinfo_nolandingpage.xml"
     )
     failFile = os.path.join(filesDir, "api", "failing.xml")
+    parseFailFile = os.path.join(filesDir, "api", "parse_failing.xml")
 
     xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
     passWorker = Worker("none", passFile, xsdObj)
     failWorker = Worker("none", failFile, xsdObj)
+    parseFailWorker = Worker("none", parseFailFile, xsdObj)
 
     # Invalid data format
     passData = readFile(passFile)
     assert passWorker.validate(passData) == (False, "Input must be bytes type", passData)
+
+    # Parsing error
+    parseFailData = bytes(readFile(parseFailFile), "utf-8")
+    assert parseFailWorker.validate(parseFailData) == (
+        False,
+        "Opening and ending tag mismatch: short_name line 141 and platform,"
+        " line 149, column 18 (<string>, line 149)", parseFailData)
 
     # Valid data format
     with monkeypatch.context() as mp:

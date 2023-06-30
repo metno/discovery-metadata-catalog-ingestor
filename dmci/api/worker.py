@@ -86,12 +86,17 @@ class Worker:
         """
         # Takes in bytes-object data
         # Gives msg when both validating and not validating
+        valid = False
+        msg = ''
         if not isinstance(data, bytes):
             return False, "Input must be bytes type", data
 
         # Check xml file against XML schema definition
-        valid = self._xsd_obj.validate(etree.fromstring(data))
-        msg = repr(self._xsd_obj.error_log)
+        try:
+            valid = self._xsd_obj.validate(etree.fromstring(data))
+            msg = repr(self._xsd_obj.error_log)
+        except Exception as e:
+            return False, str(e), data
 
         if valid:
             # Check information content
@@ -214,6 +219,7 @@ class Worker:
 
         # Read XML file
         xml_doc = etree.fromstring(data)
+
         self._extract_title(xml_doc)
         valid = self._extract_metadata_id(xml_doc)
         if not valid:
