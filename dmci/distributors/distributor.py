@@ -79,7 +79,7 @@ class Distributor():
                     self._valid = False
                     return
         else:
-            logger.error("Either xml_file or metadata_id must be specified, but not both")
+            logger.error("Either xml_file or metadata_UUID must be specified, but not both")
             self._valid = False
             return
 
@@ -100,7 +100,7 @@ class Distributor():
             return
 
         if self._cmd == DistCmd.DELETE and self._metadata_UUID is None:
-            logger.error("Command '%s' requires `metadata_id` to be specified" % str(cmd))
+            logger.error("Command '%s' requires `metadata_UUID` to be specified" % str(cmd))
             self._valid = False
             return
 

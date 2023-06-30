@@ -184,7 +184,7 @@ class Worker:
             obj = self.CALL_MAP[dist](
                 self._dist_cmd,
                 xml_file=self._dist_xml_file,
-                metadata_id=self._dist_metadata_id_uuid,
+                metadata_UUID=self._dist_metadata_id_uuid,
                 worker=self,
                 path_to_parent_list=self._kwargs.get(
                     "path_to_parent_list", None),
