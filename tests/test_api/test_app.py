@@ -146,9 +146,9 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
     assert client.post("/v1/update", data=tooLargeFile).status_code == 413
 
     # Test sending 0B of data
-    tooLargeFile = bytes(0)
-    assert client.post("/v1/insert", data=tooLargeFile).status_code == 202
-    assert client.post("/v1/update", data=tooLargeFile).status_code == 202
+    noFile = bytes(0)
+    assert client.post("/v1/insert", data=noFile).status_code == 202
+    assert client.post("/v1/update", data=noFile).status_code == 202
 
     # Fail caching the file
     with monkeypatch.context() as mp:
