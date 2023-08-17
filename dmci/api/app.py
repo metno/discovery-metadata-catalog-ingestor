@@ -78,7 +78,7 @@ class App(Flask):
         def post_delete(metadata_id=None):
             """Process delete command."""
             md_namespace, md_uuid, err = self._check_namespace_UUID(
-                metadata_id)
+                metadata_id, self._conf.env_string)
 
             if md_uuid is not None:
                 worker = Worker("delete", None, self._xsd_obj,
@@ -204,7 +204,7 @@ class App(Flask):
         return err
 
     @staticmethod
-    def _check_namespace_UUID(metadata_id):
+    def _check_namespace_UUID(metadata_id, env_string=None):
         """Splits incoming metadata_id to namespace and UUID, assuming
         structure to be namespace:UUID
         """
@@ -227,6 +227,10 @@ class App(Flask):
             err = f"Can not convert to UUID: {elements[-1]}"
             logger.error(err)
             logger.error(str(e))
+
+        if env_string is not None:
+            if env_string != md_namespace.split(".")[-1]:
+                md_namespace = md_namespace + "." + env_string
 
         return md_namespace, md_uuid, err
 

@@ -322,6 +322,13 @@ def testApiApp_CheckNamespaceUUID():
     assert App._check_namespace_UUID(testUUID) == ("", correct_UUID, None)
     # With namespace
     assert App._check_namespace_UUID("test:"+testUUID) == ("test", correct_UUID, None)
+    # With namespace, but defined env_string
+    assert App._check_namespace_UUID("test:"+testUUID, env_string="TEST") == ("test.TEST",
+                                                                              correct_UUID, None)
+    # With namespace, defined env_string, but present in call
+    assert App._check_namespace_UUID("test.TEST:"+testUUID, env_string="TEST") == ("test.TEST",
+                                                                                   correct_UUID,
+                                                                                   None)
 
     # Test with namespace, but malformed UUID
     out = App._check_namespace_UUID("test:blabla")
