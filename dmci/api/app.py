@@ -90,7 +90,10 @@ class App(Flask):
             else:
                 return self._formatMsgReturn(err), 400
 
-            return self._formatMsgReturn(OK_RETURN), 200
+            if err:
+                return self._formatMsgReturn(err), 500
+            else:
+                return self._formatMsgReturn(OK_RETURN), 200
 
         @self.route("/v1/validate", methods=["POST"])
         def post_validate():
