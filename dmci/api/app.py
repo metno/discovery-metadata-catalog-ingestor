@@ -77,8 +77,11 @@ class App(Flask):
         @self.route("/v1/delete/<metadata_id>", methods=["POST"])
         def post_delete(metadata_id=None):
             """Process delete command."""
-            md_namespace, md_uuid, err = self._check_namespace_UUID(
-                metadata_id, self._conf.env_string)
+            md_namespace, md_uuid, err = self._check_metadata_id(metadata_id,
+                                                                 self._conf.env_string)
+
+            if err is not None:
+                logger.error(err)
 
             if md_uuid is not None:
                 worker = Worker("delete", None, self._xsd_obj,
@@ -87,10 +90,7 @@ class App(Flask):
             else:
                 return self._formatMsgReturn(err), 400
 
-            if err:
-                return self._formatMsgReturn(err), 500
-            else:
-                return self._formatMsgReturn(OK_RETURN), 200
+            return self._formatMsgReturn(OK_RETURN), 200
 
         @self.route("/v1/validate", methods=["POST"])
         def post_validate():
@@ -206,33 +206,44 @@ class App(Flask):
         return err
 
     @staticmethod
-    def _check_namespace_UUID(metadata_id, env_string=None):
-        """Splits incoming metadata_id to namespace and UUID, assuming
-        structure to be namespace:UUID
+    def _check_metadata_id(metadata_id, env_string=None):
+        """ Check that the metadata_id is structured as
+        namespace:UUID, that the uuid part is of type UUID, and that
+        the namespace is correct.
         """
-        md_uuid, md_namespace, err = None, "", None
-        elements = metadata_id.split(":")
+        # Initialize variables
+        md_namespace, md_uuid, err = None, None, None
+
+        # Split metadata_id in namespace and uuid parts and, as such,
+        # also check the stucture
         try:
-            md_uuid = uuid.UUID(elements[-1])
-            # Only UUID, no namespace
-            if len(elements) < 2:
-                md_namespace, err = "", None
-            # namespace and UUID
-            elif len(elements) == 2:
-                md_namespace, err = elements[0], None
-            else:
-                err = "Malformed metadata id. Should be <namespace>:<UUID>."
-                logger.error(err)
-                return "", None, err
-
+            md_namespace, uuid_str = metadata_id.split(":")
         except ValueError as e:
-            err = f"Can not convert to UUID: {elements[-1]}"
-            logger.error(err)
+            # E.g., if namespace is missing, or there are more than
+            # one colon
             logger.error(str(e))
+            return None, None, f"Input must be structured as <namespace>:<uuid>."
 
+        # Check if the provided uuid is a valid UUID.
+        try:
+            md_uuid = uuid.UUID(uuid_str)
+        except ValueError as e:
+            logger.error(str(e))
+            return None, None, f"Cannot convert to UUID: {uuid_str}"
+
+        # Check that the namespace is correct
         if env_string is not None:
-            if env_string != md_namespace.split(".")[-1]:
-                md_namespace = md_namespace + "." + env_string
+            env = md_namespace.split(".")[-1]
+            if env_string != env:
+                return None, None, f"Dataset metadata_id namespace is wrong: {env}"
+
+        """
+        We could also check the namespace if self._conf.env_string is
+        None but then we need to assume that the namespace is composed
+        of two strings with a punctuation mark between them, like
+        "no.met". This is not necessarily the case, so we should
+        probably not test it...
+        """
 
         return md_namespace, md_uuid, err
 

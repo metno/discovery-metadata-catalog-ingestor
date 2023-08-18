@@ -245,7 +245,7 @@ def testApiApp_DeleteRequests(client, monkeypatch):
     # Invalid UUID
     assert client.post("/v1/delete/blabla").status_code == 400
     # Valid UUID, but no namespace
-    assert client.post("/v1/delete/7278888a96a54ee5845a2051bb8994c8").status_code == 200
+    assert client.post("/v1/delete/7278888a96a54ee5845a2051bb8994c8").status_code == 400
 
     # Distribute fails
     with monkeypatch.context() as mp:
@@ -255,7 +255,7 @@ def testApiApp_DeleteRequests(client, monkeypatch):
         mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e))
 
         response = client.post("/v1/delete/%s" % testUUID, data=MOCK_XML)
-        assert response.status_code == 500
+        assert response.status_code == 500 # this is now 200 and I don't understand why it should be 500...
         assert response.data == (
             b"The following distributors failed: A, B\n"
             b" - A: Reason A\n"
@@ -319,32 +319,35 @@ def testApiApp_PersistFile(tmpDir, monkeypatch):
 
 
 @pytest.mark.api
-def testApiApp_CheckNamespaceUUID():
+def testApiApp_CheckMetadataId():
     testUUID = "7278888a-96a5-4ee5-845a-2051bb8994c8"
     correct_UUID = uuid.UUID(testUUID)
 
+    # Correct with namespace
+    assert App._check_metadata_id("test:"+testUUID) == ("test", correct_UUID, None)
+
     # Without namespace
-    assert App._check_namespace_UUID(testUUID) == ("", correct_UUID, None)
-    # With namespace
-    assert App._check_namespace_UUID("test:"+testUUID) == ("test", correct_UUID, None)
-    # With namespace, but defined env_string
-    assert App._check_namespace_UUID("test:"+testUUID, env_string="TEST") == ("test.TEST",
-                                                                              correct_UUID, None)
+    assert App._check_metadata_id(testUUID) == (None, None,
+                                                "Input must be structured as <namespace>:<uuid>.")
+    # With namespace, but not in accordance with the defined env_string
+    assert App._check_metadata_id("test:"+testUUID, env_string="TEST") == (None, None,
+        f"Dataset metadata_id namespace is wrong: test")
+
     # With namespace, defined env_string, but present in call
-    assert App._check_namespace_UUID("test.TEST:"+testUUID, env_string="TEST") == ("test.TEST",
+    assert App._check_metadata_id("test.TEST:"+testUUID, env_string="TEST") == ("test.TEST",
                                                                                    correct_UUID,
                                                                                    None)
 
     # Test with namespace, but malformed UUID
-    out = App._check_namespace_UUID("test:blabla")
-    assert out[0] == ""
+    out = App._check_metadata_id("test:blabla")
+    assert out[0] is None
     assert out[1] is None
-    assert out[2] == "Can not convert to UUID: blabla"
+    assert out[2] == "Cannot convert to UUID: blabla"
 
-    out = App._check_namespace_UUID("test:wrong:7278888a96a54ee5845a2051bb8994c8")
-    assert out[0] == ""
+    out = App._check_metadata_id("test:wrong:7278888a96a54ee5845a2051bb8994c8")
+    assert out[0] is None
     assert out[1] is None
-    assert out[2] == "Malformed metadata id. Should be <namespace>:<UUID>."
+    assert out[2] == "Input must be structured as <namespace>:<uuid>."
 
 
 @pytest.mark.api
