@@ -117,6 +117,8 @@ class App(Flask):
 
     def _insert_update_method_post(self, cmd, request):
         """Process insert or update command requests."""
+        if request.content_length is None:
+            return "There is no data sent to the api", 202
         if request.content_length > self._conf.max_permitted_size:
             return f"The file is larger than maximum size: {self._conf.max_permitted_size}", 413
 
@@ -137,7 +139,7 @@ class App(Flask):
                         path_to_parent_list=self._conf.path_to_parent_list)
         valid, msg, data_ = worker.validate(data)
         if not valid:
-            msg += f"\n UUID : {file_uuid} \n "
+            msg += f"\n Rejected persistent file : {file_uuid}.xml \n "
             self._handle_persist_file(False, full_path, reject_path, msg)
             return msg, 400
 
