@@ -225,7 +225,7 @@ class App(Flask):
             # E.g., if namespace is missing, or there are more than
             # one colon
             logger.error(str(e))
-            return None, None, f"Input must be structured as <namespace>:<uuid>."
+            return None, None, "Input must be structured as <namespace>:<uuid>."
 
         # Check if the provided uuid is a valid UUID.
         try:

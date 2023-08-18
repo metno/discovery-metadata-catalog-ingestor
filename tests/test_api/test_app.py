@@ -331,12 +331,14 @@ def testApiApp_CheckMetadataId():
                                                 "Input must be structured as <namespace>:<uuid>.")
     # With namespace, but not in accordance with the defined env_string
     assert App._check_metadata_id("test:"+testUUID, env_string="TEST") == (None, None,
-        f"Dataset metadata_id namespace is wrong: test")
+                                                                           "Dataset metadata_id "
+                                                                           "namespace is wrong: "
+                                                                           "test")
 
     # With namespace, defined env_string, but present in call
     assert App._check_metadata_id("test.TEST:"+testUUID, env_string="TEST") == ("test.TEST",
-                                                                                   correct_UUID,
-                                                                                   None)
+                                                                                correct_UUID,
+                                                                                None)
 
     # Test with namespace, but malformed UUID
     out = App._check_metadata_id("test:blabla")
