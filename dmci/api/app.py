@@ -215,7 +215,7 @@ class App(Flask):
         md_namespace, md_uuid, err = None, None, None
 
         # Split metadata_id in namespace and uuid parts and, as such,
-        # also check the stucture
+        # also check the structure
         try:
             md_namespace, uuid_str = metadata_id.split(":")
         except ValueError as e:
