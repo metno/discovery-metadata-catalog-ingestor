@@ -255,7 +255,7 @@ def testApiApp_DeleteRequests(client, monkeypatch):
         mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e))
 
         response = client.post("/v1/delete/%s" % testUUID, data=MOCK_XML)
-        assert response.status_code == 500 # this is now 200 and I don't understand why it should be 500...
+        assert response.status_code == 500
         assert response.data == (
             b"The following distributors failed: A, B\n"
             b" - A: Reason A\n"
