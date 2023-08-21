@@ -103,7 +103,6 @@ def tmpConf(monkeypatch):
     theConf = Config()
     confFile = os.path.join(theConf.pkg_root, "example_config.yaml")
     theConf.readConfig(confFile)
-    monkeypatch.setattr("dmci.CONFIG", theConf)
     return theConf
 
 
