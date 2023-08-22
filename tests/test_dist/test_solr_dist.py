@@ -65,10 +65,10 @@ def testDistSolR_Init(tmpUUID):
     """Test the SolRDist class init."""
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
-    assert SolRDist("insert", metadata_id=tmpUUID).is_valid() is False
-    assert SolRDist("update", metadata_id=tmpUUID).is_valid() is False
-    assert SolRDist("delete", metadata_id=tmpUUID).is_valid() is True
-    assert SolRDist("blabla", metadata_id=tmpUUID).is_valid() is False
+    assert SolRDist("insert", metadata_UUID=tmpUUID).is_valid() is False
+    assert SolRDist("update", metadata_UUID=tmpUUID).is_valid() is False
+    assert SolRDist("delete", metadata_UUID=tmpUUID).is_valid() is True
+    assert SolRDist("blabla", metadata_UUID=tmpUUID).is_valid() is False
 
 
 @pytest.mark.dist
@@ -243,7 +243,7 @@ def testDistSolR_AddDocExists(mockXml, monkeypatch):
 def testDistSolR_Delete(monkeypatch):
     """Test the SolRDist class delete actions."""
     id = "no.met.dev:250ba38f-1081-4669-a429-f378c569db32"
-    tstDist = SolRDist("delete", metadata_id=id, worker=mockWorker)
+    tstDist = SolRDist("delete", metadata_UUID=id, worker=mockWorker)
 
     # Test delete exception Sucess
     with monkeypatch.context() as mp:
