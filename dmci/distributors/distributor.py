@@ -120,8 +120,7 @@ class Distributor():
     @staticmethod
     def _construct_identifier(namespace, metadata_id):
         """Helper function to construct identifier from namespace and
-        UUID. Currently accepts empty namespaces, but later will only
-        accept correctly formed namespaced UUID
+        UUID. Currently only accepts correctly formed namespaced UUID
 
         Parameters
         ----------
@@ -136,8 +135,6 @@ class Distributor():
             namespace:UUID or just UUID if namespace is empty.
         """
         if namespace != "":
-            identifier = namespace + ":" + str(metadata_id)
-        else:
-            identifier = str(metadata_id)
-        return identifier
+            return namespace + ":" + str(metadata_id)
+        raise ValueError("Namespace cannot be empty")
 # END Class Distributor
