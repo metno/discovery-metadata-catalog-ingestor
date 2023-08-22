@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import pytest
-
+import uuid
 from tools import causeException
 
 from dmci.distributors import SolRDist
@@ -50,10 +50,15 @@ class MockMMD4SolR:
 
     def tosolr(self, *args, **kwargs):
         solr_formatted = {
-            'id': 'no-met-dev-250ba38f-1081-4669-a429-f378c569db32',
-            'metadata_identifier': 'no.met.dev:250ba38f-1081-4669-a429-f378c569db32',
+            'id': 'no-test-250ba38f-1081-4669-a429-f378c569db32',
+            'metadata_identifier': 'no.test:250ba38f-1081-4669-a429-f378c569db32',
         }
         return solr_formatted
+
+
+class mockResp:
+    text = "Mock response"
+    status_code = 200
 
 
 class mockWorker:
@@ -240,19 +245,24 @@ def testDistSolR_AddDocExists(mockXml, monkeypatch):
 
 
 @pytest.mark.dist
-def testDistSolR_Delete(monkeypatch):
-    """Test the SolRDist class delete actions."""
-    id = "no.met.dev:250ba38f-1081-4669-a429-f378c569db32"
-    tstDist = SolRDist("delete", metadata_UUID=id, worker=mockWorker)
+def testDistSolR_Delete(monkeypatch, mockXml):
+    """Test the SolRDist class delete via distributor.run()"""
+    md_uuid = uuid.UUID("250ba38f-1081-4669-a429-f378c569db32")
 
-    # Test delete exception Sucess
+    assert SolRDist("delete").run() == (False, "The run job is invalid")
+    assert SolRDist("delete", xml_file=mockXml).run() == (False, "The run job is invalid")
+
+    assert SolRDist("delete", metadata_UUID=md_uuid, worker=mockWorker).is_valid()
+
+    # mysolr.delete with and without namespace
     with monkeypatch.context() as mp:
-        mp.setattr("dmci.distributors.solr_dist.IndexMMD.delete",
-                   lambda *a, **k: (True, "Document %s sucessfully deleted" % id))
-        assert tstDist._delete() == (True, "Document %s sucessfully deleted" % id)
-        tstDist._delete()
-    # Test delete exception Fail
-    with monkeypatch.context() as mp:
-        mp.setattr("dmci.distributors.solr_dist.IndexMMD.delete",
-                   lambda *a, **k: (False, "Document %s not found in index." % id))
-        assert tstDist._delete() == (False, "Document %s not found in index." % id)
+        mp.setattr(
+            "dmci.distributors.solr_dist.IndexMMD.delete", lambda self, my_id, *b, **k:
+            ("Mock Response", my_id)
+        )
+        with pytest.raises(ValueError):
+            res = SolRDist("delete", metadata_UUID=md_uuid, worker=mockWorker).run()
+
+        mockWorker._namespace = "no.test"
+        res = SolRDist("delete", metadata_UUID=md_uuid, worker=mockWorker).run()
+        assert res == ("Mock Response", "no.test:250ba38f-1081-4669-a429-f378c569db32")
