@@ -152,7 +152,6 @@ class SolRDist(Distributor):
             identifier, commit=self._conf.commit_on_delete)
         logger.info("SolR delete status: %s. With response: %s" %
                     (str(status), str(msg)))
-        # return status, message
         return status, msg
 
 # END Class SolRDist
