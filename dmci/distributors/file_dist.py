@@ -27,6 +27,13 @@ from dmci.distributors.distributor import Distributor, DistCmd
 logger = logging.getLogger(__name__)
 
 
+def get_folder_names(fileUUID):
+    lvlA = "arch_%s" % fileUUID.hex[7]
+    lvlB = "arch_%s" % fileUUID.hex[6]
+    lvlC = "arch_%s" % fileUUID.hex[5]
+
+    return lvlA, lvlB, lvlC
+
 class FileDist(Distributor):
 
     def __init__(self, cmd, xml_file=None, metadata_id=None, **kwargs):
@@ -134,9 +141,7 @@ class FileDist(Distributor):
 
     def _make_full_path(self, fileUUID):
         """Make the file name and path for a file with a given uuid."""
-        lvlA = "arch_%s" % fileUUID.hex[7]
-        lvlB = "arch_%s" % fileUUID.hex[6]
-        lvlC = "arch_%s" % fileUUID.hex[5]
+        lvlA, lvlB, lvlC = get_folder_names(fileUUID)
 
         fileName = str(fileUUID) + ".xml"
         archPath = os.path.join(self._conf.file_archive_path, lvlA, lvlB, lvlC)
