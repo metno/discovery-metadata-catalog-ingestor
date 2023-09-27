@@ -39,9 +39,9 @@ class SolRDist(Distributor):
     TOTAL_UPDATED = "total_updated"
     STATUS = [TOTAL_DELETED, TOTAL_INSERTED, TOTAL_UPDATED]
 
-    def __init__(self, cmd, xml_file=None, metadata_id=None, worker=None, **kwargs):
+    def __init__(self, cmd, xml_file=None, metadata_UUID=None, worker=None, **kwargs):
 
-        super().__init__(cmd, xml_file, metadata_id, worker, **kwargs)
+        super().__init__(cmd, xml_file, metadata_UUID, worker, **kwargs)
 
         self.authentication = self._init_authentication()
 
@@ -147,12 +147,11 @@ class SolRDist(Distributor):
     def _delete(self):
         """Delete entry with a specified metadata_id."""
         identifier = self._construct_identifier(self._worker._namespace,
-                                                self._metadata_id)
+                                                self._metadata_UUID)
         status, msg = self.mysolr.delete(
             identifier, commit=self._conf.commit_on_delete)
         logger.info("SolR delete status: %s. With response: %s" %
                     (str(status), str(msg)))
-        # return status, message
         return status, msg
 
 # END Class SolRDist

@@ -36,8 +36,8 @@ def get_folder_names(fileUUID):
 
 class FileDist(Distributor):
 
-    def __init__(self, cmd, xml_file=None, metadata_id=None, **kwargs):
-        super().__init__(cmd, xml_file, metadata_id, **kwargs)
+    def __init__(self, cmd, xml_file=None, metadata_UUID=None, **kwargs):
+        super().__init__(cmd, xml_file, metadata_UUID, **kwargs)
 
         return
 
@@ -117,7 +117,7 @@ class FileDist(Distributor):
 
     def _delete_from_archive(self):
         """Delete a file from the archive."""
-        fileUUID = self._metadata_id
+        fileUUID = self._metadata_UUID
         if not isinstance(fileUUID, uuid.UUID):
             msg = "No valid metadata_identifier provided, cannot delete file"
             logger.error(msg)
