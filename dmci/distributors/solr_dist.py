@@ -82,7 +82,7 @@ class SolRDist(Distributor):
     def _add(self):
         """Index to SolR."""
         try:
-            mydoc = MMD4SolR(self._xml_file)
+            mydoc = MMD4SolR(filename=self._xml_file)
         except Exception as e:
             msg = "Could not read file %s: %s" % (self._xml_file, str(e))
             logger.error(msg)
