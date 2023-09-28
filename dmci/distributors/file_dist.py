@@ -34,6 +34,7 @@ def get_folder_names(fileUUID):
 
     return lvlA, lvlB, lvlC
 
+
 class FileDist(Distributor):
 
     def __init__(self, cmd, xml_file=None, metadata_id=None, **kwargs):
