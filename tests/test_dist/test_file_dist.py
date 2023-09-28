@@ -33,10 +33,10 @@ def testDistFile_Init(tmpUUID):
     """Test the FileDist class init."""
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
-    assert FileDist("insert", metadata_id=tmpUUID).is_valid() is False
-    assert FileDist("update", metadata_id=tmpUUID).is_valid() is False
-    assert FileDist("delete", metadata_id=tmpUUID).is_valid() is True
-    assert FileDist("blabla", metadata_id=tmpUUID).is_valid() is False
+    assert FileDist("insert", metadata_UUID=tmpUUID).is_valid() is False
+    assert FileDist("update", metadata_UUID=tmpUUID).is_valid() is False
+    assert FileDist("delete", metadata_UUID=tmpUUID).is_valid() is True
+    assert FileDist("blabla", metadata_UUID=tmpUUID).is_valid() is False
 
 # END Test testDistFile_Init
 
@@ -186,7 +186,7 @@ def testDistFile_Delete(tmpDir, filesDir, monkeypatch):
     )
 
     # Set the identifier and try to delete again, but fail on unlink
-    tstDist._metadata_id = goodUUID
+    tstDist._metadata_UUID = goodUUID
     with monkeypatch.context() as mp:
         mp.setattr("os.unlink", causeOSError)
         assert tstDist.run() == (
