@@ -213,7 +213,16 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
             b"The following jobs were skipped: C\n"
         )
 
-# END Test testApiApp_InsertRequests
+    # Data is valid, distribute OK.
+    with monkeypatch.context() as mp:
+
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
+        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (True, True, [], [], [], []))
+        response = client.post("/v1/insert", data=MOCK_XML)
+        assert response.status_code == 200
+        assert response.data == (b"Everything is OK")
+
+# END Test testApiApp_InsertUpdateRequests
 
 
 @pytest.mark.api
