@@ -192,8 +192,11 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
         f = ["A", "B"]
         s = ["C"]
         e = ["Reason A", "Reason B"]
+        r = []
+
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
-        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e))
+        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (
+                   False, False, [], f, s, e, False, r))
 
         response = client.post("/v1/insert", data=MOCK_XML)
         assert response.status_code == 500
@@ -217,11 +220,21 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
     with monkeypatch.context() as mp:
 
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
-        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (True, True, [], [], [], []))
+        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (
+                   True, True, [], [], [], [], False, []))
         response = client.post("/v1/insert", data=MOCK_XML)
         assert response.status_code == 200
         assert response.data == (b"Everything is OK\n")
 
+    # Data is valid, distributer is unavailable
+    with monkeypatch.context() as mp:
+        r = ["C"]
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
+        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (
+                   True, True, [], [], [], [], True, r))
+        response = client.post("/v1/insert", data=MOCK_XML)
+        assert response.status_code == 503
+        assert response.data == (b"Retry distribution in C\n")
 # END Test testApiApp_InsertUpdateRequests
 
 
@@ -261,7 +274,8 @@ def testApiApp_DeleteRequests(client, monkeypatch):
         f = ["A", "B"]
         s = ["C"]
         e = ["Reason A", "Reason B"]
-        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e))
+        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (
+                   False, False, [], f, s, e, False, []))
 
         response = client.post("/v1/delete/%s" % testUUID, data=MOCK_XML)
         assert response.status_code == 500
@@ -274,11 +288,20 @@ def testApiApp_DeleteRequests(client, monkeypatch):
 
     # Distribute ok
     with monkeypatch.context() as mp:
-        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (True, True, [], [], [], []))
+        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (
+                   True, True, [], [], [], [], False, []))
         response = client.post("/v1/delete/%s" % testUUID, data=MOCK_XML)
         assert response.status_code == 200
         assert response.data == b"Everything is OK\n"
 
+    # Distributer unavailable
+    with monkeypatch.context() as mp:
+        r = ["C"]
+        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (
+                   True, True, [], [], [], [], True, r))
+        response = client.post("/v1/delete/%s" % testUUID, data=MOCK_XML)
+        assert response.status_code == 503
+        assert response.data == b'Retry distribution in C\n'
 # END Test testApiApp_DeleteRequests
 
 

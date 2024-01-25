@@ -86,10 +86,12 @@ class App(Flask):
             if md_uuid is not None:
                 worker = Worker("delete", None, self._xsd_obj,
                                 md_uuid=md_uuid, md_namespace=md_namespace)
-                err = self._distributor_wrapper(worker)
+                err, retry_status = self._distributor_wrapper(worker)
             else:
                 return self._formatMsgReturn(err), 400
 
+            if retry_status:
+                return self._formatMsgReturn(err), 503
             if err:
                 return self._formatMsgReturn(err), 500
             else:
@@ -201,7 +203,7 @@ class App(Flask):
         parse and combine any error messages.
         """
         err = []
-        status, valid, failed, skipped, failed_msg, retry_status, retry = worker.distribute()
+        status, valid, _, failed, skipped, failed_msg, retry_status, retry = worker.distribute()
 
         if retry_status:
             err.append("Retry distribution in %s" %

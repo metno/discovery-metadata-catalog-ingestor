@@ -58,13 +58,16 @@ def testApiWorker_Distributor(tmpConf, mockXml, monkeypatch):
         tstWorker._conf = tmpConf
         tstWorker._dist_xml_file = mockXml
 
-        status, valid, called, failed, skipped, failed_msg = tstWorker.distribute()
+        status, valid, called, failed, skipped, failed_msg, retry_status, retry = \
+            tstWorker.distribute()
         assert status is True
         assert valid is True
         assert called == ["file", "pycsw"]
         assert failed == []
         assert skipped == ["blabla"]
         assert failed_msg == []
+        assert retry_status is False
+        assert retry == []
 
     # Same as above, but jobs fail
     with monkeypatch.context() as mp:
@@ -75,7 +78,8 @@ def testApiWorker_Distributor(tmpConf, mockXml, monkeypatch):
         tstWorker._conf = tmpConf
         tstWorker._dist_xml_file = mockXml
 
-        status, valid, called, failed, skipped, failed_msg = tstWorker.distribute()
+        status, valid, called, failed, skipped, failed_msg, retry_status, retry = \
+            tstWorker.distribute()
         assert status is False
         assert valid is True
         assert called == []
@@ -89,14 +93,39 @@ def testApiWorker_Distributor(tmpConf, mockXml, monkeypatch):
     tstWorker._dist_cmd = "blabla"
     tstWorker._dist_xml_file = "/path/to/nowhere"
 
-    status, valid, called, failed, skipped, failed_msg = tstWorker.distribute()
+    status, valid, called, failed, skipped, failed_msg, retry_status, retry = \
+        tstWorker.distribute()
     assert status is True  # No jobs were run since all were skipped
     assert valid is False  # All jobs were invalid due to the command
     assert called == []
     assert failed == []
     assert skipped == ["file", "pycsw", "blabla"]
     assert failed_msg == []
+    assert retry_status is False
 
+    # Call the distributor function with obj.run() raising exception.
+    tstWorker = Worker("insert", mockXml, None)
+    tstWorker._conf.call_distributors = ["file"]
+
+    # Return a valid object and raise exception on run() method
+    class MockExceptionDist:
+        def __init__(self, *args, **kwargs):
+            return
+
+        def run(self):
+            raise Exception("Mock exception")
+
+    tstWorker.CALL_MAP["file"] = MockExceptionDist
+
+    status, valid, called, failed, skipped, failed_msg, retry_status, retry = \
+        tstWorker.distribute()
+    assert retry_status is True  # Since exception is thrown retry_status is set
+    assert valid is True  # MockExceptionDist returned a valid object
+    assert called == [] # distributer is not appended since exception was thrown
+    assert failed == []
+    assert skipped == []
+    assert failed_msg == []
+    assert retry == ["file"]
 
 # END Test testApiWorker_Distributor
 

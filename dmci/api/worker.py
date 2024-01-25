@@ -218,7 +218,7 @@ class Worker:
                 retry.append(dist)
                 retry_status = True
 
-        return status, valid, failed, skipped, failed_msg, retry_status, retry
+        return status, valid, called, failed, skipped, failed_msg, retry_status, retry
 
     ##
     #  Internal Functions
