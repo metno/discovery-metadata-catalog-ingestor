@@ -121,7 +121,7 @@ def testApiWorker_Distributor(tmpConf, mockXml, monkeypatch):
         tstWorker.distribute()
     assert retry_status is True  # Since exception is thrown retry_status is set
     assert valid is True  # MockExceptionDist returned a valid object
-    assert called == [] # distributer is not appended since exception was thrown
+    assert called == []  # distributer is not appended since exception was thrown
     assert failed == []
     assert skipped == []
     assert failed_msg == []
