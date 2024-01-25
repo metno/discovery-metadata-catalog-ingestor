@@ -154,8 +154,14 @@ class App(Flask):
                 return msg, code
 
         # Run the distributors
-        err = self._distributor_wrapper(worker)
+        err, retry_status = self._distributor_wrapper(worker)
 
+        # if retry_status is True, file is removed from workdir(can prevent file accumilation)and
+        # mmd agent will resend this request later
+        if retry_status:
+            msg = "\n".join(err)
+            self._handle_persist_file(True, full_path)
+            return msg, 503
         if err:
             msg = "\n".join(err)
             self._handle_persist_file(False, full_path, reject_path, msg)
@@ -195,7 +201,11 @@ class App(Flask):
         parse and combine any error messages.
         """
         err = []
-        status, valid, _, failed, skipped, failed_msg = worker.distribute()
+        status, valid, failed, skipped, failed_msg, retry_status, retry = worker.distribute()
+
+        if retry_status:
+            err.append("Retry distribution in %s" %
+                       ", ".join(retry))
         if not status:
             err.append("The following distributors failed: %s" %
                        ", ".join(failed))
@@ -206,7 +216,7 @@ class App(Flask):
             err.append("The following jobs were skipped: %s" %
                        ", ".join(skipped))
 
-        return err
+        return err, retry_status
 
     @staticmethod
     def _check_metadata_id(metadata_id, env_string=None):
