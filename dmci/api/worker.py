@@ -175,7 +175,7 @@ class Worker:
         failed_msg : list of str
             The messages returned by the failed jobs
         retry_status : bool
-             True if any one distributer fails to process or not available
+             True if any one distributor fails to process or not available
         retry : list of str
             The name of all distributers that were not able process or not available
         """
