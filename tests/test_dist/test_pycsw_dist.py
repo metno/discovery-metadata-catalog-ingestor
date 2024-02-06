@@ -20,6 +20,7 @@ limitations under the License.
 import os
 import pytest
 import requests
+from tools import causeException
 
 from lxml import etree
 
@@ -30,6 +31,10 @@ from dmci.distributors.pycsw_dist import PyCSWDist
 class mockResp:
     text = "Mock response"
     status_code = 200
+
+
+class failMockResp:
+    Exception("mock")
 
 
 class mockWorker:
@@ -62,7 +67,6 @@ def testDistPyCSW_Run(tmpUUID):
 @pytest.mark.dist
 def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
     """Test insert commands via run()."""
-
     # Insert returns True
     with monkeypatch.context() as mp:
         mp.setattr(PyCSWDist, "_translate", lambda *a: b"<xml />")
@@ -81,11 +85,19 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
             "dmci.distributors.pycsw_dist.requests.post", lambda *a, **k: mockResp
         )
         mp.setattr(PyCSWDist, "_get_transaction_status", lambda *a: False)
+
         tstPyCSW = PyCSWDist("insert", xml_file=mockXml)
         tstPyCSW._conf.mmd_xsl_path = mockXslt
         assert tstPyCSW.run() == (False, "Mock response")
 
-# END Test testDistPyCSW_Insert
+    # Insert returns False if post raise exception
+    with monkeypatch.context() as mp:
+        mp.setattr(
+            "dmci.distributors.pycsw_dist.requests.post", causeException)
+        tstPyCSW = PyCSWDist("insert", xml_file=mockXml)
+        assert tstPyCSW.run() == (False, "Failed to insert.")
+
+    # END Test testDistPyCSW_Insert
 
 
 @pytest.mark.dist
@@ -121,6 +133,12 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID):
         tstPyCSW._conf.mmd_xsl_path = mockXslt
         assert tstPyCSW.run() == (False, "Mock response")
 
+    # Update returns False if post raise exception
+    with monkeypatch.context() as mp:
+        mp.setattr(
+            "dmci.distributors.pycsw_dist.requests.post", causeException)
+        tstPyCSW = PyCSWDist("update", xml_file=mockXml)
+        assert tstPyCSW.run() == (False, "Failed to update.")
 # END Test testDistPyCSW_Update
 
 
@@ -154,6 +172,12 @@ def testDistPyCSW_Delete(monkeypatch, mockXml, tmpUUID):
         res = PyCSWDist("delete", metadata_UUID=tmpUUID, worker=mockWorker).run()
         assert res == (False, "Mock response")
 
+    # Delete returns False if post raise exception
+    with monkeypatch.context() as mp:
+        mp.setattr(
+            "dmci.distributors.pycsw_dist.requests.post", causeException)
+        res = PyCSWDist("delete", metadata_UUID=tmpUUID, worker=mockWorker).run()
+        assert res == (False, "Failed to delete.")
 
 # END Test testDistPyCSW_Delete
 

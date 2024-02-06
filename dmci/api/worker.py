@@ -174,51 +174,42 @@ class Worker:
             The names of all distributors that were skipped (invalid)
         failed_msg : list of str
             The messages returned by the failed jobs
-        retry_status : bool
-             True if any one distributor fails to process or not available
-        retry : list of str
-            The name of all distributers that were not able process or not available
         """
         status = True
         valid = True
-        retry_status = False
         called = []
         failed = []
-        retry = []
         skipped = []
         failed_msg = []
 
         for dist in self._conf.call_distributors:
-            try:
-                if dist not in self.CALL_MAP:
-                    skipped.append(dist)
-                    continue
-                obj = self.CALL_MAP[dist](
-                    self._dist_cmd,
-                    xml_file=self._dist_xml_file,
-                    metadata_UUID=self._dist_metadata_id_uuid,
-                    worker=self,
-                    path_to_parent_list=self._kwargs.get(
-                        "path_to_parent_list", None),
-                )
-                valid &= obj.is_valid()
-                if obj.is_valid():
-                    obj_status, obj_msg = obj.run()
-                    status &= obj_status
-                    if obj_status:
-                        called.append(dist)
-                    else:
-                        failed.append(dist)
-                        failed_msg.append(obj_msg)
-                else:
-                    skipped.append(dist)
-            except Exception as e:
-                logger.critical(" %s distributer currently not available." % dist)
-                logger.error(str(e))
-                retry.append(dist)
-                retry_status = True
 
-        return status, valid, called, failed, skipped, failed_msg, retry_status, retry
+            if dist not in self.CALL_MAP:
+                skipped.append(dist)
+                continue
+
+            obj = self.CALL_MAP[dist](
+                self._dist_cmd,
+                xml_file=self._dist_xml_file,
+                metadata_UUID=self._dist_metadata_id_uuid,
+                worker=self,
+                path_to_parent_list=self._kwargs.get(
+                    "path_to_parent_list", None),
+            )
+
+            valid &= obj.is_valid()
+            if obj.is_valid():
+                obj_status, obj_msg = obj.run()
+                status &= obj_status
+                if obj_status:
+                    called.append(dist)
+                else:
+                    failed.append(dist)
+                    failed_msg.append(obj_msg)
+            else:
+                skipped.append(dist)
+
+        return status, valid, called, failed, skipped, failed_msg
 
     ##
     #  Internal Functions

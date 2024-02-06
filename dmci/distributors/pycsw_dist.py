@@ -94,10 +94,7 @@ class PyCSWDist(Distributor):
         )
         xml += self._translate()
         xml += b"</csw:Insert></csw:Transaction>"
-        resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
-        status = self._get_transaction_status(self.TOTAL_INSERTED, resp)
-        logger.debug("Insert status: " + str(status) + ". With response: " + resp.text)
-        return status, resp.text
+        return self._post_request(headers=headers, xml=xml, cmd="insert", key=self.TOTAL_INSERTED)
 
     def _update(self):
         """Update current entry.
@@ -120,10 +117,7 @@ class PyCSWDist(Distributor):
         )
         xml += self._translate()
         xml += b"</csw:Update></csw:Transaction>"
-        resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
-        status = self._get_transaction_status(self.TOTAL_UPDATED, resp)
-        logger.debug("Update status: " + str(status) + ". With response: " + resp.text)
-        return status, resp.text
+        return self._post_request(headers=headers, xml=xml, cmd="update", key=self.TOTAL_UPDATED)
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
@@ -153,10 +147,8 @@ class PyCSWDist(Distributor):
             '  </csw:Delete>'
             '</csw:Transaction>'
         ) % identifier
-        resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml_as_string)
-        status = self._get_transaction_status(self.TOTAL_DELETED, resp)
-        logger.debug("Delete status: " + str(status) + ". With response: " + resp.text)
-        return status, resp.text
+        return self._post_request(headers=headers, xml=xml_as_string, cmd="delete",
+                                  key=self.TOTAL_DELETED)
 
     def _get_transaction_status(self, key, resp):
         """Check response status, read response text, and get status.
@@ -254,5 +246,16 @@ class PyCSWDist(Distributor):
             status = True
 
         return status
+
+    def _post_request(self, headers, xml, cmd, key):
+        try:
+            resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
+        except Exception as e:
+            logger.error(str(e))
+            return False, "Failed to %s." % cmd
+        else:
+            status = self._get_transaction_status(key, resp)
+            logger.debug(cmd + " status: " + str(status) + ". With response: " + resp.text)
+            return status, resp.text
 
 # END Class PyCSWDist

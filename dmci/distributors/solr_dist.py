@@ -101,32 +101,37 @@ class SolRDist(Distributor):
 
         """Check if document already exsists. Then we throw error and don't index."""
         isIndexed = self.mysolr.get_dataset(newdoc['id'])
-        if isIndexed['doc'] is not None and self._cmd == DistCmd.INSERT:
-            msg = "Document already exists in index, %s" % newdoc['metadata_identifier']
+
+        if isIndexed is not None:
+            if isIndexed['doc'] is not None and self._cmd == DistCmd.INSERT:
+                msg = "Document already exists in index, %s" % newdoc['metadata_identifier']
+                logger.error(msg)
+                return False, msg
+
+            if 'related_dataset' in newdoc:
+                logger.debug("Child dataset with id: %s",
+                             newdoc['metadata_identifier'])
+                logger.debug("Child dataset's parent's id is: %s",
+                             newdoc['related_dataset'])
+                parentid = newdoc['related_dataset_id']
+                status, msg = self.mysolr.update_parent(
+                    parentid,
+                    fail_on_missing=self._conf.fail_on_missing_parent
+                )
+                if status:
+                    status, msg = self._index_record(
+                        newdoc, add_thumbnail=False, level=2)
+                else:
+                    return status, msg
+            else:
+                logger.debug("Parent/Level-1 - dataset - %s",
+                             newdoc['metadata_identifier'])
+                status, msg = self._index_record(
+                    newdoc, add_thumbnail=False, level=1)
+        else:
+            msg = "Failed to insert."
             logger.error(msg)
             return False, msg
-
-        if 'related_dataset' in newdoc:
-            logger.debug("Child dataset with id: %s",
-                         newdoc['metadata_identifier'])
-            logger.debug("Child dataset's parent's id is: %s",
-                         newdoc['related_dataset'])
-            parentid = newdoc['related_dataset_id']
-            status, msg = self.mysolr.update_parent(
-                parentid,
-                fail_on_missing=self._conf.fail_on_missing_parent
-            )
-            if status:
-                status, msg = self._index_record(
-                    newdoc, add_thumbnail=False, level=2)
-            else:
-                return status, msg
-        else:
-            logger.debug("Parent/Level-1 - dataset - %s",
-                         newdoc['metadata_identifier'])
-            status, msg = self._index_record(
-                newdoc, add_thumbnail=False, level=1)
-
         return status, msg
 
     def _index_record(self, newdoc, add_thumbnail=False, level=1):

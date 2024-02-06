@@ -86,12 +86,10 @@ class App(Flask):
             if md_uuid is not None:
                 worker = Worker("delete", None, self._xsd_obj,
                                 md_uuid=md_uuid, md_namespace=md_namespace)
-                err, retry_status = self._distributor_wrapper(worker)
+                err = self._distributor_wrapper(worker)
             else:
                 return self._formatMsgReturn(err), 400
 
-            if retry_status:
-                return self._formatMsgReturn(err), 503
             if err:
                 return self._formatMsgReturn(err), 500
             else:
@@ -156,14 +154,7 @@ class App(Flask):
                 return msg, code
 
         # Run the distributors
-        err, retry_status = self._distributor_wrapper(worker)
-
-        # if retry_status is True, file is removed from workdir(can prevent file accumilation)and
-        # mmd agent will resend this request later
-        if retry_status:
-            msg = "\n".join(err)
-            self._handle_persist_file(True, full_path)
-            return msg, 503
+        err = self._distributor_wrapper(worker)
         if err:
             msg = "\n".join(err)
             self._handle_persist_file(False, full_path, reject_path, msg)
@@ -203,11 +194,8 @@ class App(Flask):
         parse and combine any error messages.
         """
         err = []
-        status, valid, _, failed, skipped, failed_msg, retry_status, retry = worker.distribute()
+        status, valid, _, failed, skipped, failed_msg = worker.distribute()
 
-        if retry_status:
-            err.append("Retry distribution in %s" %
-                       ", ".join(retry))
         if not status:
             err.append("The following distributors failed: %s" %
                        ", ".join(failed))
@@ -218,7 +206,7 @@ class App(Flask):
             err.append("The following jobs were skipped: %s" %
                        ", ".join(skipped))
 
-        return err, retry_status
+        return err
 
     @staticmethod
     def _check_metadata_id(metadata_id, env_string=None):
