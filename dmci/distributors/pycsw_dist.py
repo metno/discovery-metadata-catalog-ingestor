@@ -94,7 +94,7 @@ class PyCSWDist(Distributor):
         )
         xml += self._translate()
         xml += b"</csw:Insert></csw:Transaction>"
-        return self._post_request(headers=headers, xml=xml, cmd="insert", key=self.TOTAL_INSERTED)
+        return self._post_request(headers, xml, "insert", self.TOTAL_INSERTED)
 
     def _update(self):
         """Update current entry.
@@ -271,10 +271,9 @@ class PyCSWDist(Distributor):
             resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
         except Exception as e:
             logger.error(str(e))
-            return False, "Failed to %s." % cmd
-        else:
-            status = self._get_transaction_status(key, resp)
-            logger.debug(cmd + " status: " + str(status) + ". With response: " + resp.text)
-            return status, resp.text
+            return False, "%s: service unavailable. Failed to %s." % (self._conf.csw_service_url, cmd)
+        status = self._get_transaction_status(key, resp)
+        logger.debug(cmd + " status: " + str(status) + ". With response: " + resp.text)
+        return status, resp.text
 
 # END Class PyCSWDist

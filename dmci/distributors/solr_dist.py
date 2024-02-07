@@ -129,7 +129,7 @@ class SolRDist(Distributor):
                 status, msg = self._index_record(
                     newdoc, add_thumbnail=False, level=1)
         else:
-            msg = "Failed to insert."
+            msg = "Failed to insert dataset in SolR."
             logger.error(msg)
             return False, msg
         return status, msg

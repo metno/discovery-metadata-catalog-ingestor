@@ -192,10 +192,8 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
         f = ["A", "B"]
         s = ["C"]
         e = ["Reason A", "Reason B"]
-
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
-        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (
-                   False, False, [], f, s, e))
+        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e))
 
         response = client.post("/v1/insert", data=MOCK_XML)
         assert response.status_code == 500
