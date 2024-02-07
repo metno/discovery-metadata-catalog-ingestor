@@ -248,6 +248,25 @@ class PyCSWDist(Distributor):
         return status
 
     def _post_request(self, headers, xml, cmd, key):
+        """Send an HTTP POST request to pyCSW using a Transaction.
+
+        Parameters
+        ----------
+        headers : dict
+            Headers to be included in the request.
+        xml : str
+            XML data to be sent in the request body.
+        cmd : str
+            Description of the command being executed.
+        key : str
+            Key specifying the type of transaction: 'total_inserted', 'total_updated', or 'total_deleted'.
+    
+        Returns
+        -------
+        tuple of (bool, str)
+            A tuple containing a boolean indicating whether the transaction succeeded (True) or failed (False), 
+            and a string providing additional information about the transaction status or error message.
+        """
         try:
             resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
         except Exception as e:
