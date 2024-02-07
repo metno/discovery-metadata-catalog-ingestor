@@ -129,7 +129,7 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID):
         tstPyCSW._conf.mmd_xsl_path = mockXslt
         assert tstPyCSW.run() == (False, "Mock response")
 
-    # Update returns False if post raise exception
+    # Update returns False if the http post request fails
     with monkeypatch.context() as mp:
         mp.setattr(
             "dmci.distributors.pycsw_dist.requests.post", causeException)
