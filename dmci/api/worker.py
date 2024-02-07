@@ -183,11 +183,9 @@ class Worker:
         failed_msg = []
 
         for dist in self._conf.call_distributors:
-
             if dist not in self.CALL_MAP:
                 skipped.append(dist)
                 continue
-
             obj = self.CALL_MAP[dist](
                 self._dist_cmd,
                 xml_file=self._dist_xml_file,
@@ -196,7 +194,6 @@ class Worker:
                 path_to_parent_list=self._kwargs.get(
                     "path_to_parent_list", None),
             )
-
             valid &= obj.is_valid()
             if obj.is_valid():
                 obj_status, obj_msg = obj.run()
