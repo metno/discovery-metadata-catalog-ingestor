@@ -33,10 +33,6 @@ class mockResp:
     status_code = 200
 
 
-class failMockResp:
-    Exception("mock")
-
-
 class mockWorker:
     _namespace = ""
 
