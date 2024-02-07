@@ -258,19 +258,24 @@ class PyCSWDist(Distributor):
         cmd : str
             Description of the command being executed.
         key : str
-            Key specifying the type of transaction: 'total_inserted', 'total_updated', or 'total_deleted'.
-    
+            Key specifying the type of transaction: 'total_inserted', 'total_updated',
+            or 'total_deleted'.
+
         Returns
         -------
         tuple of (bool, str)
-            A tuple containing a boolean indicating whether the transaction succeeded (True) or failed (False), 
-            and a string providing additional information about the transaction status or error message.
+            A tuple containing a boolean indicating whether the transaction succeeded (True) or
+            failed (False), and a string providing additional information about the transaction
+            status or error message.
         """
         try:
             resp = requests.post(self._conf.csw_service_url, headers=headers, data=xml)
         except Exception as e:
             logger.error(str(e))
-            return False, "%s: service unavailable. Failed to %s." % (self._conf.csw_service_url, cmd)
+            return False, (
+                "%s: service unavailable. Failed to %s." %
+                (self._conf.csw_service_url, cmd)
+            )
         status = self._get_transaction_status(key, resp)
         logger.debug(cmd + " status: " + str(status) + ". With response: " + resp.text)
         return status, resp.text
