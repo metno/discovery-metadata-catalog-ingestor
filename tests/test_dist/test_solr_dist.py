@@ -193,9 +193,7 @@ def testDistSolR_AddFailsWithConnectionFailure(mockXml, monkeypatch):
         # Initialise object, and check that it validates
         tstDist = SolRDist("insert", xml_file=mockXml)
         assert tstDist.is_valid()
-        assert tstDist._add() == (
-            False, "Failed to insert."
-        )
+        assert tstDist._add() == (False, "Failed to insert dataset in SolR.")
 
 
 def testDistSolR_AddSuccessfulWithRelatedDataset(mockXml, monkeypatch):
