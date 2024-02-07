@@ -155,6 +155,7 @@ class App(Flask):
 
         # Run the distributors
         err = self._distributor_wrapper(worker)
+
         if err:
             msg = "\n".join(err)
             self._handle_persist_file(False, full_path, reject_path, msg)
@@ -195,7 +196,6 @@ class App(Flask):
         """
         err = []
         status, valid, _, failed, skipped, failed_msg = worker.distribute()
-
         if not status:
             err.append("The following distributors failed: %s" %
                        ", ".join(failed))
