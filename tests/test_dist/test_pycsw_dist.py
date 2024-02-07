@@ -168,7 +168,7 @@ def testDistPyCSW_Delete(monkeypatch, mockXml, tmpUUID):
         res = PyCSWDist("delete", metadata_UUID=tmpUUID, worker=mockWorker).run()
         assert res == (False, "Mock response")
 
-    # Delete returns False if post raise exception
+    # Delete returns False if http post request fails
     with monkeypatch.context() as mp:
         mp.setattr(
             "dmci.distributors.pycsw_dist.requests.post", causeException)
