@@ -117,7 +117,7 @@ class PyCSWDist(Distributor):
         )
         xml += self._translate()
         xml += b"</csw:Update></csw:Transaction>"
-        return self._post_request(headers=headers, xml=xml, cmd="update", key=self.TOTAL_UPDATED)
+        return self._post_request(headers, xml, "update", self.TOTAL_UPDATED)
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
@@ -147,8 +147,7 @@ class PyCSWDist(Distributor):
             '  </csw:Delete>'
             '</csw:Transaction>'
         ) % identifier
-        return self._post_request(headers=headers, xml=xml_as_string, cmd="delete",
-                                  key=self.TOTAL_DELETED)
+        return self._post_request(headers, xml_as_string, "delete", self.TOTAL_DELETED)
 
     def _get_transaction_status(self, key, resp):
         """Check response status, read response text, and get status.
