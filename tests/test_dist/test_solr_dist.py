@@ -56,6 +56,21 @@ class MockMMD4SolR:
         return solr_formatted
 
 
+class MockFailIndexMMD:
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def get_dataset(self, *args, **kwargs):
+        is_indexed = None
+        return is_indexed
+
+    def index_record(self, *args, **kwargs):
+        return True, 'test'
+
+    def update_parent(self, *args, **kwargs):
+        return True, "Test successful update message"
+
+
 class mockResp:
     text = "Mock response"
     status_code = 200
@@ -164,6 +179,21 @@ def testDistSolR_AddSuccessful(mockXml, monkeypatch):
         assert tstDist._add() == (
             False, "Could not index file %s, in SolR. Reason: Test Exception" % mockXml
         )
+
+
+@pytest.mark.dist
+def testDistSolR_AddFailsWithConnectionFailure(mockXml, monkeypatch):
+    """ Test that the add function fails when failed to make connection with solr"""
+    with monkeypatch.context() as mp:
+        mp.setattr("dmci.distributors.solr_dist.MMD4SolR",
+                   lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
+        mp.setattr("dmci.distributors.solr_dist.IndexMMD",
+                   lambda *args, **kwargs: MockFailIndexMMD(*args, **kwargs))
+
+        # Initialise object, and check that it validates
+        tstDist = SolRDist("insert", xml_file=mockXml)
+        assert tstDist.is_valid()
+        assert tstDist._add() == (False, "Failed to insert dataset in SolR.")
 
 
 def testDistSolR_AddSuccessfulWithRelatedDataset(mockXml, monkeypatch):
