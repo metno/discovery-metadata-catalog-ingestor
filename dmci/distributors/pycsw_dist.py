@@ -256,7 +256,7 @@ class PyCSWDist(Distributor):
         xml : str
             XML data to be sent in the request body.
         cmd : str
-            Description of the command being executed.
+            The command being executed.
         key : str
             Key specifying the type of transaction: 'total_inserted', 'total_updated',
             or 'total_deleted'.
