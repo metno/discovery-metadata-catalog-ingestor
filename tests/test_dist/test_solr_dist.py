@@ -253,6 +253,35 @@ def testDistSolR_AddTosolrRaisesException(mockXml, monkeypatch):
 
 
 @pytest.mark.dist
+def testDistSolR_AddUpdateParentRaisesException(mockXml, monkeypatch):
+    """ Test that the _add function fails correctly when
+    MMD4SolR.tosolr raises an exception.
+    """
+    with monkeypatch.context() as mp:
+
+        mp.setattr("dmci.distributors.solr_dist.MMD4SolR",
+                   lambda *args, **kwargs: MockMMD4SolR(*args, **kwargs))
+        mp.setattr("dmci.distributors.solr_dist.IndexMMD",
+                   lambda *args, **kwargs: MockIndexMMD(*args, **kwargs))
+        mp.setattr(MockMMD4SolR, "tosolr",
+                   lambda *a, **k: {
+                       "doc": None,
+                       "id": "no-met-dev-250ba38f-1081-4669-a429-f378c569db32",
+                       "metadata_identifier": "no.met.dev:250ba38f-1081-4669-a429-f378c569db32",
+                       "related_dataset": "no.met.dev:350ba38f-1081-4669-a429-f378c569db32",
+                       "related_dataset_id": "no-met-dev-350ba38f-1081-4669-a429-f378c569db32",
+                   })
+
+        mp.setattr(MockIndexMMD, "get_dataset", lambda *a, **k: {'doc': None})
+
+        mp.setattr(MockIndexMMD, "update_parent", causeException)
+        tstDist = SolRDist("insert", xml_file=mockXml)
+        assert tstDist._add() == (
+            False, "Failed to update parent in SolR.Reason: Test Exception"
+        )
+
+
+@pytest.mark.dist
 def testDistSolR_AddDocExists(mockXml, monkeypatch):
     """ Test that an the _add function fails correctly when the
     dataset already exists.

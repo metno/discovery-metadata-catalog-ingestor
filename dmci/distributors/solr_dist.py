@@ -114,10 +114,16 @@ class SolRDist(Distributor):
                 logger.debug("Child dataset's parent's id is: %s",
                              newdoc['related_dataset'])
                 parentid = newdoc['related_dataset_id']
-                status, msg = self.mysolr.update_parent(
-                    parentid,
-                    fail_on_missing=self._conf.fail_on_missing_parent
-                )
+                try:
+                    status, msg = self.mysolr.update_parent(
+                        parentid,
+                        fail_on_missing=self._conf.fail_on_missing_parent
+                    )
+                except Exception as e:
+                    msg = "Failed to update parent in SolR.Reason: %s" % str(e)
+                    logger.error(msg)
+                    return False, msg
+
                 if status:
                     status, msg = self._index_record(
                         newdoc, add_thumbnail=False, level=2)
