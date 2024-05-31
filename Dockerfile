@@ -1,7 +1,7 @@
 # Make us able to change version and repo when building
 ARG GUNICORN_VERSION="~=20.1"
 ARG MMD_REPO=https://github.com/metno/mmd
-ARG MMD_VERSION=v3.5.1
+ARG MMD_VERSION=v3.5.2
 
 # A transistent build container where we don't care about how many layers we add
 # ordering of operations matter as cache can be utilized for known good steps
