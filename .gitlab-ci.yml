@@ -4,6 +4,7 @@ stages:
 
 # git rev-parse --short HEAD
 
+# Bump build commit 1, magnar
 variables:
   dmci_version: main
 
