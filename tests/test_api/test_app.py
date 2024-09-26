@@ -339,11 +339,24 @@ def testApiApp_CheckMetadataId():
     # Without namespace
     assert App._check_metadata_id(testUUID) == (None, None,
                                                 "Input must be structured as <namespace>:<uuid>.")
+
     # With namespace, but not in accordance with the defined env_string
     assert App._check_metadata_id("test:"+testUUID, env_string="TEST") == (None, None,
                                                                            "Dataset metadata_id "
                                                                            "namespace is wrong: "
                                                                            "test")
+
+    # With namespace but the wrong one for prod environement
+    assert App._check_metadata_id("test.dev:"+testUUID, env_string="") == (None, None,
+                                                                           "Dataset metadata_id "
+                                                                           "namespace is wrong "
+                                                                           "for production: "
+                                                                           "test.dev")
+    assert App._check_metadata_id("test.staging:"+testUUID) == (None, None,
+                                                                "Dataset metadata_id "
+                                                                "namespace is wrong "
+                                                                "for production: "
+                                                                "test.staging")
 
     # With namespace, defined env_string, but present in call
     assert App._check_metadata_id("test.TEST:"+testUUID, env_string="TEST") == ("test.TEST",
