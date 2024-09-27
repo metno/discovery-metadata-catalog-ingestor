@@ -236,7 +236,7 @@ class App(Flask):
 
         # Check that the namespace is correct
         if not env_string:  # we are in prod
-            if 'staging' in md_namespace or 'dev' in md_namespace:
+            if ".staging" in md_namespace or ".dev" in md_namespace:
                 return (
                     None,
                     None,
