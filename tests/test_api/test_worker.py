@@ -212,6 +212,27 @@ def testApiWorker_NamespaceReplacement(filesDir):
 # END Test testApiWorker_NamespaceReplacement
 
 @pytest.mark.api
+def testApiWorker_NamespaceRejectedIfWrongEnv(filesDir):
+    """Test rejection if namespace contains a .dev/.staging not matching the env."""
+
+    xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
+    passFile = os.path.join(filesDir, "api", "staging.xml")
+
+    xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
+    passWorker = Worker("none", passFile, xsdObj)
+
+    passWorker._conf.env_string = ""
+
+    # Valid XML
+    passData = bytes(readFile(passFile), "utf-8")
+    valid, msg, passData = passWorker.validate(passData)
+    assert valid is False
+    assert msg == "Namespace test.no.staging does not match the env "
+
+
+# END Test testApiWorker_NamespaceRejectedIfWrongEnv
+
+@pytest.mark.api
 def testApiWorker_ParentNamespaceReplacement(filesDir):
     """Test the replacement of the namespace in the parent dataset
     with the one customized for the environment."""
