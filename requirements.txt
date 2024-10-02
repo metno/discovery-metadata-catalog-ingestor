@@ -3,4 +3,5 @@ solrindexer @ git+https://github.com/metno/solr-indexer@v2.1.0
 requests>=2.22
 pyyaml>=5.1
 flask>=1.0
+prometheus_flask_exporter
 lxml>=4.2.0

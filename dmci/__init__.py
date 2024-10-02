@@ -25,6 +25,7 @@ import sys
 import logging
 
 from dmci.config import Config
+from prometheus_flask_exporter import PrometheusMetrics
 
 
 def _init_logging(log_obj):
@@ -80,6 +81,7 @@ def api_main():
         sys.exit(1)
 
     dmci_app = App()
+    PrometheusMetrics(dmci_app)
     sys.exit(dmci_app.run())
 
 # END api_main entry point
