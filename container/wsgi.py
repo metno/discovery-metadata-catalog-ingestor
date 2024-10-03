@@ -20,6 +20,8 @@ limitations under the License.
 import os
 import sys
 
+from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
+
 from dmci.api import App
 from dmci import CONFIG
 
@@ -27,3 +29,4 @@ if not CONFIG.readConfig(configFile=os.environ.get("DMCI_CONFIG", None)):
     sys.exit(1)
 
 app = App()
+GunicornPrometheusMetrics(app)
