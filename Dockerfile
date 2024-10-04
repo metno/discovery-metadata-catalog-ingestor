@@ -102,6 +102,7 @@ ENTRYPOINT ["dumb-init", "--"]
 ENV PROMETHEUS_MULTIPROC_DIR /tmp
 ENV prometheus_multiproc_dir /tmp
 ENV METRICS_PORT 9200
+EXPOSE 9200
 
 COPY container/gunicorn_promexp_config.py /src/
 
