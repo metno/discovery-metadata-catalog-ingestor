@@ -66,12 +66,12 @@ class App(Flask):
         @self.route("/v1/create", methods=["POST"])
         @self.route("/v1/insert", methods=["POST"])
         def post_insert():
-            msg, code = self._insert_update_method_post("insert", request)
+            msg, code, failed = self._insert_update_method_post("insert", request)
             return self._formatMsgReturn(msg), code
 
         @self.route("/v1/update", methods=["POST"])
         def post_update():
-            msg, code = self._insert_update_method_post("update", request)
+            msg, code, failed = self._insert_update_method_post("update", request)
             return self._formatMsgReturn(msg), code
 
         @self.route("/v1/delete/<metadata_id>", methods=["POST"])
@@ -86,7 +86,7 @@ class App(Flask):
             if md_uuid is not None:
                 worker = Worker("delete", None, self._xsd_obj,
                                 md_uuid=md_uuid, md_namespace=md_namespace)
-                err = self._distributor_wrapper(worker)
+                err, failed = self._distributor_wrapper(worker)
             else:
                 return self._formatMsgReturn(err), 400
 
@@ -121,9 +121,9 @@ class App(Flask):
     def _insert_update_method_post(self, cmd, request):
         """Process insert or update command requests."""
         if request.content_length is None:
-            return "There is no data sent to the api", 202
+            return "There is no data sent to the api", 202, None
         if request.content_length > self._conf.max_permitted_size:
-            return f"The file is larger than maximum size: {self._conf.max_permitted_size}", 413
+            return f"The file is larger than maximum size: {self._conf.max_permitted_size}", 413, None
 
         data = request.get_data()
 
@@ -135,7 +135,7 @@ class App(Flask):
             self._conf.rejected_jobs_path, f"{file_uuid}.xml")
         msg, code = self._persist_file(data, full_path)
         if code != 200:
-            return msg, code
+            return msg, code, None
 
         # Run the validator
         worker = Worker(cmd, full_path, self._xsd_obj,
@@ -144,25 +144,25 @@ class App(Flask):
         if not valid:
             msg += f"\n Rejected persistent file : {file_uuid}.xml \n "
             self._handle_persist_file(False, full_path, reject_path, msg)
-            return msg, 400
+            return msg, 400, None
 
         # Check if the data from the request was modified in worker.validate().
         # If so we will need to write the modified data to disk.
         if not data == data_:
             msg, code = self._persist_file(data_, full_path)
             if code != 200:
-                return msg, code
+                return msg, code, None
 
         # Run the distributors
-        err = self._distributor_wrapper(worker)
+        err, failed = self._distributor_wrapper(worker)
 
         if err:
             msg = "\n".join(err)
             self._handle_persist_file(False, full_path, reject_path, msg)
-            return msg, 500
+            return msg, 500, failed
         else:
             self._handle_persist_file(True, full_path)
-            return OK_RETURN, 200
+            return OK_RETURN, 200, None
 
     def _validate_method_post(self, request):
         """Only run the validator for submitted file."""
@@ -206,7 +206,7 @@ class App(Flask):
             err.append("The following jobs were skipped: %s" %
                        ", ".join(skipped))
 
-        return err
+        return err, failed
 
     @staticmethod
     def _check_metadata_id(metadata_id, env_string=None):
