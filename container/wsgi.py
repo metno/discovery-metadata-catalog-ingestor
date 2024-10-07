@@ -22,8 +22,7 @@ import sys
 
 from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
-from prometheus_client import make_wsgi_app, CollectorRegistry
-from prometheus_client.core import REGISTRY
+from prometheus_client import make_wsgi_app
 
 from dmci.api import App
 from dmci import CONFIG
@@ -32,8 +31,7 @@ if not CONFIG.readConfig(configFile=os.environ.get("DMCI_CONFIG", None)):
     sys.exit(1)
 
 app = App()
-REGISTRY.register(CollectorRegistry())
 app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
-    '/metrics': make_wsgi_app(REGISTRY)
+    '/metrics': make_wsgi_app()
 })
 GunicornPrometheusMetrics(app)
