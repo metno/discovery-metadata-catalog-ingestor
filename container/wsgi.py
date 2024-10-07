@@ -37,4 +37,4 @@ REGISTRY.register(CollectorRegistry())
 app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
     '/metrics': make_wsgi_app(REGISTRY)
 })
-GunicornInternalPrometheusMetrics(app,path='/metrics',registry=REGISTRY)
+GunicornInternalPrometheusMetrics(app,path='/metrics', registry=REGISTRY)
