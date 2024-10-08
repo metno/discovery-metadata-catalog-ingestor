@@ -101,10 +101,6 @@ ENTRYPOINT ["dumb-init", "--"]
 
 ENV PROMETHEUS_MULTIPROC_DIR /tmp
 ENV prometheus_multiproc_dir /tmp
-ENV METRICS_PORT 9200
-EXPOSE 9200
-
-COPY container/gunicorn_promexp_config.py /src/
 
 # Start application
-CMD gunicorn -c /src/gunicorn_promexp_config.py --worker-class sync --workers 5 --bind 0.0.0.0:8000 wsgi:app --keep-alive 5 --log-level info
+CMD gunicorn --worker-class sync --workers 5 --bind 0.0.0.0:8000 wsgi:app --keep-alive 5 --log-level info
