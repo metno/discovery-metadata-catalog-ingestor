@@ -72,8 +72,8 @@ class App(Flask):
         @self.route("/v1/insert", methods=["POST"])
         def post_insert():
             msg, code, failed = self._insert_update_method_post("insert", request)
-            logger.info(f"failed {failed}")
             if failed:
+                logger.info(f"failed {failed}")
                 if "file" in failed:
                     FILE_DIST_FAIL.labels(path=request.path).inc()
                 if "pycsw" in failed:
