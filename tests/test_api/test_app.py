@@ -227,7 +227,7 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
 
     # Distribution fails, metrics are incremented
     with monkeypatch.context() as mp:
-        f = ["file", "solr", "csw"]
+        f = ["file", "solr", "pycsw"]
         s = ["C"]
         e = ["Reason A", "Reason B", "Reason C"]
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))

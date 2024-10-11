@@ -76,7 +76,7 @@ class App(Flask):
             if failed:
                 if "file" in failed:
                     FILE_DIST_FAIL.labels(path=request.path).inc()
-                if "csw" in failed:
+                if "pycsw" in failed:
                     CSW_DIST_FAIL.labels(path=request.path).inc()
                 if "solr" in failed:
                     SOLR_DIST_FAIL.labels(path=request.path).inc()
@@ -89,7 +89,7 @@ class App(Flask):
             if failed:
                 if "file" in failed:
                     FILE_DIST_FAIL.labels(path=request.path).inc()
-                if "csw" in failed:
+                if "pycsw" in failed:
                     CSW_DIST_FAIL.labels(path=request.path).inc()
                 if "solr" in failed:
                     SOLR_DIST_FAIL.labels(path=request.path).inc()
