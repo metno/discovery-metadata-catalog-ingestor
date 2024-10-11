@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 OK_RETURN = "Everything is OK"
 
 FILE_DIST_FAIL = Counter("failed_file_dist", "Number of failed file_dist", ["path"])
-CSW_DIST_FAIL = Counter("failed_csw_dist", "Number of failed csw_dist", ["path"])
+CSW_DIST_FAIL = Counter("failed_pycsw_dist", "Number of failed csw_dist", ["path"])
 SOLR_DIST_FAIL = Counter("failed_solr_dist", "Number of failed solr_dist", ["path"])
 
 

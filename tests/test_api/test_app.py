@@ -240,7 +240,7 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
             "failed_file_dist_total", {"path": "/v1/insert"}
         )
         after_csw = REGISTRY.get_sample_value(
-            "failed_csw_dist_total", {"path": "/v1/insert"}
+            "failed_pycsw_dist_total", {"path": "/v1/insert"}
         )
         after_solr = REGISTRY.get_sample_value(
             "failed_solr_dist_total", {"path": "/v1/insert"}
@@ -254,7 +254,7 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
             "failed_file_dist_total", {"path": "/v1/update"}
         )
         after_csw = REGISTRY.get_sample_value(
-            "failed_csw_dist_total", {"path": "/v1/update"}
+            "failed_pycsw_dist_total", {"path": "/v1/update"}
         )
         after_solr = REGISTRY.get_sample_value(
             "failed_solr_dist_total", {"path": "/v1/update"}
