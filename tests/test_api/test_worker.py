@@ -221,7 +221,9 @@ def testApiWorker_NamespaceRejectedIfWrongEnv(filesDir):
     xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
     passWorker = Worker("none", passFile, xsdObj)
 
-    passWorker._conf.env_string = ""
+    # Test namespace "no.met.dev" - datasets with namespaces
+    # "no.met.dev" and "no.met" should pass
+    passWorker._conf.env_string = "no.met.dev"
 
     # Valid XML
     passData = bytes(readFile(passFile), "utf-8")
@@ -229,6 +231,9 @@ def testApiWorker_NamespaceRejectedIfWrongEnv(filesDir):
     assert valid is False
     assert msg == "Namespace test.no.staging does not match the env "
 
+    # Test namespace "no.met" - only datasets with namespace "no.met"
+    # should pass
+    passWorker._conf.env_string = "no.met"
 
 # END Test testApiWorker_NamespaceRejectedIfWrongEnv
 
