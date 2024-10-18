@@ -312,8 +312,7 @@ def testApiWorker_ParentNamespaceReplacement(filesDir):
     valid, msg, data = badparentWorker.validate(badparentData)
     assert valid is False
     assert (
-        msg
-        == "Malformed parent dataset identifier [b'64db6102-14ce-41e9-b93b-61dbb2cb8b4e']"
+        msg == "Malformed parent dataset identifier [b'64db6102-14ce-41e9-b93b-61dbb2cb8b4e']"
     )
 
 
