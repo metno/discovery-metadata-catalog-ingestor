@@ -222,15 +222,18 @@ def testApiWorker_NamespaceReplacement(filesDir):
 
 
 @pytest.mark.api
-def testApiWorker_NamespaceRejectedIfWrongEnvStaging(filesDir):
+def testApiWorker_NamespaceRejectedIfWrongEnv(filesDir):
     """Test rejection if namespace contains a .staging not matching the env."""
 
     xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
+    # namespace in staging.xml is test.no.staging
+    # (should pass if env is staging and fail if it's prod or dev)
     passFile = os.path.join(filesDir, "api", "staging.xml")
 
     xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
     passWorker = Worker("none", passFile, xsdObj)
 
+    # env is prod
     passWorker._conf.env_string = ""
 
     # Valid XML
@@ -239,6 +242,16 @@ def testApiWorker_NamespaceRejectedIfWrongEnvStaging(filesDir):
     assert valid is False
     assert msg == "Namespace test.no.staging does not match the env "
 
+    # env is prod
+    passWorker._conf.env_string = "dev"
+
+    # Valid XML
+    passData = bytes(readFile(passFile), "utf-8")
+    valid, msg, passData = passWorker.validate(passData)
+    assert valid is False
+    assert msg == "Namespace test.no.staging does not match the env dev"
+
+    # env is staging
     passWorker._conf.env_string = "staging"
 
     # Valid XML
@@ -247,36 +260,7 @@ def testApiWorker_NamespaceRejectedIfWrongEnvStaging(filesDir):
     assert valid is True
 
 
-# END Test testApiWorker_NamespaceRejectedIfWrongEnvStaging
-
-
-@pytest.mark.api
-def testApiWorker_NamespaceRejectedIfWrongEnvDev(filesDir):
-    """Test rejection if namespace contains a .dev not matching the env."""
-
-    xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
-    passFile = os.path.join(filesDir, "api", "dev.xml")
-
-    xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
-    passWorker = Worker("none", passFile, xsdObj)
-
-    passWorker._conf.env_string = ""
-
-    # Valid XML
-    passData = bytes(readFile(passFile), "utf-8")
-    valid, msg, passData = passWorker.validate(passData)
-    assert valid is False
-    assert msg == "Namespace test.no.dev does not match the env "
-
-    passWorker._conf.env_string = "dev"
-
-    # Valid XML
-    passData = bytes(readFile(passFile), "utf-8")
-    valid, msg, passData = passWorker.validate(passData)
-    assert valid is True
-
-
-# END Test testApiWorker_NamespaceRejectedIfWrongEnvDev
+# END Test testApiWorker_NamespaceRejectedIfWrongEnv
 
 
 @pytest.mark.api
