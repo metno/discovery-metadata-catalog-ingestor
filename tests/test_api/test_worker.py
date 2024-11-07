@@ -242,7 +242,7 @@ def testApiWorker_NamespaceRejectedIfWrongEnv(filesDir):
     assert valid is False
     assert msg == "Namespace test.no.staging does not match the env "
 
-    # env is prod
+    # env is dev
     passWorker._conf.env_string = "dev"
 
     # Valid XML
