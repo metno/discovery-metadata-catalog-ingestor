@@ -76,6 +76,8 @@ def testCoreInit_ApiMain(monkeypatch, rootDir):
         def run(self):
             return
 
+    monkeypatch.setattr("dmci.PrometheusMetrics", lambda x: False)
+
     exampleConf = os.path.join(rootDir, "example_config.yaml")
     monkeypatch.setenv("DMCI_CONFIG", exampleConf)
     monkeypatch.setattr("dmci.api.App", mockAPI)

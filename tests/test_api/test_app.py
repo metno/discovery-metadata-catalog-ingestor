@@ -30,6 +30,8 @@ from tools import causePermissionError
 from tools import causeSameFileError
 from tools import causeShUtilError
 
+from prometheus_client import REGISTRY
+
 from dmci.api import App
 
 MOCK_XML = b"<xml />"
@@ -88,6 +90,7 @@ def testApiApp_Init(tmpConf, tmpDir, monkeypatch):
     with pytest.raises(SystemExit) as sysExit:
         App()
 
+
 # END Test testApiApp_Init
 
 
@@ -104,6 +107,7 @@ def testApiApp_EndPoints(client):
 
     # Bare delete command is not allowed
     assert client.post("/v1/delete").status_code == 404
+
 
 # END Test testApiApp_EndPoints
 
@@ -131,6 +135,7 @@ def testApiApp_EndPoints_Exception(tmpDir, tmpConf, mockXsd, monkeypatch):
     monkeypatch.setattr("lxml.etree.XMLSchema", MockException)
     with pytest.raises(SystemExit):
         App()
+
 
 # END Test testApiApp_EndPoints_Exception
 
@@ -170,14 +175,19 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
     # first _persist_file fails
     with monkeypatch.context() as mp:
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
-        mp.setattr("dmci.api.app.App._persist_file", lambda *a: ("Failed to write the file", 666))
+        mp.setattr(
+            "dmci.api.app.App._persist_file",
+            lambda *a: ("Failed to write the file", 666),
+        )
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 666
         assert client.post("/v1/update", data=MOCK_XML).status_code == 666
 
     # first _persist_file works
     with monkeypatch.context() as mp:
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
-        mp.setattr("dmci.api.app.App._persist_file", lambda *a: ("Everything is OK", 200))
+        mp.setattr(
+            "dmci.api.app.App._persist_file", lambda *a: ("Everything is OK", 200)
+        )
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 200
         assert client.post("/v1/update", data=MOCK_XML).status_code == 200
 
@@ -193,7 +203,9 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
         s = ["C"]
         e = ["Reason A", "Reason B"]
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
-        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e))
+        mp.setattr(
+            "dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e)
+        )
 
         response = client.post("/v1/insert", data=MOCK_XML)
         assert response.status_code == 500
@@ -213,15 +225,55 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
             b"The following jobs were skipped: C\n"
         )
 
+    # Distribution fails, metrics are incremented
+    with monkeypatch.context() as mp:
+        f = ["file", "solr", "pycsw"]
+        s = ["C"]
+        e = ["Reason A", "Reason B", "Reason C"]
+        mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
+        mp.setattr(
+            "dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e)
+        )
+
+        response = client.post("/v1/insert", data=MOCK_XML)
+        after_file = REGISTRY.get_sample_value(
+            "failed_file_dist_total", {"path": "/v1/insert"}
+        )
+        after_csw = REGISTRY.get_sample_value(
+            "failed_pycsw_dist_total", {"path": "/v1/insert"}
+        )
+        after_solr = REGISTRY.get_sample_value(
+            "failed_solr_dist_total", {"path": "/v1/insert"}
+        )
+        assert after_file == 1
+        assert after_csw == 1
+        assert after_solr == 1
+
+        response = client.post("/v1/update", data=MOCK_XML)
+        after_file = REGISTRY.get_sample_value(
+            "failed_file_dist_total", {"path": "/v1/update"}
+        )
+        after_csw = REGISTRY.get_sample_value(
+            "failed_pycsw_dist_total", {"path": "/v1/update"}
+        )
+        after_solr = REGISTRY.get_sample_value(
+            "failed_solr_dist_total", {"path": "/v1/update"}
+        )
+        assert after_file == 1
+        assert after_csw == 1
+        assert after_solr == 1
+
     # Data is valid, distribute OK.
     with monkeypatch.context() as mp:
 
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (True, "", MOCK_XML))
-        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (
-                   True, True, [], [], [], []))
+        mp.setattr(
+            "dmci.api.app.Worker.distribute", lambda *a: (True, True, [], [], [], [])
+        )
         response = client.post("/v1/insert", data=MOCK_XML)
         assert response.status_code == 200
         assert response.data == (b"Everything is OK\n")
+
 
 # END Test testApiApp_InsertUpdateRequests
 
@@ -229,8 +281,14 @@ def testApiApp_InsertUpdateRequests(client, monkeypatch):
 @pytest.mark.api
 def testApiApp_PersistAgainAfterModification(client, monkeypatch):
 
-    outputs = iter([("Everything is OK", 200), ("Failure in persisting", 666),
-                    ("Everything is OK", 200), ("Failure in persisting", 666)])
+    outputs = iter(
+        [
+            ("Everything is OK", 200),
+            ("Failure in persisting", 666),
+            ("Everything is OK", 200),
+            ("Failure in persisting", 666),
+        ]
+    )
 
     @staticmethod
     def fake_output(data, full_path):
@@ -242,6 +300,7 @@ def testApiApp_PersistAgainAfterModification(client, monkeypatch):
         mp.setattr("dmci.api.app.App._persist_file", fake_output)
         assert client.post("/v1/insert", data=MOCK_XML).status_code == 666
         assert client.post("/v1/update", data=MOCK_XML).status_code == 666
+
 
 # END Test testApiApp_PersistAgainAfterModification
 
@@ -262,7 +321,9 @@ def testApiApp_DeleteRequests(client, monkeypatch):
         f = ["A", "B"]
         s = ["C"]
         e = ["Reason A", "Reason B"]
-        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e))
+        mp.setattr(
+            "dmci.api.app.Worker.distribute", lambda *a: (False, False, [], f, s, e)
+        )
 
         response = client.post("/v1/delete/%s" % testUUID, data=MOCK_XML)
         assert response.status_code == 500
@@ -275,10 +336,13 @@ def testApiApp_DeleteRequests(client, monkeypatch):
 
     # Distribute ok
     with monkeypatch.context() as mp:
-        mp.setattr("dmci.api.app.Worker.distribute", lambda *a: (True, True, [], [], [], []))
+        mp.setattr(
+            "dmci.api.app.Worker.distribute", lambda *a: (True, True, [], [], [], [])
+        )
         response = client.post("/v1/delete/%s" % testUUID, data=MOCK_XML)
         assert response.status_code == 200
         assert response.data == b"Everything is OK\n"
+
 
 # END Test testApiApp_DeleteRequests
 
@@ -307,6 +371,7 @@ def testApiApp_ValidateRequests(client, monkeypatch):
         mp.setattr("dmci.api.app.Worker.validate", lambda *a: (False, "", MOCK_XML))
         assert client.post("/v1/validate", data=MOCK_XML).status_code == 400
 
+
 # END Test testApiApp_ValidateRequests
 
 
@@ -325,6 +390,7 @@ def testApiApp_PersistFile(tmpDir, monkeypatch):
     assert App._persist_file(MOCK_XML, outFile)[1] == 200
     assert os.path.isfile(outFile)
 
+
 # END Test testApiApp_PersistFile
 
 
@@ -334,17 +400,20 @@ def testApiApp_CheckMetadataId():
     correct_UUID = uuid.UUID(testUUID)
 
     # Correct with namespace
-    assert App._check_metadata_id("test:"+testUUID) == ("test", correct_UUID, None)
+    assert App._check_metadata_id("test:" + testUUID) == ("test", correct_UUID, None)
 
     # Without namespace
-    assert App._check_metadata_id(testUUID) == (None, None,
-                                                "Input must be structured as <namespace>:<uuid>.")
-
+    assert App._check_metadata_id(testUUID) == (
+        None,
+        None,
+        "Input must be structured as <namespace>:<uuid>.",
+    )
     # With namespace, but not in accordance with the defined env_string
-    assert App._check_metadata_id("test:"+testUUID, env_string="TEST") == (None, None,
-                                                                           "Dataset metadata_id "
-                                                                           "namespace is wrong: "
-                                                                           "test")
+    assert App._check_metadata_id("test:" + testUUID, env_string="TEST") == (
+        None,
+        None,
+        "Dataset metadata_id " "namespace is wrong: " "test",
+    )
 
     # With namespace but the wrong one for prod environement
     assert App._check_metadata_id("test.dev:"+testUUID, env_string="") == (None, None,
@@ -359,9 +428,11 @@ def testApiApp_CheckMetadataId():
                                                                 "test.staging")
 
     # With namespace, defined env_string, but present in call
-    assert App._check_metadata_id("test.TEST:"+testUUID, env_string="TEST") == ("test.TEST",
-                                                                                correct_UUID,
-                                                                                None)
+    assert App._check_metadata_id("test.TEST:" + testUUID, env_string="TEST") == (
+        "test.TEST",
+        correct_UUID,
+        None,
+    )
 
     # Test with namespace, but malformed UUID
     out = App._check_metadata_id("test:blabla")
@@ -442,7 +513,7 @@ def testApiApp_HandlePersistFile(caplog, fncDir, monkeypatch):
 
 @pytest.mark.api
 def testApiApp_HandlePersistFile_fail2write_reason(caplog, fncDir, monkeypatch):
-    """ Test that _handle_persist_file catches the error if it fails
+    """Test that _handle_persist_file catches the error if it fails
     to open the reject file (that should provide the reason for
     failing to write the persist file to the rejected folder).
     """
@@ -470,7 +541,11 @@ def testApiApp_HandlePersistFile_fail2write_reason(caplog, fncDir, monkeypatch):
 
     with monkeypatch.context() as mp:
         mp.setattr("builtins.open", patched_open)
-        assert App._handle_persist_file(False, full_path, reject_path, "Some reason") is False
+        assert (
+            App._handle_persist_file(False, full_path, reject_path, "Some reason")
+            is False
+        )
         assert "Failed to write rejected reason to file" in caplog.text
+
 
 # END Test testApiApp_HandlePersistFile
