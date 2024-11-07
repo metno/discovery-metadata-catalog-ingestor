@@ -272,7 +272,7 @@ class App(Flask):
             return None, None, f"Cannot convert to UUID: {uuid_str}"
 
         # Check that the namespace is correct
-        if env_string is None:  # we are in prod
+        if not env_string:  # we are in prod
             if ".staging" in md_namespace or ".dev" in md_namespace:
                 return (
                     None,
