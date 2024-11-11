@@ -124,14 +124,20 @@ def testApiWorker_Validator(monkeypatch, filesDir):
 
     # Invalid data format
     passData = readFile(passFile)
-    assert passWorker.validate(passData) == (False, "Input must be bytes type", passData)
+    assert passWorker.validate(passData) == (
+        False,
+        "Input must be bytes type",
+        passData,
+    )
 
     # Parsing error
     parseFailData = bytes(readFile(parseFailFile), "utf-8")
     assert parseFailWorker.validate(parseFailData) == (
         False,
         "Opening and ending tag mismatch: short_name line 141 and platform,"
-        " line 149, column 18 (<string>, line 149)", parseFailData)
+        " line 149, column 18 (<string>, line 149)",
+        parseFailData,
+    )
 
     # Valid data format
     with monkeypatch.context() as mp:
@@ -171,8 +177,11 @@ def testApiWorker_Validator(monkeypatch, filesDir):
 
     # _check_information_content fails
     with monkeypatch.context() as mp:
-        mp.setattr(Worker, "_check_information_content",
-                   lambda *a: (False, "_check_information_content failed"))
+        mp.setattr(
+            Worker,
+            "_check_information_content",
+            lambda *a: (False, "_check_information_content failed"),
+        )
 
         passData = bytes(readFile(passFile), "utf-8")
         valid, msg, passData = passWorker.validate(passData)
@@ -211,19 +220,21 @@ def testApiWorker_NamespaceReplacement(filesDir):
 
 # END Test testApiWorker_NamespaceReplacement
 
+
 @pytest.mark.api
 def testApiWorker_NamespaceRejectedIfWrongEnv(filesDir):
-    """Test rejection if namespace contains a .dev/.staging not matching the env."""
+    """Test rejection if namespace contains a .staging not matching the env."""
 
     xsdFile = os.path.join(filesDir, "mmd", "mmd.xsd")
+    # namespace in staging.xml is test.no.staging
+    # (should pass if env is staging and fail if it's prod or dev)
     passFile = os.path.join(filesDir, "api", "staging.xml")
 
     xsdObj = lxml.etree.XMLSchema(lxml.etree.parse(xsdFile))
     passWorker = Worker("none", passFile, xsdObj)
 
-    # Test namespace "no.met.dev" - datasets with namespaces
-    # "no.met.dev" and "no.met" should pass
-    passWorker._conf.env_string = "no.met.dev"
+    # env is prod
+    passWorker._conf.env_string = ""
 
     # Valid XML
     passData = bytes(readFile(passFile), "utf-8")
@@ -231,9 +242,23 @@ def testApiWorker_NamespaceRejectedIfWrongEnv(filesDir):
     assert valid is False
     assert msg == "Namespace test.no.staging does not match the env "
 
-    # Test namespace "no.met" - only datasets with namespace "no.met"
-    # should pass
-    passWorker._conf.env_string = "no.met"
+    # env is dev
+    passWorker._conf.env_string = "dev"
+
+    # Valid XML
+    passData = bytes(readFile(passFile), "utf-8")
+    valid, msg, passData = passWorker.validate(passData)
+    assert valid is False
+    assert msg == "Namespace test.no.staging does not match the env dev"
+
+    # env is staging
+    passWorker._conf.env_string = "staging"
+
+    # Valid XML
+    passData = bytes(readFile(passFile), "utf-8")
+    valid, msg, passData = passWorker.validate(passData)
+    assert valid is True
+
 
 # END Test testApiWorker_NamespaceRejectedIfWrongEnv
 
@@ -257,7 +282,8 @@ def testApiWorker_ParentNamespaceReplacement(filesDir):
     assert valid is True
 
     match_parent_id = re.search(
-        b'<mmd:related_dataset relation_type="parent">(.+?)</mmd:related_dataset>', passData
+        b'<mmd:related_dataset relation_type="parent">(.+?)</mmd:related_dataset>',
+        passData,
     )
     parent_id = match_parent_id.group(1)
     namespace = parent_id.split(b":")[0].decode()
@@ -269,7 +295,10 @@ def testApiWorker_ParentNamespaceReplacement(filesDir):
     badparentData = bytes(readFile(badparentidFile), "utf-8")
     valid, msg, data = badparentWorker.validate(badparentData)
     assert valid is False
-    assert msg == "Malformed parent dataset identifier [b'64db6102-14ce-41e9-b93b-61dbb2cb8b4e']"
+    assert (
+        msg == "Malformed parent dataset identifier [b'64db6102-14ce-41e9-b93b-61dbb2cb8b4e']"
+    )
+
 
 # END Test testApiWorker_NamespaceReplacement
 
