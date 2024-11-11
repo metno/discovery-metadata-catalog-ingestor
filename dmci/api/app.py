@@ -28,10 +28,15 @@ from lxml import etree
 
 import dmci
 from dmci.api.worker import Worker
+from prometheus_client import Counter
 
 logger = logging.getLogger(__name__)
 
 OK_RETURN = "Everything is OK"
+
+FILE_DIST_FAIL = Counter("failed_file_dist", "Number of failed file_dist", ["path"])
+CSW_DIST_FAIL = Counter("failed_pycsw_dist", "Number of failed csw_dist", ["path"])
+SOLR_DIST_FAIL = Counter("failed_solr_dist", "Number of failed solr_dist", ["path"])
 
 
 class App(Flask):
@@ -54,11 +59,11 @@ class App(Flask):
 
         # Create the XML Validator Object
         try:
-            self._xsd_obj = etree.XMLSchema(
-                etree.parse(self._conf.mmd_xsd_path))
+            self._xsd_obj = etree.XMLSchema(etree.parse(self._conf.mmd_xsd_path))
         except Exception as e:
-            logger.critical("XML Schema could not be parsed: %s" %
-                            str(self._conf.mmd_xsd_path))
+            logger.critical(
+                "XML Schema could not be parsed: %s" % str(self._conf.mmd_xsd_path)
+            )
             logger.critical(str(e))
             sys.exit(1)
 
@@ -66,27 +71,49 @@ class App(Flask):
         @self.route("/v1/create", methods=["POST"])
         @self.route("/v1/insert", methods=["POST"])
         def post_insert():
-            msg, code = self._insert_update_method_post("insert", request)
+            msg, code, failed = self._insert_update_method_post("insert", request)
+            if failed:
+                logger.info(f"failed {failed}")
+                if "file" in failed:
+                    FILE_DIST_FAIL.labels(path=request.path).inc()
+                if "pycsw" in failed:
+                    CSW_DIST_FAIL.labels(path=request.path).inc()
+                if "solr" in failed:
+                    SOLR_DIST_FAIL.labels(path=request.path).inc()
             return self._formatMsgReturn(msg), code
 
         @self.route("/v1/update", methods=["POST"])
         def post_update():
-            msg, code = self._insert_update_method_post("update", request)
+            msg, code, failed = self._insert_update_method_post("update", request)
+            logger.info(f"failed {failed}")
+            if failed:
+                if "file" in failed:
+                    FILE_DIST_FAIL.labels(path=request.path).inc()
+                if "pycsw" in failed:
+                    CSW_DIST_FAIL.labels(path=request.path).inc()
+                if "solr" in failed:
+                    SOLR_DIST_FAIL.labels(path=request.path).inc()
             return self._formatMsgReturn(msg), code
 
         @self.route("/v1/delete/<metadata_id>", methods=["POST"])
         def post_delete(metadata_id=None):
             """Process delete command."""
-            md_namespace, md_uuid, err = self._check_metadata_id(metadata_id,
-                                                                 self._conf.env_string)
+            md_namespace, md_uuid, err = self._check_metadata_id(
+                metadata_id, self._conf.env_string
+            )
 
             if err is not None:
                 logger.error(err)
 
             if md_uuid is not None:
-                worker = Worker("delete", None, self._xsd_obj,
-                                md_uuid=md_uuid, md_namespace=md_namespace)
-                err = self._distributor_wrapper(worker)
+                worker = Worker(
+                    "delete",
+                    None,
+                    self._xsd_obj,
+                    md_uuid=md_uuid,
+                    md_namespace=md_namespace,
+                )
+                err, failed = self._distributor_wrapper(worker)
             else:
                 return self._formatMsgReturn(err), 400
 
@@ -121,68 +148,80 @@ class App(Flask):
     def _insert_update_method_post(self, cmd, request):
         """Process insert or update command requests."""
         if request.content_length is None:
-            return "There is no data sent to the api", 202
+            return "There is no data sent to the api", 202, None
         if request.content_length > self._conf.max_permitted_size:
-            return f"The file is larger than maximum size: {self._conf.max_permitted_size}", 413
+            return (
+                f"The file is larger than maximum size: {self._conf.max_permitted_size}",
+                413,
+                None,
+            )
 
         data = request.get_data()
 
         # Cache the job file
         file_uuid = uuid.uuid4()
-        full_path = os.path.join(
-            self._conf.distributor_cache, f"{file_uuid}.xml")
-        reject_path = os.path.join(
-            self._conf.rejected_jobs_path, f"{file_uuid}.xml")
+        full_path = os.path.join(self._conf.distributor_cache, f"{file_uuid}.xml")
+        reject_path = os.path.join(self._conf.rejected_jobs_path, f"{file_uuid}.xml")
         msg, code = self._persist_file(data, full_path)
         if code != 200:
-            return msg, code
+            return msg, code, None
 
         # Run the validator
-        worker = Worker(cmd, full_path, self._xsd_obj,
-                        path_to_parent_list=self._conf.path_to_parent_list)
+        worker = Worker(
+            cmd,
+            full_path,
+            self._xsd_obj,
+            path_to_parent_list=self._conf.path_to_parent_list,
+        )
         valid, msg, data_ = worker.validate(data)
         if not valid:
             msg += f"\n Rejected persistent file : {file_uuid}.xml \n "
             self._handle_persist_file(False, full_path, reject_path, msg)
-            return msg, 400
+            return msg, 400, None
 
         # Check if the data from the request was modified in worker.validate().
         # If so we will need to write the modified data to disk.
         if not data == data_:
             msg, code = self._persist_file(data_, full_path)
             if code != 200:
-                return msg, code
+                return msg, code, None
 
         # Run the distributors
-        err = self._distributor_wrapper(worker)
+        err, failed = self._distributor_wrapper(worker)
 
         if err:
             msg = "\n".join(err)
             self._handle_persist_file(False, full_path, reject_path, msg)
-            return msg, 500
+            return msg, 500, failed
         else:
             self._handle_persist_file(True, full_path)
-            return OK_RETURN, 200
+            return OK_RETURN, 200, None
 
     def _validate_method_post(self, request):
         """Only run the validator for submitted file."""
         if request.content_length > self._conf.max_permitted_size:
-            return f"The file is larger than maximum size: {self._conf.max_permitted_size}", 413
+            return (
+                f"The file is larger than maximum size: {self._conf.max_permitted_size}",
+                413,
+            )
 
         data = request.get_data()
 
         # Cache the job file
         file_uuid = uuid.uuid4()
-        full_path = os.path.join(
-            self._conf.distributor_cache, f"{file_uuid}.xml")
+        full_path = os.path.join(self._conf.distributor_cache, f"{file_uuid}.xml")
         msg, code = self._persist_file(data, full_path)
         if code != 200:
             self._handle_persist_file(True, full_path)
             return msg, code
 
         # Run the validator
-        worker = Worker("none", full_path, self._xsd_obj,
-                        path_to_parent_list=self._conf.path_to_parent_list)
+        worker = Worker(
+            "none",
+            full_path,
+            self._xsd_obj,
+            path_to_parent_list=self._conf.path_to_parent_list,
+        )
         valid, msg, data = worker.validate(data)
         self._handle_persist_file(True, full_path)
         if valid:
@@ -197,20 +236,18 @@ class App(Flask):
         err = []
         status, valid, _, failed, skipped, failed_msg = worker.distribute()
         if not status:
-            err.append("The following distributors failed: %s" %
-                       ", ".join(failed))
+            err.append("The following distributors failed: %s" % ", ".join(failed))
             for name, reason in zip(failed, failed_msg):
                 err.append(" - %s: %s" % (name, reason))
 
         if not valid:
-            err.append("The following jobs were skipped: %s" %
-                       ", ".join(skipped))
+            err.append("The following jobs were skipped: %s" % ", ".join(skipped))
 
-        return err
+        return err, failed
 
     @staticmethod
     def _check_metadata_id(metadata_id, env_string=None):
-        """ Check that the metadata_id is structured as
+        """Check that the metadata_id is structured as
         namespace:UUID, that the uuid part is of type UUID, and that
         the namespace is correct.
         """
@@ -235,7 +272,14 @@ class App(Flask):
             return None, None, f"Cannot convert to UUID: {uuid_str}"
 
         # Check that the namespace is correct
-        if env_string is not None:
+        if env_string is None:  # we are in prod
+            if ".staging" in md_namespace or ".dev" in md_namespace:
+                return (
+                    None,
+                    None,
+                    f"Dataset metadata_id namespace is wrong for production: {md_namespace}"
+                )
+        else:
             env = md_namespace.split(".")[-1]
             if env_string != env:
                 return None, None, f"Dataset metadata_id namespace is wrong: {env}"
@@ -273,7 +317,8 @@ class App(Flask):
             except shutil.SameFileError as e:
                 logger.error(
                     "Source and destination represents the same file. %s -> %s"
-                    % (full_path, reject_path))
+                    % (full_path, reject_path)
+                )
                 logger.error(str(e))
                 return False
 
@@ -297,8 +342,7 @@ class App(Flask):
                 with open(reason_path, mode="w", encoding="utf-8") as ofile:
                     ofile.write(reject_reason)
             except Exception as e:
-                logger.error(
-                    "Failed to write rejected reason to file: %s", reason_path)
+                logger.error("Failed to write rejected reason to file: %s", reason_path)
                 logger.error(str(e))
                 return False
 
@@ -316,5 +360,6 @@ class App(Flask):
             return "Cannot write xml data to cache file", 507
 
         return OK_RETURN, 200
+
 
 # END Class App
