@@ -105,10 +105,11 @@ class PyCSWDist(Distributor):
         """
         del_status, del_response_text = self._delete()
         if not del_status:
-            return del_status, del_response_text
+            return del_status, del_response_text.replace("delete", "update")
         ins_status, ins_response_text = self._insert()
+        response_text = ins_response_text.replace("insert", "update")
         # Handle insertion
-        return ins_status, ins_response_text
+        return ins_status, response_text
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
