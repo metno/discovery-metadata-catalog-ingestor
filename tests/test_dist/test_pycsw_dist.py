@@ -121,8 +121,8 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID, tmpConf):
         tstPyCSW._worker = tstWorker
         tstPyCSW._conf.mmd_xsl_path = mockXslt
         assert tstPyCSW.run() == (True, "Mock response")
-        #tstPyCSW._worker._namespace = "test.no"
-        #assert tstPyCSW.run() == (True, "Mock response")
+        tstPyCSW._worker._namespace = "test.no"
+        assert tstPyCSW.run() == (True, "Mock response")
 
     # Update returns False
     with monkeypatch.context() as mp:
@@ -148,9 +148,11 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID, tmpConf):
             False,
             "http://localhost: service unavailable. Failed to update."
         )
+
         # Insert within update fails
         def new_delete(cls, *a, **k):
             return True, ""
+
         with mock.patch.object(PyCSWDist, '_delete', new=new_delete):
             mp.setattr(
                 "dmci.distributors.pycsw_dist.requests.post", causeException)
