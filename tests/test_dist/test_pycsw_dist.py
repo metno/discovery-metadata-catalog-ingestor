@@ -61,7 +61,7 @@ def testDistPyCSW_Run(tmpUUID):
 
 
 @pytest.mark.dist
-def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
+def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt, tmpConf):
     """Test insert commands via run()."""
     # Insert returns True
     with monkeypatch.context() as mp:
@@ -91,6 +91,7 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
         mp.setattr(
             "dmci.distributors.pycsw_dist.requests.post", causeException)
         tstPyCSW = PyCSWDist("insert", xml_file=mockXml)
+        tstPyCSW._conf = tmpConf
         assert tstPyCSW.run() == (
             False,
             "http://localhost: service unavailable. Failed to insert."
@@ -100,11 +101,12 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt):
 
 
 @pytest.mark.dist
-def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID):
+def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID, tmpConf):
     """Test update commands via run()."""
 
     tstWorker = Worker("update", None, None)
     tstWorker._file_metadata_id = tmpUUID
+    tstWorker._conf = tmpConf
 
     # Update returns True
     with monkeypatch.context() as mp:
@@ -137,6 +139,7 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID):
         mp.setattr(
             "dmci.distributors.pycsw_dist.requests.post", causeException)
         tstPyCSW = PyCSWDist("update", xml_file=mockXml)
+        tstPyCSW._conf = tmpConf
         assert tstPyCSW.run() == (
             False,
             "http://localhost: service unavailable. Failed to update."
@@ -146,7 +149,7 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID):
 
 
 @pytest.mark.dist
-def testDistPyCSW_Delete(monkeypatch, mockXml, tmpUUID):
+def testDistPyCSW_Delete(monkeypatch, mockXml, tmpUUID, tmpConf):
     """Test delete commands via run()."""
 
     assert PyCSWDist("delete").run() == (False, "The run job is invalid")
@@ -179,8 +182,10 @@ def testDistPyCSW_Delete(monkeypatch, mockXml, tmpUUID):
     with monkeypatch.context() as mp:
         mp.setattr(
             "dmci.distributors.pycsw_dist.requests.post", causeException)
-        res = PyCSWDist("delete", metadata_UUID=tmpUUID, worker=mockWorker).run()
-        assert res == (False, "http://localhost: service unavailable. Failed to delete.")
+        tstPyCSW = PyCSWDist("delete", metadata_UUID=tmpUUID, worker=mockWorker)
+        tstPyCSW._conf = tmpConf
+        assert tstPyCSW.run() == (False,
+                                  "http://localhost: service unavailable. Failed to delete.")
 
 # END Test testDistPyCSW_Delete
 
