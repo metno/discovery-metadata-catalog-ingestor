@@ -20,9 +20,10 @@ limitations under the License.
 import os
 import pytest
 import requests
-from tools import causeException
 
 from lxml import etree
+from unittest import mock
+from tools import causeException
 
 from dmci.api.worker import Worker
 from dmci.distributors.pycsw_dist import PyCSWDist
@@ -106,6 +107,7 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID, tmpConf):
 
     tstWorker = Worker("update", None, None)
     tstWorker._file_metadata_id = tmpUUID
+    tstWorker._namespace = "no.test"
     tstWorker._conf = tmpConf
 
     # Update returns True
@@ -136,14 +138,31 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID, tmpConf):
 
     # Update returns False if the http post request fails
     with monkeypatch.context() as mp:
+        # Delete within update fails
         mp.setattr(
             "dmci.distributors.pycsw_dist.requests.post", causeException)
         tstPyCSW = PyCSWDist("update", xml_file=mockXml)
+        tstPyCSW._worker = tstWorker
         tstPyCSW._conf = tmpConf
         assert tstPyCSW.run() == (
             False,
             "http://localhost: service unavailable. Failed to update."
         )
+
+        # Insert within update fails
+        def new_delete(cls, *a, **k):
+            return True, ""
+
+        with mock.patch.object(PyCSWDist, '_delete', new=new_delete):
+            mp.setattr(
+                "dmci.distributors.pycsw_dist.requests.post", causeException)
+            tstPyCSW = PyCSWDist("update", xml_file=mockXml)
+            tstPyCSW._worker = tstWorker
+            tstPyCSW._conf = tmpConf
+            assert tstPyCSW.run() == (
+                False,
+                "http://localhost: service unavailable. Failed to update."
+            )
 
 # END Test testDistPyCSW_Update
 
