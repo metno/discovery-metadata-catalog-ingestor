@@ -32,11 +32,7 @@ logger = logging.getLogger(__name__)
 
 class Worker:
 
-    CALL_MAP = {
-        "file": FileDist,
-        "pycsw": PyCSWDist,
-        "solr": SolRDist
-    }
+    CALL_MAP = {"file": FileDist, "pycsw": PyCSWDist, "solr": SolRDist}
 
     def __init__(self, cmd, xml_file, xsd_validator, **kwargs):
 
@@ -87,7 +83,7 @@ class Worker:
         # Takes in bytes-object data
         # Gives msg when both validating and not validating
         valid = False
-        msg = ''
+        msg = ""
         if not isinstance(data, bytes):
             return False, "Input must be bytes type", data
 
@@ -104,48 +100,63 @@ class Worker:
             if not valid:
                 return valid, msg, data
 
+            # Make sure that datasets in dev (e.g., no.met.dev) and
+            # staging (e.g., no.met.staging) cannot be added to wrong
+            # environments
+            if (".dev" in self._namespace and self._conf.env_string != "dev") or (
+                ".staging" in self._namespace and self._conf.env_string != "staging"
+            ):
+                msg = (
+                    f"Namespace {self._namespace} does not match "
+                    f"the env {self._conf.env_string}"
+                )
+                return False, msg, data
+
             if self._conf.env_string:
 
                 # Append env string to namespace in metadata_identifier
                 logger.debug("Identifier namespace: %s" % self._namespace)
-                logger.debug("Environment customization: %s" %
-                             self._conf.env_string)
+                logger.debug("Environment customization: %s" % self._conf.env_string)
                 ns_re_pattern = re.compile(r"\w.\w." + self._conf.env_string)
 
                 if re.search(ns_re_pattern, self._namespace) is None:
                     full_namespace = f"{self._namespace}.{self._conf.env_string}"
                     data = re.sub(
-                        str.encode(
-                            f"<mmd:metadata_identifier>{self._namespace}"),
-                        str.encode(
-                            f"<mmd:metadata_identifier>{full_namespace}"),
+                        str.encode(f"<mmd:metadata_identifier>{self._namespace}"),
+                        str.encode(f"<mmd:metadata_identifier>{full_namespace}"),
                         data,
                     )
                     self._namespace = full_namespace
 
                 # Append env string to the namespace in the parent block, if present
-                if bool(re.search(b'<mmd:related_dataset relation_type="parent">', data)):
+                if bool(
+                    re.search(b'<mmd:related_dataset relation_type="parent">', data)
+                ):
                     match_parent_block = re.search(
                         b'<mmd:related_dataset relation_type="parent">(.+?)</mmd:related_dataset>',
-                        data
+                        data,
                     )
                     found_parent_block_content = match_parent_block.group(1)
-                    found_parent_block_content = found_parent_block_content.split(
-                        b":")
+                    found_parent_block_content = found_parent_block_content.split(b":")
                     if len(found_parent_block_content) != 2:
                         err = f"Malformed parent dataset identifier {found_parent_block_content}"
                         logger.error(err)
                         return False, err, data
                     old_parent_namespace = found_parent_block_content[0].decode()
-                    logger.debug("Parent dataset namespace: %s" %
-                                 old_parent_namespace)
+                    logger.debug("Parent dataset namespace: %s" % old_parent_namespace)
                     if re.search(ns_re_pattern, old_parent_namespace) is None:
-                        new_parent_namespace = f"{old_parent_namespace}.{self._conf.env_string}"
+                        new_parent_namespace = (
+                            f"{old_parent_namespace}.{self._conf.env_string}"
+                        )
                         data = re.sub(
-                            str.encode(f'<mmd:related_dataset '
-                                       f'relation_type="parent">{old_parent_namespace}'),
-                            str.encode(f'<mmd:related_dataset '
-                                       f'relation_type="parent">{new_parent_namespace}'),
+                            str.encode(
+                                f"<mmd:related_dataset "
+                                f'relation_type="parent">{old_parent_namespace}'
+                            ),
+                            str.encode(
+                                f"<mmd:related_dataset "
+                                f'relation_type="parent">{new_parent_namespace}'
+                            ),
                             data,
                         )
 
@@ -191,8 +202,7 @@ class Worker:
                 xml_file=self._dist_xml_file,
                 metadata_UUID=self._dist_metadata_id_uuid,
                 worker=self,
-                path_to_parent_list=self._kwargs.get(
-                    "path_to_parent_list", None),
+                path_to_parent_list=self._kwargs.get("path_to_parent_list", None),
             )
             valid &= obj.is_valid()
             if obj.is_valid():
@@ -278,8 +288,7 @@ class Worker:
                 f"\n    <mmd:description/>\n    "
                 f"<mmd:resource>{catalog_url}/dataset/{uuid}</mmd:resource>\n  "
             )
-            data_mod = re.sub(found_datasetlandingpage,
-                              datasetlandingpage_mod, data)
+            data_mod = re.sub(found_datasetlandingpage, datasetlandingpage_mod, data)
 
         return data_mod
 
@@ -304,17 +313,15 @@ class Worker:
                 # only accept if format is uri:UUID, both need to be present
                 words = xml_entry.text.split(":")
                 if len(words) != 2:
-                    logger.error(
-                        "metadata_identifier not formed as namespace:UUID")
+                    logger.error("metadata_identifier not formed as namespace:UUID")
                     return False
                 namespace, file_uuid = words
 
-                logger.info("XML file metadata_identifier: %s:%s" %
-                            (namespace, file_uuid))
-                logger.debug(
-                    "XML file metadata_identifier namespace: %s", namespace)
-                logger.debug(
-                    "XML file metadata_identifier UUID: %s", file_uuid)
+                logger.info(
+                    "XML file metadata_identifier: %s:%s" % (namespace, file_uuid)
+                )
+                logger.debug("XML file metadata_identifier namespace: %s", namespace)
+                logger.debug("XML file metadata_identifier UUID: %s", file_uuid)
                 break
 
         if file_uuid == "":
