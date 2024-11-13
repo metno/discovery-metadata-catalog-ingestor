@@ -103,21 +103,13 @@ class PyCSWDist(Distributor):
         properties against a csw:Constraint, to update: Define
         overwriting property, search for places to overwrite.
         """
-        headers = requests.structures.CaseInsensitiveDict()
-        headers["Content-Type"] = "application/xml"
-        headers["Accept"] = "application/xml"
-        xml = (
-            b'<?xml version="1.0" encoding="UTF-8"?>'
-            b'<csw:Transaction xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" '
-            b'xmlns:ows="http://www.opengis.net/ows" '
-            b'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
-            b'xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 '
-            b'http://schemas.opengis.net/csw/2.0.2/CSW-publication.xsd" '
-            b'service="CSW" version="2.0.2"><csw:Update>'
-        )
-        xml += self._translate()
-        xml += b"</csw:Update></csw:Transaction>"
-        return self._post_request(headers, xml, "update", self.TOTAL_UPDATED)
+        del_status, del_response_text = self._delete()
+        if not del_status:
+            return del_status, del_response_text.replace("delete", "update")
+        ins_status, ins_response_text = self._insert()
+        response_text = ins_response_text.replace("insert", "update")
+        # Handle insertion
+        return ins_status, response_text
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
