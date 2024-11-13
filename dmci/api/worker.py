@@ -100,6 +100,9 @@ class Worker:
             if not valid:
                 return valid, msg, data
 
+            # Make sure that datasets in dev (e.g., no.met.dev) and
+            # staging (e.g., no.met.staging) cannot be added to wrong
+            # environments
             if (".dev" in self._namespace and self._conf.env_string != "dev") or (
                 ".staging" in self._namespace and self._conf.env_string != "staging"
             ):
