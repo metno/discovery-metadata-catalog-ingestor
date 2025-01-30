@@ -146,7 +146,7 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID, tmpConf):
         tstPyCSW._conf = tmpConf
         assert tstPyCSW.run() == (
             False,
-            "http://localhost: service unavailable. Failed to update."
+            "http://localhost: service unavailable. Failed to delete."
         )
 
         # Insert within update fails
@@ -161,7 +161,7 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID, tmpConf):
             tstPyCSW._conf = tmpConf
             assert tstPyCSW.run() == (
                 False,
-                "http://localhost: service unavailable. Failed to update."
+                "http://localhost: service unavailable. Failed to insert."
             )
 
 # END Test testDistPyCSW_Update

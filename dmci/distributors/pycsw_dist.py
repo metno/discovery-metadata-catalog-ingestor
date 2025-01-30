@@ -105,9 +105,12 @@ class PyCSWDist(Distributor):
         """
         del_status, del_response_text = self._delete()
         if not del_status:
-            return del_status, del_response_text.replace("delete", "update")
+            return del_status, del_response_text
         ins_status, ins_response_text = self._insert()
-        response_text = ins_response_text.replace("insert", "update")
+        if not ins_status:
+            return ins_status, ins_response_text
+        else:
+            response_text = ins_response_text.replace("insert", "update")
         # Handle insertion
         return ins_status, response_text
 
