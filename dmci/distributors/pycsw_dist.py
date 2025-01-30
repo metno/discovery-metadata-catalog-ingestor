@@ -117,7 +117,7 @@ class PyCSWDist(Distributor):
     def _delete(self):
         """Delete entry with a specified metadata_id."""
         identifier = self._construct_identifier(self._worker._namespace, self._metadata_UUID)
-        logging.debug(f"Deleting file: {identifier}")
+        logger.debug(f"Deleting file: {identifier}")
 
         headers = requests.structures.CaseInsensitiveDict()
         headers["Content-Type"] = "application/xml"
