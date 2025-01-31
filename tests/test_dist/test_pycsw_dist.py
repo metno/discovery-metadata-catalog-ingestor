@@ -102,13 +102,15 @@ def testDistPyCSW_Insert(monkeypatch, mockXml, mockXslt, tmpConf):
 
 
 @pytest.mark.dist
-def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID, tmpConf):
+def testDistPyCSW_Update(monkeypatch, filesDir, mockXslt, tmpUUID, tmpConf):
     """Test update commands via run()."""
 
     tstWorker = Worker("update", None, None)
     tstWorker._file_metadata_id = tmpUUID
     tstWorker._namespace = "no.test"
     tstWorker._conf = tmpConf
+
+    mockXml = os.path.join(filesDir, "reference", "mmd_file.xml")
 
     # Update returns True
     with monkeypatch.context() as mp:
@@ -163,6 +165,16 @@ def testDistPyCSW_Update(monkeypatch, mockXml, mockXslt, tmpUUID, tmpConf):
                 False,
                 "http://localhost: service unavailable. Failed to insert."
             )
+
+    # Worker._get_metadata_id returns empty file_uuid, i.e., file_uuid = "".
+    with monkeypatch.context() as mp:
+        mp.setattr(Worker, "_get_metadata_id", lambda *a, **k: "no.test", "")
+        import ipdb
+        ipdb.set_trace()
+        tstPyCSW = PyCSWDist("update", xml_file=mockXml)
+
+    # Worker._get_metadata_id returns empty namespace, i.e., namespace = "".
+    # Worker._get_metadata_id returns invalid file_uuid, e.g., file_uuid = "123".
 
 # END Test testDistPyCSW_Update
 

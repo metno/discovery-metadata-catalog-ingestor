@@ -293,8 +293,7 @@ class Worker:
         return data_mod
 
     def _extract_metadata_id(self, xml_doc):
-        """Extract the metadata_identifier from the xml object and set
-        the class variables namespace and file_metadata_id.
+        """Set the class variables namespace and file_metadata_id.
 
         Returns
         -------
@@ -305,25 +304,7 @@ class Worker:
         """
         self._file_metadata_id = None
         self._namespace = None
-        file_uuid = ""
-        namespace = ""
-        for xml_entry in xml_doc:
-            local = etree.QName(xml_entry)
-            if local.localname == "metadata_identifier":
-                # only accept if format is uri:UUID, both need to be present
-                words = xml_entry.text.split(":")
-                if len(words) != 2:
-                    logger.error("metadata_identifier not formed as namespace:UUID")
-                    return False
-                namespace, file_uuid = words
-
-                logger.info(
-                    "XML file metadata_identifier: %s:%s" % (namespace, file_uuid)
-                )
-                logger.debug("XML file metadata_identifier namespace: %s", namespace)
-                logger.debug("XML file metadata_identifier UUID: %s", file_uuid)
-                break
-
+        namespace, file_uuid = self._get_metadata_id(xml_doc)
         if file_uuid == "":
             logger.error("No UUID found in XML file")
             return False
@@ -340,6 +321,37 @@ class Worker:
             return False
         self._namespace = namespace
         return True
+
+    @staticmethod
+    def _get_metadata_id(xml_doc):
+        """Extract the metadata_identifier from the xml object.
+
+        Returns
+        -------
+        namespace : str
+            Namespace if this is found, otherwise empty string
+        file_uuid : str
+            File UUID if this is found, otherwise empty string
+        """
+        file_uuid = ""
+        namespace = ""
+        for xml_entry in xml_doc:
+            local = etree.QName(xml_entry)
+            if local.localname == "metadata_identifier":
+                # only accept if format is uri:UUID, both need to be present
+                words = xml_entry.text.split(":")
+                if len(words) != 2:
+                    logger.error("metadata_identifier not formed as namespace:UUID")
+                    return "", ""
+                namespace, file_uuid = words
+
+                logger.info(
+                    "XML file metadata_identifier: %s:%s" % (namespace, file_uuid)
+                )
+                logger.debug("XML file metadata_identifier namespace: %s", namespace)
+                logger.debug("XML file metadata_identifier UUID: %s", file_uuid)
+                break
+        return namespace, file_uuid
 
     def _extract_title(self, xml_doc):
         title = ""

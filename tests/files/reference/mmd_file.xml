@@ -1,0 +1,152 @@
+<mmd:mmd xmlns:mmd="http://www.met.no/schema/mmd" xmlns:gml="http://www.opengis.net/gml">
+  <mmd:metadata_identifier>no.test:3f289fcc-022b-4b62-bbbb-b001304a6e09</mmd:metadata_identifier>
+  <mmd:title xml:lang="en">Arome-Arctic 2.5Km lagged subset + 66 hours</mmd:title>
+  <mmd:abstract xml:lang="en">This file contains output from ensemble. Contains several surface parameters, and some pressure level parameters. Was updated every 3 hours. The dataset production is ended.</mmd:abstract>
+  <mmd:abstract xml:lang="no">Denne filen inneholder utdata fra ensemble. Inneholder flere overflateparametere, og noen trykknivåparametere. Ble ppdatert hver 3. time. Produksjonen av dette datasettet er avsluttet.</mmd:abstract>
+  <mmd:metadata_status>Active</mmd:metadata_status>
+  <mmd:dataset_production_status>Complete</mmd:dataset_production_status>
+  <mmd:collection>SIOS</mmd:collection>
+  <mmd:collection>ADC</mmd:collection>
+  <mmd:collection>METNCS</mmd:collection>
+  <mmd:last_metadata_update>
+    <mmd:update>
+      <mmd:datetime>2023-09-15T12:00:00Z</mmd:datetime>
+      <mmd:type>Created</mmd:type>
+    </mmd:update>
+    <mmd:update>
+      <mmd:datetime>2024-04-05T13:33:14Z</mmd:datetime>
+      <mmd:type>Minor modification</mmd:type>
+      <mmd:note>Add collection ADC</mmd:note>
+    </mmd:update>
+    <mmd:update>
+      <mmd:datetime>2025-01-10T13:45:00Z</mmd:datetime>
+      <mmd:type>Minor modification</mmd:type>
+      <mmd:note>Set dataset production status to complete</mmd:note>
+    </mmd:update>
+    <mmd:update>
+      <mmd:datetime>2024-04-05T13:35:05Z</mmd:datetime>
+      <mmd:type>Minor modification</mmd:type>
+      <mmd:note>Add collection SIOS</mmd:note>
+    </mmd:update>
+    <mmd:update>
+      <mmd:datetime>2025-01-15T08:30:00Z</mmd:datetime>
+      <mmd:type>Minor modification</mmd:type>
+      <mmd:note>Add this comment to test dmci ingestion</mmd:note>
+    </mmd:update>
+  </mmd:last_metadata_update>
+  <mmd:temporal_extent>
+    <mmd:start_date>2023-02-27T15:00:00Z</mmd:start_date>
+  </mmd:temporal_extent>
+  <mmd:iso_topic_category>climatologyMeteorologyAtmosphere</mmd:iso_topic_category>
+  <mmd:keywords vocabulary="GCMDSK">
+    <mmd:keyword>WEATHER FORECAST</mmd:keyword>
+    <mmd:resource>https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords</mmd:resource>
+    <mmd:separator/>
+  </mmd:keywords>
+  <mmd:keywords vocabulary="GEMET">
+    <mmd:keyword>Meteorological geographical features</mmd:keyword>
+    <mmd:keyword>Atmospheric conditions</mmd:keyword>
+    <mmd:resource>https://inspire.ec.europa.eu/theme</mmd:resource>
+    <mmd:separator/>
+  </mmd:keywords>
+  <mmd:keywords vocabulary="NORTHEMES">
+    <mmd:keyword>Weather and climate</mmd:keyword>
+    <mmd:resource>https://register.geonorge.no/metadata-kodelister/nasjonal-temainndeling</mmd:resource>
+    <mmd:separator/>
+  </mmd:keywords>
+  <mmd:geographic_extent>
+    <mmd:rectangle srsName="EPSG:4326">
+      <mmd:north>88.0</mmd:north>
+      <mmd:south>62.0</mmd:south>
+      <mmd:east>80.0</mmd:east>
+      <mmd:west>-18.0</mmd:west>
+    </mmd:rectangle>
+    <mmd:polygon>
+      <gml:Polygon id="polygon" srsName="EPSG:4326">
+        <gml:exterior>
+          <gml:LinearRing>
+            <gml:pos>-17.96 69.30</gml:pos>
+            <gml:pos>-13.44 69.04</gml:pos>
+            <gml:pos>-9.06 68.66</gml:pos>
+            <gml:pos>-4.85 68.17</gml:pos>
+            <gml:pos>-0.84 67.57</gml:pos>
+            <gml:pos>2.94 66.88</gml:pos>
+            <gml:pos>6.48 66.09</gml:pos>
+            <gml:pos>9.79 65.23</gml:pos>
+            <gml:pos>12.86 64.30</gml:pos>
+            <gml:pos>15.71 63.30</gml:pos>
+            <gml:pos>18.66 62.12</gml:pos>
+            <gml:pos>21.80 63.60</gml:pos>
+            <gml:pos>25.31 65.00</gml:pos>
+            <gml:pos>29.23 66.30</gml:pos>
+            <gml:pos>33.58 67.50</gml:pos>
+            <gml:pos>38.40 68.56</gml:pos>
+            <gml:pos>43.68 69.46</gml:pos>
+            <gml:pos>49.38 70.18</gml:pos>
+            <gml:pos>55.46 70.71</gml:pos>
+            <gml:pos>61.81 71.01</gml:pos>
+            <gml:pos>68.90 71.09</gml:pos>
+            <gml:pos>68.90 71.09</gml:pos>
+            <gml:pos>69.08 72.92</gml:pos>
+            <gml:pos>69.28 74.56</gml:pos>
+            <gml:pos>69.53 76.20</gml:pos>
+            <gml:pos>69.84 77.84</gml:pos>
+            <gml:pos>70.24 79.48</gml:pos>
+            <gml:pos>70.79 81.11</gml:pos>
+            <gml:pos>71.59 82.74</gml:pos>
+            <gml:pos>72.83 84.37</gml:pos>
+            <gml:pos>75.04 85.98</gml:pos>
+            <gml:pos>80.05 87.56</gml:pos>
+            <gml:pos>80.05 87.56</gml:pos>
+            <gml:pos>31.29 87.08</gml:pos>
+            <gml:pos>8.72 85.56</gml:pos>
+            <gml:pos>-1.73 83.70</gml:pos>
+            <gml:pos>-7.39 81.72</gml:pos>
+            <gml:pos>-10.88 79.69</gml:pos>
+            <gml:pos>-13.23 77.63</gml:pos>
+            <gml:pos>-14.92 75.55</gml:pos>
+            <gml:pos>-16.18 73.47</gml:pos>
+            <gml:pos>-17.17 71.38</gml:pos>
+            <gml:pos>-17.96 69.30</gml:pos>
+          </gml:LinearRing>
+        </gml:exterior>
+      </gml:Polygon>
+    </mmd:polygon>
+  </mmd:geographic_extent>
+  <mmd:dataset_language>en</mmd:dataset_language>
+  <mmd:operational_status>Operational</mmd:operational_status>
+  <mmd:use_constraint>
+    <mmd:identifier>CC-BY-4.0</mmd:identifier>
+    <mmd:resource>https://spdx.org/licenses/CC-BY-4.0</mmd:resource>
+  </mmd:use_constraint>
+  <mmd:personnel>
+    <mmd:role>Investigator</mmd:role>
+    <mmd:name>Senter for utvikling av værvarslingstjenesten</mmd:name>
+    <mmd:email>suv-arctic@met.no</mmd:email>
+    <mmd:organisation>Norwegian Meteorological Institute</mmd:organisation>
+  </mmd:personnel>
+  <mmd:data_center>
+    <mmd:data_center_name>
+      <mmd:short_name>MET Norway</mmd:short_name>
+      <mmd:long_name>Norwegian Meteorological Institute</mmd:long_name>
+    </mmd:data_center_name>
+    <mmd:data_center_url>https://data.met.no</mmd:data_center_url>
+  </mmd:data_center>
+  <mmd:related_information>
+    <mmd:type>Project home page</mmd:type>
+    <mmd:description/>
+    <mmd:resource>https://www.met.no/en/projects/The-weather-model-AROME-Arctic</mmd:resource>
+  </mmd:related_information>
+  <mmd:spatial_representation>grid</mmd:spatial_representation>
+  <mmd:activity_type>Numerical Simulation</mmd:activity_type>
+  <mmd:dataset_citation>
+    <mmd:author>Senter for utvikling av værvarslingstjenesten</mmd:author>
+    <mmd:publication_date>2023-09-14T12:00:00Z</mmd:publication_date>
+    <mmd:title>Arome-Arctic 2.5Km lagged subset + 66 hours</mmd:title>
+  </mmd:dataset_citation>
+  <mmd:related_information>
+    <mmd:type>Dataset landing page</mmd:type>
+    <mmd:description/>
+    <mmd:resource>https://data-test.met.no/dataset/3f289fcc-022b-4b62-bbbb-b001304a6e09</mmd:resource>
+  </mmd:related_information>
+</mmd:mmd>
