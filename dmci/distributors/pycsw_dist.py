@@ -118,7 +118,7 @@ class PyCSWDist(Distributor):
             logger.debug("File UUID: %s", str(file_uuid))
         except Exception as e:
             logger.error(str(e))
-            return False, f"Could not parse UUID: {str(file_uuid)}" 
+            return False, f"Could not parse UUID: {str(file_uuid)}"
 
         del_status, del_response_text = self._delete()
         if not del_status:
@@ -133,7 +133,6 @@ class PyCSWDist(Distributor):
 
     def _delete(self):
         """Delete entry with a specified metadata_id."""
-        #when updating, self._metadata_UUID is None - we need to set this..
         identifier = self._construct_identifier(self._worker._namespace, self._metadata_UUID)
         logger.debug(f"Deleting file: {identifier}")
 
