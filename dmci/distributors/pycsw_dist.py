@@ -17,6 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import uuid
 import logging
 import requests
 
@@ -99,10 +100,26 @@ class PyCSWDist(Distributor):
     def _update(self):
         """Update current entry.
 
-        Update: updates can be made as full record updates or record
-        properties against a csw:Constraint, to update: Define
-        overwriting property, search for places to overwrite.
+        Note: in pycsw updates are made on elements, not full documents. The
+        way dmci is designed, it is easier to update the full document by first
+        deleting the current entry, then inserting the new version.
         """
+        from dmci.api.worker import Worker
+        with open(self._xml_file) as fn:
+            data = fn.read()
+        xml_doc = etree.fromstring(data)
+        namespace, file_uuid = Worker._get_metadata_id(xml_doc)
+        if file_uuid == "":
+            return False, "No UUID found in XML file"
+        if namespace == "":
+            return False, "No namespace found in XML file"
+        try:
+            self._metadata_UUID = uuid.UUID(file_uuid)
+            logger.debug("File UUID: %s", str(file_uuid))
+        except Exception as e:
+            logger.error(str(e))
+            return False, f"Could not parse UUID: {str(file_uuid)}"
+
         del_status, del_response_text = self._delete()
         if not del_status:
             return del_status, del_response_text
