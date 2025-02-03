@@ -1,4 +1,4 @@
-metvocab @ git+https://github.com/metno/met-vocab-tools@v1.2
+metvocab @ git+https://github.com/metno/met-vocab-tools@v1.2.0
 solrindexer @ git+https://github.com/metno/solr-indexer@v2.1.0
 requests>=2.22
 pyyaml>=5.1
