@@ -21,7 +21,6 @@ import os
 import sys
 
 from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
-from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from prometheus_client import CollectorRegistry
 
 from dmci.api import App
