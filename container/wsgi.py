@@ -33,8 +33,4 @@ if not CONFIG.readConfig(configFile=os.environ.get("DMCI_CONFIG", None)):
 
 
 app = App()
-#REGISTRY.register(CollectorRegistry())
-#app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
-#    '/metrics': make_wsgi_app(registry=REGISTRY)
-#})
 GunicornPrometheusMetrics(app, path='/metrics', registry=CollectorRegistry())
