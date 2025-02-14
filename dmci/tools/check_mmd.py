@@ -71,9 +71,9 @@ class CheckMMD():
     def check_rectangle(self, rectangle):
         """Check if element geographic extent/rectangle is valid:
             - only 1 existing rectangle element
-            - rectangle has north / south / west / east subelements
-            - -180 <= min_lat <= max_lat <= 180
-            -    0 <= min_lon <= max_lon <= 360
+            - rectangle has North / South / West / East subelements
+            - -90 <= min_lat <= max_lat <= 90
+            - West <= East
 
         Parameters
         ----------
@@ -114,8 +114,8 @@ class CheckMMD():
 
         if ok:
             # Only check this if all values are successfully read
-            if not (-180.0 <= directions["west"] <= directions["east"] <= 180.0):
-                err.append("Longitudes not in range -180 <= west <= east <= 180.")
+            if not (directions["west"] <= directions["east"]):
+                err.append("Longitude West must be smaller than longitude East.")
                 ok = False
 
             if not (-90.0 <= directions["south"] <= directions["north"] <= 90.0):
