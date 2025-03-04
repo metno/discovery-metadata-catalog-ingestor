@@ -78,6 +78,8 @@ RUN apt-get -qqy update && \
     && rm -rf /var/lib/apt/lists/* && \
     pip install "gunicorn${GUNICORN_VERSION}"
 
+RUN pip install --upgrade pip setuptools
+
 COPY --from=builder /dst/. /
 
 # Fix netcdf4 ssl error, occurring when solr-indexer tries to read featureType from the netcdf file
@@ -105,6 +107,6 @@ ENV METRICS_PORT 9200
 EXPOSE 9200
 
 COPY container/gunicorn_prometheus_config.py /src/
-
+COPY container/.dodsrc /root/.dodsrc
 # Start application
 CMD gunicorn -c /src/gunicorn_prometheus_config.py --worker-class sync --workers 5 --bind 0.0.0.0:8000 wsgi:app --keep-alive 5 --log-level info

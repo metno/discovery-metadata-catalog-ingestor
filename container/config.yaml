@@ -1,19 +1,19 @@
----
-dmci:
+dmci: 
   distributors:
     - file
     - pycsw
-  distributor_cache: /workdir
+  distributor_cache: workdir
+  rejected_jobs_path: rejected
   max_permitted_size: 100000
   mmd_xsl_path: /usr/share/mmd/xslt/mmd-to-geonorge.xsl
   mmd_xsd_path: /usr/share/mmd/xsd/mmd_strict.xsd
-
+  path_to_parent_list: parent-uuid-list.xml
 pycsw:
   csw_service_url: http://localhost
 
 customization:
   catalog_url: http://localhost
-  env_string: dev
-
+    env_string: dev
+  
 file:
-  file_archive_path: /workdir
+  file_archive_path: archive
