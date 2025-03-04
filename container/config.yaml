@@ -11,11 +11,9 @@ dmci:
 pycsw:
   csw_service_url: http://localhost
 
-overrides:
+customization:
   catalog_url: http://localhost
+    env_string: dev
   
 file:
   file_archive_path: archive
-
-solr:
-  solr_service_url: http://localhost
