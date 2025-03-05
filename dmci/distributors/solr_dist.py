@@ -100,7 +100,13 @@ class SolRDist(Distributor):
             return False, msg
 
         """Check if document already exsists. Then we throw error and don't index."""
-        isIndexed = self.mysolr.get_dataset(newdoc['id'])
+        try:
+            isIndexed = self.mysolr.get_dataset(newdoc['id'])
+        except Exception as e:
+            msg = 'Could not search the file %s: %s' % (
+                self._xml_file, str(e))
+            logger.error(msg)
+            return False, msg
 
         if isIndexed is not None:
             if isIndexed['doc'] is not None and self._cmd == DistCmd.INSERT:
