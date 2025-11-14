@@ -73,7 +73,8 @@ class CheckMMD():
             - only 1 existing rectangle element
             - rectangle has North / South / West / East subelements
             - -90 <= min_lat <= max_lat <= 90
-            - West <= East
+            - -180 <= min_lat <= 180
+            - -180 <= max_lat <= 180
 
         Parameters
         ----------
@@ -114,9 +115,16 @@ class CheckMMD():
 
         if ok:
             # Only check this if all values are successfully read
-            if not (directions["west"] <= directions["east"]):
-                err.append("Longitude West must be smaller than longitude East.")
+            if not (-180 <= directions["west"] <= 180):
+                err.append("Longitude West must be less/more than +/- 180 degrees.")
                 ok = False
+
+            if not (-180 <= directions["east"] <= 180):
+                err.append("Longitude East must be less/more than +/- 180 degrees.")
+                ok = False
+
+            # Note that if East < West, the dataset is by convention
+            # crossing the date line
 
             if not (-90.0 <= directions["south"] <= directions["north"] <= 90.0):
                 err.append("Latitudes not in range -90 <= south <= north <= 90.")
