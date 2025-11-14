@@ -75,8 +75,8 @@ def testMMDTools_CheckRectangle():
         "    <rectangle>"
         "      <north>50</north>"
         "      <south>20</south>"
-        "      <west>50</west>"
-        "      <east>0</east>"
+        "      <west>190</west>"
+        "      <east>182</east>"
         "    </rectangle>"
         "  </geographic_extent>"
         "</root>"
@@ -84,9 +84,10 @@ def testMMDTools_CheckRectangle():
     rect = etreeRef.findall("./{*}geographic_extent/{*}rectangle")
     ok, err = chkMMD.check_rectangle(rect)
     assert ok is False
-    assert err == ["Longitude West must be smaller than longitude East."]
+    assert err == ["Longitude West must be less/more than +/- 180 degrees.",
+                   "Longitude East must be less/more than +/- 180 degrees."]
 
-    # Check invalid longitude
+    # Check invalid latitude
     etreeRef = etree.ElementTree(etree.XML(
         "<root>"
         "  <geographic_extent>"
