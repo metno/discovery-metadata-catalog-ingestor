@@ -72,9 +72,9 @@ class CheckMMD():
         """Check if element geographic extent/rectangle is valid:
             - only 1 existing rectangle element
             - rectangle has North / South / West / East subelements
-            - -90 <= min_lat <= max_lat <= 90
-            - -180 <= min_lat <= 180
-            - -180 <= max_lat <= 180
+            - -90 <= South <= North <= 90
+            - -180 <= West <= 180
+            - -180 <= East <= 180
 
         Parameters
         ----------
