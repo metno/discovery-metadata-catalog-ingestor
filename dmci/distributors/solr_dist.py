@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 """Configure log level for solrindexer
 TODO: Maybe read this from env variable SOLRINDEXER_LOGLEVEL?
 """
-logging.getLogger('solrindexer').setLevel(logging.DEBUG)
+logging.getLogger('solrindexer').setLevel(logging.WARNING)
 
 
 class SolRDist(Distributor):
