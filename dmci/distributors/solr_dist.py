@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 """Configure log level for solrindexer
 TODO: Maybe read this from env variable SOLRINDEXER_LOGLEVEL?
 """
-logging.getLogger('solrindexer').setLevel(logging.WARNING)
+logging.getLogger('solrindexer').setLevel(logging.DEBUG)
 
 
 class SolRDist(Distributor):
@@ -47,7 +47,7 @@ class SolRDist(Distributor):
 
         #  Create connection to solr
         self.mysolr = IndexMMD(self._conf.solr_service_url, always_commit=False,
-                               authentication=self.authentication)
+                               authentication=self.authentication, config={})
         return
 
     def _init_authentication(self):
