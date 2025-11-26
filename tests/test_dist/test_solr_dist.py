@@ -81,7 +81,7 @@ class mockWorker:
 
 
 @pytest.mark.dist
-def testDistSolR_Init(tmpUUID):
+def testDistSolR_Init(tmpUUID, solr_ping_ok):
     """Test the SolRDist class init."""
     # Check that it initialises properly by running some of the simple
     # Distributor class tests
@@ -92,7 +92,7 @@ def testDistSolR_Init(tmpUUID):
 
 
 @pytest.mark.dist
-def testDistSolR_InitAuthentication(mockXml):
+def testDistSolR_InitAuthentication(mockXml, solr_ping_ok):
     """Test the authentication initiation by
     first initiate a SolRDist without authentication, then call
     _init_authentication with new conf values
@@ -109,7 +109,7 @@ def testDistSolR_InitAuthentication(mockXml):
 
 
 @pytest.mark.dist
-def testDistSolR_Run(mockXml):
+def testDistSolR_Run(mockXml, solr_ping_ok):
     """Test the SolRDist class run function."""
 
     # Initialise object, and check that it validates
@@ -141,7 +141,7 @@ def testDistSolR_Run(mockXml):
 
 
 @pytest.mark.dist
-def testDistSolR_AddMMD4SolRRaisesException(mockXml, monkeypatch):
+def testDistSolR_AddMMD4SolRRaisesException(mockXml, monkeypatch, solr_ping_ok):
     """ Test _add function failing on initialization of MMD4SolR
     instance.
     """
@@ -238,7 +238,7 @@ def testDistSolR_AddSuccessfulWithRelatedDataset(mockXml, monkeypatch):
 
 
 @pytest.mark.dist
-def testDistSolR_AddTosolrRaisesException(mockXml, monkeypatch):
+def testDistSolR_AddTosolrRaisesException(mockXml, monkeypatch, solr_ping_ok):
     """ Test that the _add function fails correctly when
     MMD4SolR.tosolr raises an exception.
     """
@@ -282,7 +282,7 @@ def testDistSolR_AddUpdateParentRaisesException(mockXml, monkeypatch):
 
 
 @pytest.mark.dist
-def testDistSolR_AddDocExists(mockXml, monkeypatch):
+def testDistSolR_AddDocExists(mockXml, monkeypatch, solr_ping_ok):
     """ Test that an the _add function fails correctly when the
     dataset already exists.
     """
@@ -304,7 +304,7 @@ def testDistSolR_AddDocExists(mockXml, monkeypatch):
 
 
 @pytest.mark.dist
-def testDistSolR_Delete(monkeypatch, mockXml):
+def testDistSolR_Delete(monkeypatch, mockXml, solr_ping_ok):
     """Test the SolRDist class delete via distributor.run()"""
     md_uuid = uuid.UUID("250ba38f-1081-4669-a429-f378c569db32")
 
