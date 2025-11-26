@@ -19,6 +19,8 @@ limitations under the License.
 
 import os
 import sys
+import pysolr
+import json
 import uuid
 import shutil
 import pytest
@@ -109,3 +111,16 @@ def tmpConf(monkeypatch):
 @pytest.fixture(scope="function")
 def tmpUUID():
     return uuid.uuid4()
+
+##
+# SOLR
+##
+@pytest.fixture
+def solr_ping_ok(monkeypatch):
+    # Mock the ping method to always return a successful response
+    def mock_ping(self):
+        return json.dumps({"status": "OK"})
+
+    # Apply the monkeypatch to pysolr.Solr.ping
+    monkeypatch.setattr(pysolr.Solr, "ping", mock_ping)
+

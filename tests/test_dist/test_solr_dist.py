@@ -40,7 +40,6 @@ class MockIndexMMD:
     def update_parent(self, *args, **kwargs):
         return True, "Test successful update message"
 
-
 class MockMMD4SolR:
     def __init__(self, *args, **kwargs):
         pass
