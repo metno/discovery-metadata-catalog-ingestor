@@ -123,4 +123,3 @@ def solr_ping_ok(monkeypatch):
 
     # Apply the monkeypatch to pysolr.Solr.ping
     monkeypatch.setattr(pysolr.Solr, "ping", mock_ping)
-
