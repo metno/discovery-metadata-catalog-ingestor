@@ -112,6 +112,7 @@ def tmpConf(monkeypatch):
 def tmpUUID():
     return uuid.uuid4()
 
+
 ##
 # SOLR
 ##
